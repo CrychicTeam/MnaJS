@@ -123,9 +123,6 @@ repositories {
     }
     maven {
         url = "https://maven.theillusivec4.top/"
-        content {
-            includeGroup "top.theillusivec4.curios"
-        }
     }
     maven {
         name "KosmX's maven"
@@ -167,13 +164,14 @@ dependencies {
     }
 
     /* Mna Dependencies */
-    modRuntimeOnly("top.theillusivec4.curios:curios-forge:${curios_version}")
-    modCompileOnly("top.theillusivec4.curios:curios-forge:${curios_version}:api")
-    modRuntimeOnly("top.theillusivec4.caelus:caelus-forge:${caelus_version}")
-    modCompileOnly("top.theillusivec4.caelus:caelus-forge:${caelus_version}")
+    modRuntimeOnly("top.theillusivec4.curios:curios-forge:${config.curios_version}")
+    modCompileOnly("top.theillusivec4.curios:curios-forge:${config.curios_version}:api")
+    modRuntimeOnly("top.theillusivec4.caelus:caelus-forge:${config.caelus_version}")
+    modCompileOnly("top.theillusivec4.caelus:caelus-forge:${config.caelus_version}")
 
     modImplementation('software.bernie.geckolib:geckolib-forge-1.20.1:4.2.2')
-    forgeRuntimeLibrary("com.mithion:mna-forge-${minecraft_version}:${mna_version}:all")
+    modCompileOnly("curse.maven:mana-and-artifice-${config.mna_id}:${config.mna_all_id}")
+    modRuntimeOnly("curse.maven:mana-and-articice-${config.mna_id}:${config.mna_all_id}")
 
     if (hasConfig("curios_version") && !config.curios_version.isEmpty()) {
         modImplementation("top.theillusivec4.curios:curios-forge:${config.curios_version}")

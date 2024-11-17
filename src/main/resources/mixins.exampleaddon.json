@@ -1,9 +1,10 @@
 {
   "required": true,
-  "package": "com.example.exampleaddon.mixin",
+  "package": "com.crychicteam.mnajs.mixin",
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "mixins": [
+    "CastingResourceMixin"
   ],
   "client": [
   ],

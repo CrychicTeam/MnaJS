@@ -1,1 +1,1 @@
-com.example.exampleaddon.kubejs.ExampleKubeJSPlugin
+com.crychicteam.mnajs.kubejs.MnaJSPlugin

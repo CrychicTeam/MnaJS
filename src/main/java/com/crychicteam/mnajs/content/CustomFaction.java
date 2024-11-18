@@ -7,7 +7,6 @@ import dev.latvian.mods.kubejs.generator.AssetJsonGenerator;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -16,14 +15,14 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 public class CustomFaction extends BaseFaction {
-    public ItemStack factionGrimoire;
-    public Item tokenItem;
-    public SoundEvent raidSound;
-    public SoundEvent hornSound;
-    public Component occulusTaskPrompt;
-    public ResourceLocation factionIcon;
-    public int[] manaweaveRGB;
-    public ChatFormatting tornJournalPageFactionColor;
+    private final ItemStack factionGrimoire;
+    private final Item tokenItem;
+    private final SoundEvent raidSound;
+    private final SoundEvent hornSound;
+    private final Component occulusTaskPrompt;
+    private final ResourceLocation factionIcon;
+    private final int[] manaweaveRGB;
+    private final ChatFormatting tornJournalPageFactionColor;
 
     public CustomFaction(Builder builder) {
         this.factionGrimoire = builder.factionGrimoire;

@@ -25,8 +25,7 @@ public class MnaJSPlugin extends KubeJSPlugin {
     @Override
     public void registerRecipeSchemas(RegisterRecipeSchemasEvent event) {
         var ritualSchema = RitualRecipeSchema.RITUAL_RECIPE;
-        event.namespace("mna")
-                .register("ritual", ritualSchema);
+        event.register(RecipeInit.RITUAL_SERIALIZER.getId(), ritualSchema);
     }
 }
 

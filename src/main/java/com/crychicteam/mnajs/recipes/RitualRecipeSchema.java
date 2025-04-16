@@ -365,33 +365,38 @@ public interface RitualRecipeSchema {
         /**
          * Adds a fully configured ritual material key
          */
-        @Info("Adds a fully configured ritual material key. Parameters: key-character reference, item-ingredient (can be '#forge:sand' tag format or direct item ID), optional-whether optional, consume-whether consumed, manualReturn-whether manually returned, isDynamic-whether dynamic item, dynamicSource-whether dynamic source")
+        @Info("Adds a fully configured ritual material key. Parameters: key-character reference, item-ingredient, optional-whether optional, consume-whether consumed")
         public RitualRecipeJS key(String key, InputItem item, boolean optional, boolean consume,
                                   boolean manualReturn, boolean isDynamic, boolean dynamicSource) {
-            Map<String, RitualKey> keys = getValue(KEYS);
-            if (keys == null) {
-                keys = new HashMap<>();
-            }
+            JsonObject keysObj = ensureKeys();
+            JsonObject keyObj = new JsonObject();
 
             String itemId;
-            if (item.ingredient != null) {
-                try {
-                    String itemString = item.toString();
-                    if (itemString.startsWith("#")) {
-                        itemId = itemString.substring(1);
-                    } else {
-                        itemId = ForgeRegistries.ITEMS.getKey(item.ingredient.kjs$getFirst().getItem()).toString();
-                    }
-                } catch (Exception e) {
-                    itemId = "minecraft:air";
+            try {
+                String itemString = item.toString();
+                if (itemString.startsWith("#")) {
+                    itemId = itemString.substring(1);
+                } else {
+                    itemId = ForgeRegistries.ITEMS.getKey(item.ingredient.kjs$getFirst().getItem()).toString();
                 }
-            } else {
+            } catch (Exception e) {
                 itemId = "minecraft:air";
             }
-
-            keys.put(key, new RitualKey(itemId, optional, consume, manualReturn, isDynamic, dynamicSource));
-
-            setValue(KEYS, keys);
+            keyObj.addProperty("item", itemId);
+            if (optional) {
+                keyObj.addProperty("optional", true);
+            }
+            keyObj.addProperty("consume", consume);
+            if (manualReturn) {
+                keyObj.addProperty("manual_return", true);
+            }
+            if (isDynamic) {
+                keyObj.addProperty("is_dynamic", true);
+            }
+            if (dynamicSource) {
+                keyObj.addProperty("dynamic_source", true);
+            }
+            keysObj.add(key, keyObj);
             save();
             return this;
         }

@@ -147,6 +147,7 @@ dependencies {
     modRuntimeOnly("dev.latvian.mods:rhino-forge:${config.rhino_version}")
     modRuntimeOnly("dev.architectury:architectury-forge:${config.architectury_version}")
     modRuntimeOnly("curse.maven:probejs-585406:5227399")
+    modRuntimeOnly ("curse.maven:jei-238222:6075247")
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.2"))

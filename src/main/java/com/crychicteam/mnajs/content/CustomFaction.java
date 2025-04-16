@@ -123,7 +123,8 @@ public class CustomFaction extends BaseFaction {
 
         @Override
         public RegistryInfo<IFaction> getRegistryType() {
-            return MnaJSPlugin.FACTION_REGISTRY;
+//            return MnaJSPlugin.FACTION_REGISTRY;
+            return null;
         }
 
         @Override

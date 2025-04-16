@@ -6,7 +6,7 @@ license = "All rights reserved" # https://choosealicense.com/
 # issueTrackerURL="https://github.com/invalid/pleasechangeme/issues"
 
 [[mods]]
-modId = "exampleaddon"
+modId = "mnajs"
 version = "${version}"
 displayName = "Example Addon"
 logoFile="icon.png"

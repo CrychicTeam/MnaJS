@@ -1,5 +1,6 @@
 package com.crychicteam.mnajs.recipes.components;
 
+import com.crychicteam.mnajs.MnaJS;
 import com.google.gson.JsonElement;
 import dev.latvian.mods.kubejs.recipe.RecipeJS;
 import dev.latvian.mods.kubejs.recipe.RecipeKey;
@@ -11,9 +12,10 @@ import dev.latvian.mods.kubejs.util.TinyMap;
 
 public interface IRitualKeyComponent {
 	RecipeComponent<RitualKey> INPUT = new RecipeComponent<>() {
+		
 		@Override
 		public String componentType() {
-			return "ritual_key";
+			return "ritual_key"; // 曾经是ritualKeys, 影响未知, 当前已与{@link ItemComponents#INPUT}的形式保持一致
 		}
 		
 		@Override
@@ -43,7 +45,7 @@ public interface IRitualKeyComponent {
 		
 		@Override
 		public RecipeComponent<TinyMap<Character, RitualKey>> asPatternKey() {
-			return new MapRecipeComponent<>(StringComponent.CHARACTER, this, true);
+			return RITUAL_PATTERN_KEY;
 		}
 		
 		@Override
@@ -51,4 +53,6 @@ public interface IRitualKeyComponent {
 			return this.componentType();
 		}
 	};
+	
+	RecipeComponent<TinyMap<Character, RitualKey>> RITUAL_PATTERN_KEY = new MapRecipeComponent<>(StringComponent.CHARACTER, INPUT, true);
 }

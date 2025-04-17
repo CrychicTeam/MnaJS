@@ -437,7 +437,7 @@ public interface RitualRecipeSchema {
     RecipeSchema RITUAL_RECIPE = new RecipeSchema(
             RitualRecipeJS.class,
             RitualRecipeJS::new,
-            PATTERN, REAGENTS, IRitualKeyComponent.INPUT.asPatternKey().key("key"), DISPLAY_PATTERN, MANAWEAVE,
+            PATTERN, REAGENTS, IRitualKeyComponent.RITUAL_PATTERN_KEY.key("keys"), DISPLAY_PATTERN, MANAWEAVE,
             INNER_COLOR, OUTER_COLOR, BEAM_COLOR, CONNECT_BEAM,
             DISPLAY_INDEXES, KITTABLE, TIER, CREATES_ITEM, COMMAND
     );

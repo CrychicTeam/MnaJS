@@ -4,7 +4,6 @@ import dev.latvian.mods.kubejs.recipe.component.ArrayRecipeComponent;
 import dev.latvian.mods.kubejs.recipe.component.BooleanComponent;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponent;
 import dev.latvian.mods.kubejs.recipe.component.StringComponent;
-import com.crychicteam.mnajs.recipes.components.RitualKeyComponent.RitualKey;
 
 import java.util.Map;
 
@@ -32,7 +31,7 @@ public class MAComponents {
         return STRING_ARRAY;
     }
 
-    public static RecipeComponent<Map<String, RitualKey>> ritualKeys() {
+    public static RecipeComponent<Map<String, RitualKeyComponent.RitualKey>> ritualKeys() {
         return RITUAL_KEYS;
     }
 

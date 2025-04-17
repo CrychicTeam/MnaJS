@@ -1,5 +1,6 @@
 package com.crychicteam.mnajs.recipes;
 
+import com.crychicteam.mnajs.recipes.components.IRitualKeyComponent;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.crychicteam.mnajs.recipes.components.MAComponents;
@@ -15,8 +16,6 @@ import dev.latvian.mods.kubejs.typings.Info;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -438,7 +437,7 @@ public interface RitualRecipeSchema {
     RecipeSchema RITUAL_RECIPE = new RecipeSchema(
             RitualRecipeJS.class,
             RitualRecipeJS::new,
-            PATTERN, REAGENTS, KEYS, DISPLAY_PATTERN, MANAWEAVE,
+            PATTERN, REAGENTS, IRitualKeyComponent.INPUT.asPatternKey().key("key"), DISPLAY_PATTERN, MANAWEAVE,
             INNER_COLOR, OUTER_COLOR, BEAM_COLOR, CONNECT_BEAM,
             DISPLAY_INDEXES, KITTABLE, TIER, CREATES_ITEM, COMMAND
     );

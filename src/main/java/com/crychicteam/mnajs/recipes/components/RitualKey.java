@@ -63,22 +63,17 @@ public class RitualKey {
 	}
 	
 	public static RitualKey ofJson(JsonElement json) {
-		MnaJS.LOGGER.info("RitualKey ofJson");
 		if (json == null || json.isJsonNull() || json.isJsonArray() && json.getAsJsonArray().isEmpty()) {
-			MnaJS.LOGGER.warn("Json is Empty");
 			return EMPTY;
 		}
 		
 		if (json.isJsonPrimitive()) {
-			MnaJS.LOGGER.info("RitualKey isJsonPrimitive");
 			return ofJsonString(json);
 		}
 		
 		if (json.isJsonObject()) {
-			MnaJS.LOGGER.info("RitualKey isJsonObject");
 			return ofJsonObject(json.getAsJsonObject());
 		}
-		MnaJS.LOGGER.error("ofJson method is failed");
 		return EMPTY;
 	}
 	
@@ -95,36 +90,37 @@ public class RitualKey {
 		boolean dynamicSource = object.has("dynamicSource") ? object.get("dynamicSource").getAsBoolean() : false;
 		boolean consume = object.has("consume") ? object.get("consume").getAsBoolean() : true;
 		
-		RitualKey key = new RitualKey(item, optional, manualReturn, isDynamic, dynamicSource, consume);
-		MnaJS.LOGGER.info("return RitualKey");
-		return key;
+		return new RitualKey(item, optional, manualReturn, isDynamic, dynamicSource, consume);
 	}
 	
 	
 	public static RitualKey of(Object object) {
-		if (object instanceof RitualKey ritualKey) {
-			return ritualKey;
-		} else if (object instanceof JsonElement element) {
-			MnaJS.LOGGER.info("object instanceof JsonElement element");
-			return ofJson(element);
-		} else if (object instanceof Map map) {
-			if(map.containsKey("item")){
-				InputItem item = InputItem.of(map.get("item"));
-				boolean optional = map.containsKey("optional") ? (boolean) map.get("optional") : false;
-				boolean manualReturn = map.containsKey("manualReturn") ? (boolean) map.get("manualReturn") : false;
-				boolean isDynamic = map.containsKey("isDynamic") ? (boolean) map.get("isDynamic") : false;
-				boolean dynamicSource = map.containsKey("dynamicSource") ? (boolean) map.get("dynamicSource") : false;
-				boolean consume = map.containsKey("consume") ? (boolean) map.get("consume") : true;
-				RitualKey key = new RitualKey(item, optional, manualReturn, isDynamic, dynamicSource, consume);
-				MnaJS.LOGGER.info("return RitualKey 2");
-				return key;
-			}else {
-				MnaJS.LOGGER.error("item field is not exit");
+		try {
+			if (object instanceof RitualKey ritualKey) {
+				return ritualKey;
+			} else if (object instanceof JsonElement element) {
+				return ofJson(element);
+			} else if (object instanceof Map map) {
+				if (map.containsKey("item")) {
+					InputItem item = InputItem.of(map.get("item"));
+					boolean optional = map.containsKey("optional") ? (boolean) map.get("optional") : false;
+					boolean manualReturn = map.containsKey("manualReturn") ? (boolean) map.get("manualReturn") : false;
+					boolean isDynamic = map.containsKey("isDynamic") ? (boolean) map.get("isDynamic") : false;
+					boolean dynamicSource = map.containsKey("dynamicSource") ? (boolean) map.get("dynamicSource") : false;
+					boolean consume = map.containsKey("consume") ? (boolean) map.get("consume") : true;
+					RitualKey key = new RitualKey(item, optional, manualReturn, isDynamic, dynamicSource, consume);
+					return key;
+				} else {
+					return EMPTY;
+				}
+			} else if (object instanceof CharSequence sequence) {
+				return new RitualKey(InputItem.of(sequence));
+			} else {
 				return EMPTY;
 			}
-		} else {
-			MnaJS.LOGGER.info("RitualKey pf(Object) EMPTY, class: {}", object.getClass());
-			return EMPTY;
+		} catch (Exception e) {
+			MnaJS.LOGGER.error("parse RitualKey Error: {}, at: {}", e.getMessage(), e.getStackTrace());
 		}
+		return EMPTY;
 	}
 }

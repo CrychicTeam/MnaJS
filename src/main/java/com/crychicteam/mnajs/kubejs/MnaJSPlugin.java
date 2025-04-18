@@ -1,16 +1,20 @@
 package com.crychicteam.mnajs.kubejs;
 
-import com.crychicteam.mnajs.recipes.ProgressionSchema;
-import com.crychicteam.mnajs.recipes.RitualRecipeBuilder;
-import com.crychicteam.mnajs.recipes.components.IRitualKeyComponent;
-import com.crychicteam.mnajs.recipes.components.ProgressionAdvancementComponent;
+import com.crychicteam.mnajs.content.CustomFaction;
+import com.crychicteam.mnajs.recipes.RecipesHelper;
+import com.mna.api.faction.IFaction;
 import dev.latvian.mods.kubejs.KubeJSPlugin;
-import dev.latvian.mods.kubejs.recipe.schema.RecipeComponentFactoryRegistryEvent;
-import dev.latvian.mods.kubejs.recipe.schema.RegisterRecipeSchemasEvent;
+import dev.latvian.mods.kubejs.registry.RegistryInfo;
 import dev.latvian.mods.kubejs.script.BindingsEvent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.common.util.Lazy;
 
 public class MnaJSPlugin extends KubeJSPlugin {
-//    public static final RegistryInfo<IFaction> FACTION_REGISTRY = RegistryInfo.of(Registries.Factions.get().getRegistryKey(), IFaction.class);
+    public static final Lazy<RegistryInfo<IFaction>> FACTION_REGISTRY =
+			Lazy.of(() -> RegistryInfo.of(
+					ResourceKey.createRegistryKey(new ResourceLocation("mna:factions")), IFaction.class)
+			);
 	
 	@Override
 	public void registerEvents() {
@@ -19,28 +23,12 @@ public class MnaJSPlugin extends KubeJSPlugin {
 	
 	@Override
 	public void init() {
-//        FACTION_REGISTRY.addType("basic", CustomFaction.Builder.class, CustomFaction.Builder::new);
+		FACTION_REGISTRY.get().addType("basic", CustomFaction.Builder.class, CustomFaction.Builder::new);
 	}
 
 	@Override
 	public void registerBindings(BindingsEvent event) {
-		event.add("RitualHelper", RitualRecipeBuilder.class);
-	}
-
-	@Override
-	public void registerRecipeComponents(RecipeComponentFactoryRegistryEvent event) {
-//		event.register("ritualKeys", RitualKeyComponent.INSTANCE);
-//		event.register("ritualKey", RitualKeyComponent.RitualKey.INSTANCE);
-		event.register("ritualKey", IRitualKeyComponent.INPUT);
-		event.register("advancement", ProgressionAdvancementComponent.INSTANCE);
-	}
-	
-	@Override
-	public void registerRecipeSchemas(RegisterRecipeSchemasEvent event) {
-		event.namespace("mna")
-				.register("progression-condition", ProgressionSchema.SCHEMA);
-//		var ritualSchema = RitualRecipeSchema.RITUAL_RECIPE;
-//		event.register(RecipeInit.RITUAL_TYPE.getId(), ritualSchema);
+		event.add("MNARecipesHelper", RecipesHelper.class);
 	}
 }
 

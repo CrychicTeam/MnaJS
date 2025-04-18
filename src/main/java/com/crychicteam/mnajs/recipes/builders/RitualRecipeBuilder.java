@@ -1,17 +1,15 @@
-package com.crychicteam.mnajs.recipes;
+package com.crychicteam.mnajs.recipes.builders;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class RitualRecipeBuilder {
-    private final ResourceLocation id;
     private int[][] pattern;
     private String[] reagentPattern;
     private Map<Character, ReagentInfo> reagentMap = new HashMap<>();
@@ -25,18 +23,19 @@ public class RitualRecipeBuilder {
     private Boolean displayIndexes;
     private Boolean kittable;
     private Integer tier;
-    private Item createdItem;
+    private ItemStack createdItem;
     private String command;
 
+    @HideFromJS
     public static class ReagentInfo {
-        private final String item;
+        private final ItemStack item;
         private boolean optional = false;
         private boolean consume = true;
         private boolean is_dynamic = false;
         private boolean dynamic_source = false;
         private boolean manual_return = false;
 
-        public ReagentInfo(String item) {
+        public ReagentInfo(ItemStack item) {
             this.item = item;
         }
 
@@ -65,7 +64,7 @@ public class RitualRecipeBuilder {
             return this;
         }
 
-        public String getItem() {
+        public ItemStack getItem() {
             return item;
         }
 
@@ -90,65 +89,63 @@ public class RitualRecipeBuilder {
         }
     }
 
-    public static RitualRecipeBuilder create(ResourceLocation id) {
-        return new RitualRecipeBuilder(id);
-    }
-
-    public static RitualRecipeBuilder create(String idString) {
-        return create(new ResourceLocation(idString));
-    }
-
-    private RitualRecipeBuilder(ResourceLocation id) {
-        this.id = Objects.requireNonNull(id, "Recipe ID cannot be null");
-    }
-
+    @Info("The method that is mandatory to set the pattern of the ritual")
     public RitualRecipeBuilder pattern(int[][] pattern) {
         this.pattern = Objects.requireNonNull(pattern, "Pattern cannot be null");
         return this;
     }
 
+    @Info("The method that is optional to set the display pattern of the ritual")
     public RitualRecipeBuilder displayPattern(int[][] displayPattern) {
         this.displayPattern = displayPattern;
         return this;
     }
 
-    public RitualRecipeBuilder reagent(char key, String item) {
+    @Info("The method that is mandatory to set the key of the reagents")
+    public RitualRecipeBuilder reagent(char key, ItemStack item) {
         this.reagentMap.put(key, new ReagentInfo(item));
         return this;
     }
 
-    public RitualRecipeBuilder reagent(char key, String item, boolean optional, boolean consume) {
+    @Info("The method that is mandatory to set the key of the reagents")
+    public RitualRecipeBuilder reagent(char key, ItemStack item, boolean optional, boolean consume) {
         this.reagentMap.put(key, new ReagentInfo(item)
                 .optional(optional)
                 .consume(consume));
         return this;
     }
 
-    public RitualRecipeBuilder dynamicSourceReagent(char key, String item) {
+    @Info("The method that is mandatory to set the key of the reagents with dynamic source")
+    public RitualRecipeBuilder dynamicSourceReagent(char key, ItemStack item) {
         this.reagentMap.put(key, new ReagentInfo(item).dynamicSource(true));
         return this;
     }
 
-    public RitualRecipeBuilder dynamicReagent(char key, String item) {
+    @Info("The method that is mandatory to set the key of the reagents with dynamic boolean")
+    public RitualRecipeBuilder dynamicReagent(char key, ItemStack item) {
         this.reagentMap.put(key, new ReagentInfo(item).dynamic(true));
         return this;
     }
 
-    public RitualRecipeBuilder manualReturnReagent(char key, String item) {
+    @Info("The method that is mandatory to set the key of the reagents with manual return")
+    public RitualRecipeBuilder manualReturnReagent(char key, ItemStack item) {
         this.reagentMap.put(key, new ReagentInfo(item).manualReturn(true));
         return this;
     }
 
+    @Info("The method that is mandatory to set the pattern of the reagents")
     public RitualRecipeBuilder reagentPattern(String[] reagentPattern) {
         this.reagentPattern = Objects.requireNonNull(reagentPattern, "Reagent pattern cannot be null");
         return this;
     }
 
+    @Info("The method that is optional to set the manaweave patterns of the ritual")
     public RitualRecipeBuilder manaweavePatterns(String[] patterns) {
         this.manaweavePatterns = patterns;
         return this;
     }
 
+    @Info("The method that is optional to add a manaweave pattern to the patterns' list and will finally add to the ritual")
     public RitualRecipeBuilder addManaweavePattern(String pattern) {
         if (pattern == null || pattern.isEmpty()) {
             return this;
@@ -165,63 +162,61 @@ public class RitualRecipeBuilder {
         return this;
     }
 
+    @Info("The method that is optional to set the inner color of the ritual")
     public RitualRecipeBuilder innerColor(long color) {
         this.innerColor = color;
         return this;
     }
 
+    @Info("The method that is optional to set the outer color of the ritual")
     public RitualRecipeBuilder outerColor(long color) {
         this.outerColor = color;
         return this;
     }
 
+    @Info("The method that is optional to set the beam color of the ritual")
     public RitualRecipeBuilder beamColor(long color) {
         this.beamColor = color;
         return this;
     }
 
+    @Info("The method that is optional to set the beam connection of the ritual")
     public RitualRecipeBuilder connectBeam(boolean connect) {
         this.connectBeam = connect;
         return this;
     }
 
+    @Info("The method that is optional to set the display indexes of the ritual")
     public RitualRecipeBuilder displayIndexes(boolean display) {
         this.displayIndexes = display;
         return this;
     }
 
+    @Info("The method that is optional to set the kittable of the ritual")
     public RitualRecipeBuilder kittable(boolean kittable) {
         this.kittable = kittable;
         return this;
     }
 
+    @Info("The method that is optional to set the tier of the ritual")
     public RitualRecipeBuilder tier(int tier) {
         this.tier = tier;
         return this;
     }
 
-    public RitualRecipeBuilder createsItem(Item item) {
+    @Info("The method that is optional to set the item that will be created by the ritual")
+    public RitualRecipeBuilder createsItem(ItemStack item) {
         this.createdItem = item;
         return this;
     }
 
-    public RitualRecipeBuilder createsItem(ResourceLocation itemId) {
-        Item item = ForgeRegistries.ITEMS.getValue(itemId);
-        if (item != null) {
-            this.createdItem = item;
-        }
-        return this;
-    }
-
-    public RitualRecipeBuilder createsItem(String itemId) {
-        return createsItem(new ResourceLocation(itemId));
-    }
-
+    @Info("The method that is optional to set the command that will be executed when the ritual is triggered")
     public RitualRecipeBuilder command(String command) {
         this.command = command;
         return this;
     }
 
+    @Info("The method that is mandatory to build the ritual json object to use it in custom()")
     public JsonObject build() {
         validateBuildState();
         JsonObject json = new JsonObject();
@@ -260,7 +255,7 @@ public class RitualRecipeBuilder {
             ReagentInfo reagent = reagentMap.get(key);
             JsonObject reagentObject = new JsonObject();
 
-            reagentObject.addProperty("item", reagent.getItem());
+            reagentObject.addProperty("item", reagent.getItem().kjs$getIdLocation().toString());
 
             if (reagent.isOptional()) {
                 reagentObject.addProperty("optional", true);
@@ -325,7 +320,7 @@ public class RitualRecipeBuilder {
             json.add("parameters", paramsObject);
         }
         if (createdItem != null) {
-            ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(createdItem);
+            ResourceLocation itemId = createdItem.kjs$getIdLocation();
             if (itemId != null) {
                 json.addProperty("createsItem", itemId.toString());
             }

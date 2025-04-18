@@ -12,10 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.Lazy;
 
 public class MnaJSPlugin extends KubeJSPlugin {
-    public static final Lazy<RegistryInfo<IFaction>> FACTION_REGISTRY =
-			Lazy.of(() -> RegistryInfo.of(
-					ResourceKey.createRegistryKey(new ResourceLocation("mna:factions")), IFaction.class)
-			);
+    public static final Lazy<RegistryInfo<IFaction>> FACTION_REGISTRY = Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(new ResourceLocation("mna:factions")), IFaction.class));
 	
 	@Override
 	public void registerEvents() {

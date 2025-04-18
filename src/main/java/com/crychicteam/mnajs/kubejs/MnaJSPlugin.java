@@ -1,6 +1,7 @@
 package com.crychicteam.mnajs.kubejs;
 
 import com.crychicteam.mnajs.content.CustomFaction;
+import com.crychicteam.mnajs.content.items.CustomManaBatteryItem;
 import com.crychicteam.mnajs.recipes.RecipesHelper;
 import com.mna.api.faction.IFaction;
 import dev.latvian.mods.kubejs.KubeJSPlugin;
@@ -24,6 +25,8 @@ public class MnaJSPlugin extends KubeJSPlugin {
 	@Override
 	public void init() {
 		FACTION_REGISTRY.get().addType("basic", CustomFaction.Builder.class, CustomFaction.Builder::new);
+
+		RegistryInfo.ITEM.addType("mana_battery_item" , CustomManaBatteryItem.Builder.class, CustomManaBatteryItem.Builder::new);
 	}
 
 	@Override

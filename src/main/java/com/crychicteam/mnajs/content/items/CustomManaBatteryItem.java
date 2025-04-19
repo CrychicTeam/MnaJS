@@ -1,6 +1,5 @@
 package com.crychicteam.mnajs.content.items;
 
-import com.crychicteam.mnajs.MnaJS;
 import com.mna.api.ManaAndArtificeMod;
 import com.mna.api.capabilities.IPlayerMagic;
 import com.mna.api.items.ManaBatteryItem;
@@ -10,7 +9,6 @@ import dev.latvian.mods.kubejs.item.ItemBuilder;
 import dev.latvian.mods.kubejs.typings.Info;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -96,7 +94,18 @@ public class CustomManaBatteryItem extends ManaBatteryItem {
 
     @Override
     public boolean tickInventory() {
-        return this.builder.itckInventory;
+        if (builder.tickEffect != null) {
+            return true;
+        }
+        return  super.tickInventory();
+    }
+
+    @Override
+    protected boolean tickCurio() {
+        if (builder.curiosTick != null) {
+            return true;
+        }
+        return super.tickCurio();
     }
 
     @Info("""
@@ -146,7 +155,6 @@ public class CustomManaBatteryItem extends ManaBatteryItem {
         private float maxMana = 100.0F;
         private int manaPerTick = 1;
         private float manaPerOperation = 1.0F;
-        private boolean itckInventory = false;
         private TickEffectCallback tickEffect;
         private CuriosTickCallback curiosTick;
         private onUseTickCallback onUseTick;
@@ -170,12 +178,6 @@ public class CustomManaBatteryItem extends ManaBatteryItem {
         @Info("Sets the mana cost for each operation performed by the battery. This value is used to determine how much mana is consumed when the battery performs an action in tickEffect() or during curio tick processing.")
         public Builder manaPerOperation(float manaPerOperation) {
             this.manaPerOperation = manaPerOperation;
-            return this;
-        }
-
-        @Info("Determines whether the tickEffect method should be called when the item is in the player's inventory (not necessarily equipped or selected).")
-        public Builder tickInventory(boolean tickInventory) {
-            this.itckInventory = tickInventory;
             return this;
         }
 

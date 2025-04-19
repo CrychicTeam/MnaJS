@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +24,8 @@ public class CustomFaction extends BaseFaction {
     private final ResourceLocation factionIcon;
     private final int[] manaweaveRGB;
     private final ChatFormatting tornJournalPageFactionColor;
+    private final ResourceLocation sanctumStructure;
+    private final ResourceLocation CastingResource;
 
     public CustomFaction(Builder builder) {
         this.factionGrimoire = builder.factionGrimoire;
@@ -33,6 +36,8 @@ public class CustomFaction extends BaseFaction {
         this.factionIcon = builder.factionIcon;
         this.manaweaveRGB = builder.manaweaveRGB;
         this.tornJournalPageFactionColor = builder.tornJournalPageFactionColor;
+        this.sanctumStructure = builder.sanctumStructure;
+        this.CastingResource = builder.CastingResource;
     }
 
     @Override
@@ -75,6 +80,16 @@ public class CustomFaction extends BaseFaction {
         return this.tornJournalPageFactionColor;
     }
 
+    @Override
+    public @Nullable ResourceLocation getSanctumStructure() {
+        return this.sanctumStructure;
+    }
+
+    @Override
+    public ResourceLocation[] getCastingResources() {
+        return new ResourceLocation[]{this.CastingResource};
+    }
+
     public static class Builder extends BuilderBase<CustomFaction> {
         public ItemStack factionGrimoire;
         public Item tokenItem;
@@ -84,6 +99,8 @@ public class CustomFaction extends BaseFaction {
         public ResourceLocation factionIcon;
         public int[] manaweaveRGB;
         public ChatFormatting tornJournalPageFactionColor;
+        public ResourceLocation sanctumStructure;
+        public ResourceLocation CastingResource;
 
         public Builder(ResourceLocation i) {
             super(i);
@@ -119,6 +136,14 @@ public class CustomFaction extends BaseFaction {
 
         public void setTornJournalPageFactionColor(ChatFormatting tornJournalPageFactionColor) {
             this.tornJournalPageFactionColor = tornJournalPageFactionColor;
+        }
+
+        public void setSanctumStructure(ResourceLocation sanctumStructure) {
+            this.sanctumStructure = sanctumStructure;
+        }
+
+        public void setCastingResource(ResourceLocation castingResource) {
+            this.CastingResource = castingResource;
         }
 
         @Override

@@ -1,4 +1,4 @@
-package com.pickaid.mnajs.recipes.component;
+package com.pickaid.mnajs.recipes.component.mna;
 
 import com.mna.api.affinity.Affinity;
 

@@ -1,4 +1,4 @@
-package com.pickaid.mnajs.recipes.component;
+package com.pickaid.mnajs.recipes.component.mna;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -15,6 +15,7 @@ public class PowerProvidedComponent {
         public Class<?> componentClass() {
             return PowerProvided.class;
         }
+
         @Override
         public String componentType() {
             return "power_requirements";

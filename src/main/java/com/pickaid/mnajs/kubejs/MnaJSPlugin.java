@@ -9,15 +9,16 @@ import com.pickaid.mnajs.content.CustomRitualEffect;
 import com.pickaid.mnajs.content.CustomSpellEffect;
 import com.pickaid.mnajs.content.items.CustomManaBatteryItem;
 import com.pickaid.mnajs.recipes.RecipesHelper;
-import com.pickaid.mnajs.recipes.component.IRitualKeyComponent;
-import com.pickaid.mnajs.recipes.component.InputItemsComponent;
-import com.pickaid.mnajs.recipes.component.PowerProvidedComponent;
+import com.pickaid.mnajs.recipes.component.ItemOrTagComponent;
+import com.pickaid.mnajs.recipes.component.ItemStackComponent;
+import com.pickaid.mnajs.recipes.component.ItemsOrTagsComponent;
+import com.pickaid.mnajs.recipes.component.mna.IRitualKeyComponent;
+import com.pickaid.mnajs.recipes.component.ItemComponent;
+import com.pickaid.mnajs.recipes.component.mna.PowerProvidedComponent;
 import com.pickaid.mnajs.recipes.schema.*;
-import com.pickaid.mnajs.recipes.schema.Basic.ItemBaseSchema;
 import com.pickaid.mnajs.util.PlayerMagic;
 import dev.latvian.mods.kubejs.KubeJSPlugin;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeComponentFactoryRegistryEvent;
-import dev.latvian.mods.kubejs.recipe.schema.RecipeSchemaType;
 import dev.latvian.mods.kubejs.recipe.schema.RegisterRecipeSchemasEvent;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
 import dev.latvian.mods.kubejs.script.BindingsEvent;
@@ -55,41 +56,30 @@ public class MnaJSPlugin extends KubeJSPlugin {
 	@Override
 	public void registerRecipeComponents(RecipeComponentFactoryRegistryEvent event) {
 		event.register("ritualKey", IRitualKeyComponent.RITUAL_PATTERN_KEY);
-		event.register("item", ItemBaseSchema.ITEM);
-		event.register("itemStack", ItemBaseSchema.ITEMSTACK);
-		event.register("inputItems", InputItemsComponent.INPUT_ITEMS);
-		event.register("power_requirements", PowerProvidedComponent.POWER_PROVIDED_COMPONENT);
+		event.register("power_key", PowerProvidedComponent.POWER_PROVIDED_COMPONENT);
+		event.register("item", ItemComponent.ITEM);
+		event.register("itemStack", ItemStackComponent.ITEMSTACK);
+		event.register("itemOrTagComponent", ItemOrTagComponent.ITEM_OR_TAG_COMPONENT);
+		event.register("itemsOrTagsComponent", ItemsOrTagsComponent.ITEMS_OR_TAGS_COMPONENT);
 	}
 
 	@Override
 	public void registerRecipeSchemas(RegisterRecipeSchemasEvent event) {
-		event.namespace("mna")
+		var mnaNamespace = event.namespace("mna");
+		mnaNamespace
 				.register("ritual", RitualRecipeSchema.SCHEMA)
 				.register("transmutation", TransmutationSchema.SCHEMA)
 				.register("crushing", CrushingSchema.SCHEMA)
 				.register("runeforging", RuneForgingSchema.SCHEMA)
-				.register("runescribing", RunescribingSchema.SCHEMA);
-		event.namespace("mna")
-				.put("progression", new RecipeSchemaType(event.namespace("mna")
-						, new ResourceLocation("mna:progression-condition")
-						, ProgressionSchema.SCHEMA));
-		event.namespace("mna")
-				.put("manaweavingAltar", new RecipeSchemaType(event.namespace("mna")
-						, new ResourceLocation("mna:manaweaving-recipe")
-						, ManaweavingAltarSchema.SCHEMA));
-		event.namespace("mna")
-				.put("arcaneFurnace", new RecipeSchemaType(event.namespace("mna")
-						, new ResourceLocation("mna:arcane-furnace")
-						, ArcaneFurnaceSchema.SCHEMA));
-		event.namespace("mna")
-				.put("eldrinAltar", new RecipeSchemaType(event.namespace("mna")
-						, new ResourceLocation("mna:eldrin-altar")
-						, EldrinAltarSchema.SCHEMA));
-		event.namespace("mna")
-				.put("Fumefilter", new RecipeSchemaType(event.namespace("mna")
-						, new ResourceLocation("mna:eldrin-fume")
-						, FumerFliterSchema.SCHEMA));
-
+				.register("runescribing", RunescribingSchema.SCHEMA)
+				.register("component", ComponentSchema.SCHEMA)
+				.register("modifier", ModifierSchema.SCHEMA)
+				.register("shape", ShapeSchema.SCHEMA)
+				.register("progression-condition", ProgressionSchema.SCHEMA)
+				.register("manaweaving-recipe", ManaweavingAltarSchema.SCHEMA)
+				.register("arcane-furnace", ArcaneFurnaceSchema.SCHEMA)
+				.register("eldrin-altar", EldrinAltarSchema.SCHEMA)
+				.register("eldrin-fume", FumerFliterSchema.SCHEMA);
 	}
 }
 

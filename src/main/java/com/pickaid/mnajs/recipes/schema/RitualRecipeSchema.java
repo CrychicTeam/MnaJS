@@ -1,8 +1,8 @@
 package com.pickaid.mnajs.recipes.schema;
 
-import com.pickaid.mnajs.recipes.component.IRitualKeyComponent;
-import com.pickaid.mnajs.recipes.component.RitualKey;
-import com.pickaid.mnajs.recipes.schema.Basic.TierBaseSchema;
+import com.pickaid.mnajs.recipes.component.mna.IRitualKeyComponent;
+import com.pickaid.mnajs.recipes.component.mna.RitualKey;
+import com.pickaid.mnajs.recipes.schema.base.TierBaseSchema;
 import dev.latvian.mods.kubejs.item.OutputItem;
 import dev.latvian.mods.kubejs.recipe.RecipeKey;
 import dev.latvian.mods.kubejs.recipe.component.BooleanComponent;

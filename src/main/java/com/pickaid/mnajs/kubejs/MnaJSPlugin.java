@@ -4,6 +4,10 @@ import com.mna.api.events.ProgressionEventIDs;
 import com.mna.api.faction.IFaction;
 import com.mna.api.rituals.RitualEffect;
 import com.mna.api.spells.parts.SpellEffect;
+import com.mna.api.tools.BlockUtilities;
+import com.mna.api.tools.CollectionUtils;
+import com.mna.api.tools.MATags;
+import com.mna.apibridge.InventoryHelper;
 import com.pickaid.mnajs.content.CustomFaction;
 import com.pickaid.mnajs.content.CustomRitualEffect;
 import com.pickaid.mnajs.content.CustomSpellEffect;
@@ -16,7 +20,9 @@ import com.pickaid.mnajs.recipes.component.mna.IRitualKeyComponent;
 import com.pickaid.mnajs.recipes.component.ItemComponent;
 import com.pickaid.mnajs.recipes.component.mna.PowerProvidedComponent;
 import com.pickaid.mnajs.recipes.schema.*;
+import com.pickaid.mnajs.util.MnaUtils;
 import com.pickaid.mnajs.util.PlayerMagic;
+import com.pickaid.mnajs.util.WorldMagic;
 import dev.latvian.mods.kubejs.KubeJSPlugin;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeComponentFactoryRegistryEvent;
 import dev.latvian.mods.kubejs.recipe.schema.RegisterRecipeSchemasEvent;
@@ -49,8 +55,10 @@ public class MnaJSPlugin extends KubeJSPlugin {
 	@Override
 	public void registerBindings(BindingsEvent event) {
 		event.add("MNARecipesHelper", RecipesHelper.class);
-		event.add("PlayerMagic", PlayerMagic.class);
 		event.add("ProgressionEventIDs",ProgressionEventIDs.class);
+		event.add("PlayerMagic", PlayerMagic.class);
+		event.add("WorldMagic", WorldMagic.class);
+		event.add("MnaUtils", MnaUtils.class);
 	}
 
 	@Override

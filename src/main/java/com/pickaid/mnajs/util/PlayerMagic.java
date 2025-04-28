@@ -5,23 +5,23 @@ import com.mna.capabilities.playerdata.magic.PlayerMagicProvider;
 import net.minecraft.world.entity.player.Player;
 
 public class PlayerMagic {
-    public static IPlayerMagic getPlayerMagic(Player player) {
+    public static IPlayerMagic get(Player player) {
         return player.getCapability(PlayerMagicProvider.MAGIC).resolve().get();
     }
 
     public static float getMana(Player player) {
-        return getPlayerMagic(player).getCastingResource().getAmount();
+        return get(player).getCastingResource().getAmount();
     }
 
     public static void setMana(Player player, float amount) {
-        getPlayerMagic(player).getCastingResource().setAmount(amount);
+        get(player).getCastingResource().setAmount(amount);
     }
 
     public static void addMana(Player player, float amount) {
-        getPlayerMagic(player).getCastingResource().setAmount(Math.min(getMana(player) + amount, getPlayerMagic(player).getCastingResource().getMaxAmount()));
+        get(player).getCastingResource().setAmount(Math.min(getMana(player) + amount, getPlayerMagic(player).getCastingResource().getMaxAmount()));
     }
 
     public static void subtractMana(Player player, float amount) {
-        getPlayerMagic(player).getCastingResource().setAmount(Math.max(getMana(player) - amount, 0));
+        get(player).getCastingResource().setAmount(Math.max(getMana(player) - amount, 0));
     }
 }

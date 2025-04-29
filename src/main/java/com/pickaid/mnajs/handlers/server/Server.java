@@ -17,23 +17,20 @@ public class Server {
     @SubscribeEvent
     public static void onManaCalculate(CalculatingManaCostEvent event) {
         if (event.getCaster() instanceof  Player) {
-            var manaChangedEvent = MnaJSEvents.MANA_CHANGED.post(new SellCostManaEventJS(event));
-            if (manaChangedEvent.interruptFalse()) {
-                event.setCanceled(true);
-            }
+            MnaJSEvents.MANA_CHANGED.post(new SellCostManaEventJS(event));
         }
     }
 
     @SubscribeEvent
     public static void onRitualComplete(RitualCompleteEvent event) {
         if (event.getCaster() instanceof Player) {
-            MnaJSEvents.MANA_CHANGED.post(new RitualCompleteEventJS(event));
+            MnaJSEvents.RITUAL_COMPLETED.post(new RitualCompleteEventJS(event));
         }
     }
 
     @SubscribeEvent
     public static void onAffinityChangedEvent(AffinityChangedEvent event) {
-        var affinityChangedEvent = MnaJSEvents.MANA_CHANGED.post(new AffinityChangedEventJS(event));
+        var affinityChangedEvent = MnaJSEvents.AFFINITY_CHANGED.post(new AffinityChangedEventJS(event));
         if (affinityChangedEvent.interruptFalse()) {
             event.setCanceled(true);
         }

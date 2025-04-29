@@ -24,4 +24,8 @@ public class SellCostManaEventJS extends PlayerEventJS {
     public ISpellDefinition getSpell() {
         return event.getSpell();
     }
+
+    public void setCost(float amount) {
+        this.event.setManaCost(amount);
+    }
 }

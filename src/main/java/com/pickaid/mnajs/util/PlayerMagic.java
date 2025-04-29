@@ -18,7 +18,7 @@ public class PlayerMagic {
     }
 
     public static void addMana(Player player, float amount) {
-        get(player).getCastingResource().setAmount(Math.min(getMana(player) + amount, getPlayerMagic(player).getCastingResource().getMaxAmount()));
+        get(player).getCastingResource().setAmount(Math.min(getMana(player) + amount, get(player).getCastingResource().getMaxAmount()));
     }
 
     public static void subtractMana(Player player, float amount) {

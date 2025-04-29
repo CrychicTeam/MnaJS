@@ -4,10 +4,6 @@ import com.mna.api.events.ProgressionEventIDs;
 import com.mna.api.faction.IFaction;
 import com.mna.api.rituals.RitualEffect;
 import com.mna.api.spells.parts.SpellEffect;
-import com.mna.api.tools.BlockUtilities;
-import com.mna.api.tools.CollectionUtils;
-import com.mna.api.tools.MATags;
-import com.mna.apibridge.InventoryHelper;
 import com.pickaid.mnajs.content.CustomFaction;
 import com.pickaid.mnajs.content.CustomRitualEffect;
 import com.pickaid.mnajs.content.CustomSpellEffect;
@@ -16,7 +12,6 @@ import com.pickaid.mnajs.recipes.RecipesHelper;
 import com.pickaid.mnajs.recipes.component.ItemOrTagComponent;
 import com.pickaid.mnajs.recipes.component.ItemStackComponent;
 import com.pickaid.mnajs.recipes.component.ItemsOrTagsComponent;
-import com.pickaid.mnajs.recipes.component.mna.IRitualKeyComponent;
 import com.pickaid.mnajs.recipes.component.ItemComponent;
 import com.pickaid.mnajs.recipes.component.mna.PowerProvidedComponent;
 import com.pickaid.mnajs.recipes.schema.*;
@@ -25,6 +20,7 @@ import com.pickaid.mnajs.util.PlayerMagic;
 import com.pickaid.mnajs.util.WorldMagic;
 import dev.latvian.mods.kubejs.KubeJSPlugin;
 import dev.latvian.mods.kubejs.recipe.schema.RecipeComponentFactoryRegistryEvent;
+import dev.latvian.mods.kubejs.recipe.schema.RecipeSchemaType;
 import dev.latvian.mods.kubejs.recipe.schema.RegisterRecipeSchemasEvent;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
 import dev.latvian.mods.kubejs.script.BindingsEvent;
@@ -63,7 +59,6 @@ public class MnaJSPlugin extends KubeJSPlugin {
 
 	@Override
 	public void registerRecipeComponents(RecipeComponentFactoryRegistryEvent event) {
-		event.register("ritualKey", IRitualKeyComponent.RITUAL_PATTERN_KEY);
 		event.register("power_key", PowerProvidedComponent.POWER_PROVIDED_COMPONENT);
 		event.register("item", ItemComponent.ITEM);
 		event.register("itemStack", ItemStackComponent.ITEMSTACK);
@@ -82,12 +77,38 @@ public class MnaJSPlugin extends KubeJSPlugin {
 				.register("runescribing", RunescribingSchema.SCHEMA)
 				.register("component", ComponentSchema.SCHEMA)
 				.register("modifier", ModifierSchema.SCHEMA)
-				.register("shape", ShapeSchema.SCHEMA)
-				.register("progression-condition", ProgressionSchema.SCHEMA)
-				.register("manaweaving-recipe", ManaweavingAltarSchema.SCHEMA)
-				.register("arcane-furnace", ArcaneFurnaceSchema.SCHEMA)
-				.register("eldrin-altar", EldrinAltarSchema.SCHEMA)
-				.register("eldrin-fume", FumerFliterSchema.SCHEMA);
+				.register("shape", ShapeSchema.SCHEMA);
+
+
+
+		event.namespace("mna")
+				.put("progression", new RecipeSchemaType(event.namespace("mna")
+						, new ResourceLocation("mna:progression-condition")
+						, ProgressionSchema.SCHEMA));
+		event.namespace("mna")
+				.put("manaweavingAltar", new RecipeSchemaType(event.namespace("mna")
+						, new ResourceLocation("mna:manaweaving-recipe")
+						, ManaweavingAltarSchema.SCHEMA));
+		event.namespace("mna")
+				.put("arcaneFurnace", new RecipeSchemaType(event.namespace("mna")
+						, new ResourceLocation("mna:arcane-furnace")
+						, ArcaneFurnaceSchema.SCHEMA));
+		event.namespace("mna")
+				.put("eldrinAltar", new RecipeSchemaType(event.namespace("mna")
+						, new ResourceLocation("mna:eldrin-altar")
+						, EldrinAltarSchema.SCHEMA));
+		event.namespace("mna")
+				.put("eldrinFume", new RecipeSchemaType(event.namespace("mna")
+						, new ResourceLocation("mna:eldrin-fume")
+						, FumerFliterSchema.SCHEMA));
+		event.namespace("mna")
+				.put("pattern", new RecipeSchemaType(event.namespace("mna")
+						, new ResourceLocation("mna:manaweaving-pattern")
+						, ManaweavingPatternSchema.SCHEMA));
+		event.namespace("mna")
+				.put("cacheEffect", new RecipeSchemaType(event.namespace("mna")
+						, new ResourceLocation("mna:manaweave-cache-effect")
+						, ManaweaveCacheEffectSchema.SCHEMA));
 	}
 }
 

@@ -30,4 +30,8 @@ public class RecipesHelper {
     public static ModifierBuilder modifierBuilder = new ModifierBuilder();
     @Info("The Helper for creating shape Builder recipes using event.custom().")
     public static ShapeBuilder shapeBuilder = new ShapeBuilder();
+    @Info("The Helper for creating manaweaving Pattern Builder recipes using event.custom().")
+    public static ManaweavingPatternBuilder manaweavingPatternBuilder = new ManaweavingPatternBuilder();
+    @Info("The Helper for creating multiblock Definition Builder recipes using event.custom().")
+    public static MultiblockDefinitionBuilder multiblockDefinitionBuilder = new MultiblockDefinitionBuilder();
 }

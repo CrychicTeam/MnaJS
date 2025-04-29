@@ -10,11 +10,14 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.registries.ForgeRegistries;
 
-public class ItemOrTagComponent {
-    public static RecipeComponent<Either<TagKey<Item>, Item>> ITEM_OR_TAG_COMPONENT = new RecipeComponent<>() {
+import java.util.Arrays;
+
+public interface ItemOrTagComponent {
+    RecipeComponent<Either<TagKey<Item>, Item>> ITEM_OR_TAG_COMPONENT = new RecipeComponent<>() {
 
         @Override
         public Class<?> componentClass() {
@@ -32,15 +35,14 @@ public class ItemOrTagComponent {
         @Override
         public Either<TagKey<Item>, Item> read(RecipeJS recipe, Object from) {
             ResourceLocation resourceLocation = null;
-
             if (from instanceof String string) {
+                if (string.startsWith("#")) string = string.substring(1);
                 resourceLocation = new ResourceLocation(string);
             } else if (from instanceof ResourceLocation location) {
                 resourceLocation = location;
             } else if (from instanceof Item item) {
                 return Either.right(item);
             }
-
             if (resourceLocation != null) {
                 var tagItems = MATags.smartLookupItem(resourceLocation);
                 if (tagItems == null) return null;
@@ -50,7 +52,7 @@ public class ItemOrTagComponent {
                         : Either.right(ForgeRegistries.ITEMS.getValue(resourceLocation));
             }
 
-            return null;
+            return Either.right(ItemStack.EMPTY.getItem());
         }
     };
 }

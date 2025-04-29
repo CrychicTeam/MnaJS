@@ -7,6 +7,7 @@ import com.mna.api.tools.MATags;
 import com.mojang.datafixers.util.Either;
 import dev.latvian.mods.kubejs.recipe.RecipeJS;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponent;
+import dev.latvian.mods.kubejs.util.ConsoleJS;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -18,16 +19,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class ItemsOrTagsComponent {
-    public static RecipeComponent<List<Either<TagKey<Item>, Item>>> ITEMS_OR_TAGS_COMPONENT = new RecipeComponent<>() {
+public interface ItemsOrTagsComponent {
+    RecipeComponent<Either<TagKey<Item>, Item>[]> ITEMS_OR_TAGS_COMPONENT = new RecipeComponent<>() {
 
         @Override
         public Class<?> componentClass() {
-            return List.class;
+            return Ingredient.class;
         }
 
         @Override
-        public JsonElement write(RecipeJS recipe, List<Either<TagKey<Item>, Item>> values) {
+        public String componentType() {
+            return "array";
+        }
+
+
+        @Override
+        public JsonElement write(RecipeJS recipe, Either<TagKey<Item>, Item>[] values) {
             var json = new JsonArray();
             for (Either<TagKey<Item>, Item> value : values) {
                 JsonElement element = value.map(
@@ -40,36 +47,35 @@ public class ItemsOrTagsComponent {
         }
 
         @Override
-        public List<Either<TagKey<Item>, Item>> read(RecipeJS recipe, Object from) {
-            List<Either<TagKey<Item>, Item>> result = new ArrayList<>();
+        public Either<TagKey<Item>, Item>[] read(RecipeJS recipe, Object from) {
+            List<Either<TagKey<Item>, Item>> resultList = new ArrayList<>();
             try {
-                System.out.println("Reading items from: " + from + " of type: " + (from != null ? from.getClass().getName() : "null"));
-
                 if (from instanceof Collection<?> collection) {
                     for (Object obj : collection) {
                         Either<TagKey<Item>, Item> item = readSingleItem(obj);
                         if (item != null) {
-                            result.add(item);
+                            resultList.add(item);
                         }
                     }
                 } else if (from instanceof Object[] array) {
                     for (Object obj : array) {
                         Either<TagKey<Item>, Item> item = readSingleItem(obj);
                         if (item != null) {
-                            result.add(item);
+                            resultList.add(item);
                         }
                     }
                 } else {
                     Either<TagKey<Item>, Item> item = readSingleItem(from);
                     if (item != null) {
-                        result.add(item);
+                        resultList.add(item);
                     }
                 }
             } catch (Exception e) {
-                System.err.println("Error reading items: " + e.getMessage());
                 e.printStackTrace();
             }
 
+            @SuppressWarnings("unchecked")
+            Either<TagKey<Item>, Item>[] result = resultList.toArray(size -> (Either<TagKey<Item>, Item>[]) new Either[size]);
             return result;
         }
 
@@ -78,11 +84,14 @@ public class ItemsOrTagsComponent {
 
             try {
                 if (from instanceof String string) {
+                    if (string.startsWith("#")) string = string.substring(1);
                     ResourceLocation resourcelocation = ensureNamespace(string);
                     return processResourceLocation(resourcelocation);
                 } else if (from instanceof ResourceLocation resourcelocation) {
                     return processResourceLocation(resourcelocation);
                 } else if (from instanceof Item item) {
+                    ConsoleJS.SERVER.log(from);
+                    ConsoleJS.SERVER.log(from.getClass());
                     return Either.right(item);
                 } else if (from instanceof Ingredient ingredient && ingredient.getItems().length > 0) {
                     return Either.right(ingredient.getItems()[0].getItem());

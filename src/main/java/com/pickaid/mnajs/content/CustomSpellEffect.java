@@ -17,6 +17,7 @@ import com.mna.api.spells.parts.SpellEffect;
 import com.mna.api.spells.targeting.SpellContext;
 import com.mna.api.spells.targeting.SpellSource;
 import com.mna.api.spells.targeting.SpellTarget;
+import com.pickaid.mnajs.kubejs.MnaJSPlugin;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
 import dev.latvian.mods.kubejs.typings.Info;
@@ -357,7 +358,7 @@ public class CustomSpellEffect extends SpellEffect {
 
         @Override
         public RegistryInfo getRegistryType() {
-            return null;
+            return MnaJSPlugin.SPELL_EFFECT.get();
         }
 
         @Info("Sets the GUI icon for this spell effect")

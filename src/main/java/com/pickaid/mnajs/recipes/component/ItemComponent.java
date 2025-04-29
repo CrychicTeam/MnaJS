@@ -12,8 +12,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Arrays;
 
-public class ItemComponent {
-    public static RecipeComponent<Item> ITEM = new RecipeComponent<Item>() {
+public interface ItemComponent {
+    RecipeComponent<Item> ITEM = new RecipeComponent<Item>() {
         @Override
         public Class<?> componentClass() {
             return Item.class;

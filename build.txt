@@ -1,7 +1,7 @@
 # Mod Info
 enable_annotation=false
-mod_version = 0.0.1
-formal_version = false
+mod_version= 0.1.1
+formal_version = true
 
 kubejs_version=2001.6.4-build.120
 rhino_version=2001.2.2-build.18
@@ -32,13 +32,13 @@ mixin_extras_version=0.2.0-beta.8
 
 # Persistent mod info
 mod_id=mnajs
-archive_name=CrychicTeam
+archive_name=PickAID
 mod_name=MNAJS
 mod_description=A compat mod for MNA and KubeJS.
-mod_authors=CrychicTeam
-mod_license=All Rights Reserved
+mod_authors=PickAID
+mod_license=MIT
 mod_credits=None
-issue_tracker_url=https://github.com/CrychicTeam/MnaJS/issues
+issue_tracker_url=https://github.com/PickAID/MnaJS/issues
 
 # Maven Info
 # maven_group=org.zeith.modid
@@ -59,7 +59,7 @@ cf_project=0
 modrinth_project=
 
 # alpha, beta, release
-release_type=alpha
+release_type=release
 
 # List of mods separated by ;
 # If a specific mod for one platform is needed, @m: or @c: prefixes are used.

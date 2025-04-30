@@ -1,22 +1,23 @@
-package com.pickaid.mnajs.content;
+package com.pickaid.mnajs.content.spell;
 
-import com.google.common.collect.ImmutableList;
 import com.mna.api.affinity.Affinity;
 import com.mna.api.faction.IFaction;
 import com.mna.api.sound.SFX;
 import com.mna.api.spells.ComponentApplicationResult;
-import com.mna.api.spells.base.SpellBlacklistResult;
 import com.mna.api.spells.SpellCraftingContext;
 import com.mna.api.spells.SpellPartTags;
 import com.mna.api.spells.SpellReagent;
 import com.mna.api.spells.attributes.Attribute;
 import com.mna.api.spells.attributes.AttributeValuePair;
+import com.mna.api.spells.base.IDamageComponent;
 import com.mna.api.spells.base.IModifiedSpellPart;
 import com.mna.api.spells.base.ISpellDefinition;
+import com.mna.api.spells.base.SpellBlacklistResult;
 import com.mna.api.spells.parts.SpellEffect;
 import com.mna.api.spells.targeting.SpellContext;
 import com.mna.api.spells.targeting.SpellSource;
 import com.mna.api.spells.targeting.SpellTarget;
+import com.mna.config.GeneralConfig;
 import com.pickaid.mnajs.kubejs.MnaJSPlugin;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
@@ -41,18 +42,17 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Custom Spell Effect implementation for KubeJS integration with Mana and Artifice.
- * @author M1hono
+ * Custom Damage Component implementation for KubeJS integration with Mana and Artifice.
+ * This component implements IDamageComponent for damage-based spell effects.
  */
-public class CustomSpellEffect extends SpellEffect {
+public class CustomDamageComponent extends SpellEffect implements IDamageComponent {
     private final Builder builder;
     private ArrayList<SpellReagent> reagents = null;
 
-    public CustomSpellEffect(Builder builder) {
+    public CustomDamageComponent(Builder builder) {
         super(builder.guiIcon, builder.attributeValuePairs.toArray(new AttributeValuePair[0]));
         this.builder = builder;
 
-        // Initialize reagents from builder
         if (builder.reagents != null && !builder.reagents.isEmpty()) {
             this.reagents = new ArrayList<>(builder.reagents);
         }
@@ -63,6 +63,21 @@ public class CustomSpellEffect extends SpellEffect {
         if (builder.applyEffectCallback != null) {
             return builder.applyEffectCallback.apply(source, target, modificationData, context);
         }
+
+        // Default implementation for damage effects if no callback is provided
+        if (target.isLivingEntity()) {
+            float damage = modificationData.getValue(Attribute.DAMAGE) * GeneralConfig.getDamageMultiplier();
+
+            if (builder.damageEntityCallback != null) {
+                return builder.damageEntityCallback.apply(source, target, damage, context);
+            } else {
+                // Basic damage implementation
+                if (target.getLivingEntity().hurt(source.getCaster().damageSources().magic(), damage)) {
+                    return ComponentApplicationResult.SUCCESS;
+                }
+            }
+        }
+
         return ComponentApplicationResult.FAIL;
     }
 
@@ -266,6 +281,11 @@ public class CustomSpellEffect extends SpellEffect {
         ComponentApplicationResult apply(SpellSource source, SpellTarget target, IModifiedSpellPart<SpellEffect> modificationData, SpellContext context);
     }
 
+    @Info("Callback for damage-specific entity damaging logic")
+    public interface DamageEntityCallback {
+        ComponentApplicationResult apply(SpellSource source, SpellTarget target, float damage, SpellContext context);
+    }
+
     @Info("Callback interface for checking if the spell is craftable")
     public interface IsCraftableCallback {
         boolean apply(SpellCraftingContext context);
@@ -316,18 +336,18 @@ public class CustomSpellEffect extends SpellEffect {
         boolean apply();
     }
 
-    public static class Builder extends BuilderBase<CustomSpellEffect> {
+    public static class Builder extends BuilderBase<CustomDamageComponent> {
         private ResourceLocation guiIcon;
         private Affinity affinity = Affinity.ARCANE;
         private float initialComplexity = 1.0F;
         private int baselineCooldown = 0;
         private boolean canBeChanneled = true;
         private boolean targetsEntities = true;
-        private boolean targetsBlocks = true;
+        private boolean targetsBlocks = false;
         private Direction defaultBlockFace = Direction.UP;
         private boolean isUseableByPlayers = true;
         private boolean autoConsumeReagents = true;
-        private SpellPartTags useTag = SpellPartTags.NEUTRAL;
+        private SpellPartTags useTag = SpellPartTags.HARMFUL; // Default to HARMFUL for damage components
         private List<Affinity> validTinkerAffinities = Arrays.asList(Affinity.ARCANE, Affinity.EARTH, Affinity.ENDER, Affinity.FIRE, Affinity.WATER, Affinity.WIND, Affinity.ICE, Affinity.LIGHTNING);
         private float soundVolume = 0.15F;
         private SoundEvent soundEffect = SFX.Spell.Impact.Single.ARCANE;
@@ -341,6 +361,7 @@ public class CustomSpellEffect extends SpellEffect {
         private String addingModName = null;
 
         private ApplyEffectCallback applyEffectCallback;
+        private DamageEntityCallback damageEntityCallback;
         private IsCraftableCallback isCraftableCallback;
         private IsHellfireBoostedCallback isHellfireBoostedCallback;
         private ApplyAtChanneledEntityPosCallback applyAtChanneledEntityPosCallback;
@@ -361,91 +382,97 @@ public class CustomSpellEffect extends SpellEffect {
             return MnaJSPlugin.SPELL_EFFECT.get();
         }
 
-        @Info("Sets the GUI icon for this spell effect")
+        @Info("Sets the GUI icon for this damage component")
         public Builder guiIcon(ResourceLocation icon) {
             this.guiIcon = icon;
             return this;
         }
 
-        @Info("Sets the affinity for this spell effect")
+        @Info("Sets the affinity for this damage component")
         public Builder affinity(Affinity affinity) {
             this.affinity = affinity;
             return this;
         }
 
-        @Info("Sets the initial complexity value for this spell effect")
+        @Info("Sets the initial complexity value for this damage component")
         public Builder initialComplexity(float complexity) {
             this.initialComplexity = complexity;
             return this;
         }
 
-        @Info("Adds a modifiable attribute to this spell effect")
+        @Info("Adds a damage attribute to this spell effect")
+        public Builder addDamageAttribute(float baseValue, float minValue, float maxValue, float stepSize, float complexity) {
+            this.attributeValuePairs.add(new AttributeValuePair(Attribute.DAMAGE, baseValue, minValue, maxValue, stepSize, complexity));
+            return this;
+        }
+
+        @Info("Adds a modifiable attribute to this damage component")
         public Builder addAttribute(Attribute attribute, float baseValue, float minValue, float maxValue, float stepSize, float complexity) {
             this.attributeValuePairs.add(new AttributeValuePair(attribute, baseValue, minValue, maxValue, stepSize, complexity));
             return this;
         }
 
-        @Info("Sets the baseline cooldown for this spell effect in ticks")
+        @Info("Sets the baseline cooldown for this damage component in ticks")
         public Builder baselineCooldown(int cooldown) {
             this.baselineCooldown = cooldown;
             return this;
         }
 
-        @Info("Sets whether this spell effect can be channeled")
+        @Info("Sets whether this damage component can be channeled")
         public Builder canBeChanneled(boolean canBeChanneled) {
             this.canBeChanneled = canBeChanneled;
             return this;
         }
 
-        @Info("Sets whether this spell effect targets entities")
+        @Info("Sets whether this damage component targets entities")
         public Builder targetsEntities(boolean targetsEntities) {
             this.targetsEntities = targetsEntities;
             return this;
         }
 
-        @Info("Sets whether this spell effect targets blocks")
+        @Info("Sets whether this damage component targets blocks")
         public Builder targetsBlocks(boolean targetsBlocks) {
             this.targetsBlocks = targetsBlocks;
             return this;
         }
 
-        @Info("Sets the default block face for this spell effect")
+        @Info("Sets the default block face for this damage component")
         public Builder defaultBlockFace(Direction face) {
             this.defaultBlockFace = face;
             return this;
         }
 
-        @Info("Sets whether this spell effect is useable by players")
+        @Info("Sets whether this damage component is useable by players")
         public Builder isUseableByPlayers(boolean isUseable) {
             this.isUseableByPlayers = isUseable;
             return this;
         }
 
-        @Info("Sets whether this spell effect automatically consumes reagents")
+        @Info("Sets whether this damage component automatically consumes reagents")
         public Builder autoConsumeReagents(boolean autoConsume) {
             this.autoConsumeReagents = autoConsume;
             return this;
         }
 
-        @Info("Sets the use tag for this spell effect (BENEFICIAL, HARMFUL, or NEUTRAL)")
+        @Info("Sets the use tag for this damage component (usually HARMFUL for damage)")
         public Builder useTag(SpellPartTags tag) {
             this.useTag = tag;
             return this;
         }
 
-        @Info("Sets the valid tinker affinities for this spell effect")
+        @Info("Sets the valid tinker affinities for this damage component")
         public Builder validTinkerAffinities(List<Affinity> affinities) {
             this.validTinkerAffinities = affinities;
             return this;
         }
 
-        @Info("Sets the sound volume for this spell effect")
+        @Info("Sets the sound volume for this damage component")
         public Builder soundVolume(float volume) {
             this.soundVolume = volume;
             return this;
         }
 
-        @Info("Sets the sound effect for this spell effect")
+        @Info("Sets the sound effect for this damage component")
         public Builder soundEffect(SoundEvent sound) {
             this.soundEffect = sound;
             return this;
@@ -487,26 +514,26 @@ public class CustomSpellEffect extends SpellEffect {
             return this;
         }
 
-        @Info("Adds a reagent requirement to this spell effect")
+        @Info("Adds a reagent requirement to this damage component")
         public Builder addReagent(ItemStack reagentStack, boolean compareNBT, boolean ignoreDurability, boolean consume, IFaction... ignoredBy) {
             SpellReagent reagent = new SpellReagent(null, reagentStack, compareNBT, ignoreDurability, consume, false, ignoredBy);
             this.reagents.add(reagent);
             return this;
         }
 
-        @Info("Adds a reagent requirement to this spell effect with default settings")
+        @Info("Adds a reagent requirement to this damage component with default settings")
         public Builder addReagent(ItemStack reagentStack, IFaction... ignoredBy) {
             return addReagent(reagentStack, false, false, true, ignoredBy);
         }
 
-        @Info("Adds an optional reagent to this spell effect")
+        @Info("Adds an optional reagent to this damage component")
         public Builder addOptionalReagent(ItemStack reagentStack, boolean compareNBT, boolean ignoreDurability, boolean consume, IFaction... ignoredBy) {
             SpellReagent reagent = new SpellReagent(null, reagentStack, compareNBT, ignoreDurability, consume, true, ignoredBy);
             this.reagents.add(reagent);
             return this;
         }
 
-        @Info("Adds an optional reagent to this spell effect with default settings")
+        @Info("Adds an optional reagent to this damage component with default settings")
         public Builder addOptionalReagent(ItemStack reagentStack, IFaction... ignoredBy) {
             return addOptionalReagent(reagentStack, false, false, true, ignoredBy);
         }
@@ -514,6 +541,12 @@ public class CustomSpellEffect extends SpellEffect {
         @Info("Sets the callback for applying the spell effect")
         public Builder applyEffect(ApplyEffectCallback callback) {
             this.applyEffectCallback = callback;
+            return this;
+        }
+
+        @Info("Sets the damage-specific callback for damaging entities")
+        public Builder damageEntity(DamageEntityCallback callback) {
+            this.damageEntityCallback = callback;
             return this;
         }
 
@@ -578,8 +611,8 @@ public class CustomSpellEffect extends SpellEffect {
         }
 
         @Override
-        public CustomSpellEffect createObject() {
-            return new CustomSpellEffect(this);
+        public CustomDamageComponent createObject() {
+            return new CustomDamageComponent(this);
         }
     }
 }

@@ -12,6 +12,7 @@ import com.mna.tools.ShearHelper;
 import com.mna.tools.StructureUtils;
 import com.mna.tools.SummonUtils;
 import com.mna.tools.math.MathUtils;
+import com.mna.tools.render.GuiRenderUtils;
 
 public class MnaUtils {
     public static Class<MATags> tags = MATags.class;
@@ -31,4 +32,5 @@ public class MnaUtils {
     public static Class<ShearHelper> shearUtil = ShearHelper.class;
 
     public static Class<ParticleConfigurations> particleUtil = ParticleConfigurations.class;
+    public static Class<GuiRenderUtils> renderUtil = GuiRenderUtils.class;
 }

@@ -1,14 +1,14 @@
-package com.pickaid.mnajs.kubejs.events.server;
+package com.pickaid.mnajs.kubejs.events.server.spell;
 
 import com.mna.api.events.CalculatingManaCostEvent;
 import com.mna.api.spells.base.ISpellDefinition;
 import dev.latvian.mods.kubejs.player.PlayerEventJS;
 import net.minecraft.world.entity.player.Player;
 
-public class SellCostManaEventJS extends PlayerEventJS {
+public class CostManaEventJS extends PlayerEventJS {
     private final CalculatingManaCostEvent event;
 
-    public SellCostManaEventJS(CalculatingManaCostEvent event) {
+    public CostManaEventJS(CalculatingManaCostEvent event) {
         this.event = event;
     }
 

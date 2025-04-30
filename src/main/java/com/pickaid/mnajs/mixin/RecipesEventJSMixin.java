@@ -43,7 +43,7 @@ public class RecipesEventJSMixin {
                     mnaJS$addAliasIfPresent(self, mnaMap, "eldrin-altar", "eldrinAltar");
                     mnaJS$addAliasIfPresent(self, mnaMap, "eldrin-fume", "eldrinFume");
                     mnaJS$addAliasIfPresent(self, mnaMap, "manaweaving-pattern", "pattern");
-                    mnaJS$addAliasIfPresent(self, mnaMap, "manaweave-cache-effect", "cacheEffect");
+//                    mnaJS$addAliasIfPresent(self, mnaMap, "manaweave-cache-effect", "cacheEffect");
                 }
             }
         } catch (Exception e) {

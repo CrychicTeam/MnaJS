@@ -1,4 +1,4 @@
-package com.pickaid.mnajs.kubejs.events.server;
+package com.pickaid.mnajs.kubejs.events.server.player;
 
 import com.mna.api.events.RitualCompleteEvent;
 import com.mna.api.recipes.IRitualRecipe;

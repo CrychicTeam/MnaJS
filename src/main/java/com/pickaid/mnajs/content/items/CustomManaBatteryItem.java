@@ -11,7 +11,6 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
@@ -25,7 +24,7 @@ public class CustomManaBatteryItem extends ManaBatteryItem {
     private final float manaPerOperation;
 
     public CustomManaBatteryItem(Builder builder) {
-        super(new Item.Properties(), builder.maxMana);
+        super(builder.createItemProperties(), builder.maxMana);
         this.builder = builder;
         this.manaPerTick = builder.manaPerTick;
         this.manaPerOperation = builder.manaPerOperation;

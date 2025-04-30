@@ -15,7 +15,7 @@ public interface ManaweavingPatternSchema extends TierBaseSchema {
     RecipeComponent<byte[][]> BYTE_ARRAY_ARRAY_COMPONENT = new RecipeComponent<>() {
         @Override
         public Class<?> componentClass() {
-            return byte[][].class;
+            return byte.class;
         }
 
         @Override

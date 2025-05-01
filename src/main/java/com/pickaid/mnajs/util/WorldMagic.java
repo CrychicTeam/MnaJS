@@ -6,6 +6,7 @@ import com.mna.api.capabilities.WellspringNode;
 import com.mna.capabilities.worlddata.WorldMagicProvider;
 import dev.latvian.mods.kubejs.typings.Info;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -40,19 +41,19 @@ public class WorldMagic {
 
     public static void addPower(Level level, Player player, Affinity affinity, float amount) {
         if(get(level) != null && get(level).getWellspringRegistry() != null && getPower(level, player, affinity) != null) {
-            get(level).getWellspringRegistry().insertPower(player.getUUID(), level, affinity, getPower(level, player, affinity) + amount);
+            get(level).getWellspringRegistry().insertPower(player.getUUID(), level, affinity,  + amount);
         }
     }
 
     public static void subtractPower(Level level, Player player, Affinity affinity, float amount) {
         if(get(level) != null && get(level).getWellspringRegistry() != null && getPower(level, player, affinity) != null) {
-            get(level).getWellspringRegistry().insertPower(player.getUUID(), level, affinity, getPower(level, player, affinity) - amount);
+            get(level).getWellspringRegistry().consumePower(player.getUUID(), level, affinity, amount);
         }
     }
 
     public static void setPower(Level level, Player player, Affinity affinity, float amount) {
-        if(get(level) != null && get(level).getWellspringRegistry() != null && getPower(level, player, affinity) != null) {
-            get(level).getWellspringRegistry().insertPower(player.getUUID(), level, affinity, amount);
+        if(get(level) != null && get(level).getWellspringRegistry() != null && getPower(level, player, affinity) != null && player instanceof ServerPlayer serverPlayer) {
+            get(level).getWellspringRegistry().setWellspringPower(serverPlayer, affinity, amount);
         }
     }
 }

@@ -1,6 +1,6 @@
 # Mod Info
 enable_annotation=false
-mod_version= 0.1.1
+mod_version= 0.1.4
 formal_version = true
 
 kubejs_version=2001.6.4-build.120
@@ -32,7 +32,7 @@ mixin_extras_version=0.2.0-beta.8
 
 # Persistent mod info
 mod_id=mnajs
-archive_name=PickAID
+archive_name=MnaJS
 mod_name=MNAJS
 mod_description=A compat mod for MNA and KubeJS.
 mod_authors=PickAID

@@ -1,10 +1,15 @@
 package com.pickaid.mnajs.util;
 
 import com.mna.api.capabilities.IPlayerMagic;
+import com.mna.api.capabilities.IPlayerProgression;
 import com.mna.capabilities.playerdata.magic.PlayerMagicProvider;
+import com.mna.capabilities.playerdata.progression.PlayerProgressionProvider;
 import net.minecraft.world.entity.player.Player;
 
-public class PlayerMagic {
+import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicReference;
+
+public class PlayerUtil {
     public static IPlayerMagic get(Player player) {
         return player.getCapability(PlayerMagicProvider.MAGIC).resolve().get();
     }
@@ -23,5 +28,12 @@ public class PlayerMagic {
 
     public static void subtractMana(Player player, float amount) {
         get(player).getCastingResource().setAmount(Math.max(getMana(player) - amount, 0));
+    }
+
+    @Nullable
+    public static IPlayerProgression getProgressionCao(Player player) {
+        AtomicReference<IPlayerProgression> progression = null;
+        player.getCapability(PlayerProgressionProvider.PROGRESSION).ifPresent(progression::set);
+        return progression.get();
     }
 }

@@ -30,7 +30,7 @@ import com.pickaid.mnajs.recipes.component.ItemsOrTagsComponent;
 import com.pickaid.mnajs.recipes.component.mna.PowerProvidedComponent;
 import com.pickaid.mnajs.recipes.schema.*;
 import com.pickaid.mnajs.util.MnaUtils;
-import com.pickaid.mnajs.util.PlayerMagic;
+import com.pickaid.mnajs.util.PlayerUtil;
 import com.pickaid.mnajs.util.TypeWrap;
 import com.pickaid.mnajs.util.WorldMagic;
 import dev.latvian.mods.kubejs.KubeJSPlugin;
@@ -93,7 +93,7 @@ public class MnaJSPlugin extends KubeJSPlugin {
 	public void registerBindings(BindingsEvent event) {
 		event.add("MNARecipesHelper", RecipesHelper.class);
 		event.add("ProgressionEventIDs",ProgressionEventIDs.class);
-		event.add("PlayerMagic", PlayerMagic.class);
+		event.add("PlayerMagic", PlayerUtil.class);
 		event.add("WorldMagic", WorldMagic.class);
 		event.add("MnaUtils", MnaUtils.class);
 		event.add("Affinity", Affinity.class);

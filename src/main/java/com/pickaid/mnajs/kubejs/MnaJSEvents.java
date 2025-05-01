@@ -8,6 +8,8 @@ import com.pickaid.mnajs.kubejs.events.server.spell.ComponentApplyingEventJS;
 import com.pickaid.mnajs.kubejs.events.server.spell.CooldownCalculatingEventJS;
 import com.pickaid.mnajs.kubejs.events.server.spell.CostManaEventJS;
 import com.pickaid.mnajs.kubejs.events.server.spell.CastEventJS;
+import com.pickaid.mnajs.kubejs.events.startup.CantripRegistrationEventJS;
+import com.pickaid.mnajs.kubejs.events.startup.GuideBookRegisterEventJS;
 import dev.latvian.mods.kubejs.event.EventGroup;
 import dev.latvian.mods.kubejs.event.EventHandler;
 
@@ -17,7 +19,9 @@ public interface MnaJSEvents {
     EventGroup SPELL_GROUP = EventGroup.of("SpellEvent");;
     EventGroup RUNE_FORGE_GROUP = EventGroup.of("RuneForgeEvent");
 
-    EventHandler WIZARD_SELECTING_TRADES = PLAYER_GROUP.server("wanderingWizardSelectingTrade", () -> WanderingWizardSelectingTradesEventJS.class);
+    EventHandler REGISTER_GUIDE_BOOK = GROUP.startup("registerGuideBook", () -> GuideBookRegisterEventJS.class);
+    EventHandler REGISTER_CANTRIP = GROUP.startup("registerCantrip", () -> CantripRegistrationEventJS.class);
+    EventHandler WIZARD_SELECTING_TRADES = GROUP.server("wanderingWizardSelectingTrade", () -> WanderingWizardSelectingTradesEventJS.class);
 
     EventHandler RITUAL_COMPLETED = PLAYER_GROUP.server("ritualCompleteEvent", () -> RitualCompleteEventJS.class);
     EventHandler AFFINITY_CHANGED = PLAYER_GROUP.server("affinityChangedEvent", () -> AffinityChangedEventJS.class).hasResult();

@@ -36,3 +36,10 @@ mandatory = true
 versionRange = "[2001.6.4,)"
 ordering = "NONE"
 side = "BOTH"
+
+[[dependencies.mnajs]]
+modId = "mna"
+mandatory = true
+versionRange = "[3.1.0.8,)"
+ordering = "NONE"
+side = "BOTH"

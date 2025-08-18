@@ -29,7 +29,6 @@ import com.pickaid.mnajs.recipes.component.ItemStackComponent;
 import com.pickaid.mnajs.recipes.component.ItemsOrTagsComponent;
 import com.pickaid.mnajs.recipes.component.mna.PowerProvidedComponent;
 import com.pickaid.mnajs.recipes.schema.*;
-import com.pickaid.mnajs.util.MnaUtils;
 import com.pickaid.mnajs.util.PlayerUtil;
 import com.pickaid.mnajs.util.TypeWrap;
 import com.pickaid.mnajs.util.WorldMagic;
@@ -44,6 +43,19 @@ import dev.latvian.mods.rhino.util.wrap.TypeWrappers;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.Lazy;
+import com.mna.api.tools.CollectionUtils;
+import com.mna.api.tools.MATags;
+import com.mna.tools.BiomeUtils;
+import com.mna.tools.EntityUtil;
+import com.mna.tools.InventoryUtilities;
+import com.mna.tools.ParticleConfigurations;
+import com.mna.tools.ProjectileHelper;
+import com.mna.tools.RecipeUtil;
+import com.mna.tools.ShearHelper;
+import com.mna.tools.StructureUtils;
+import com.mna.tools.SummonUtils;
+import com.mna.tools.math.MathUtils;
+import com.mna.tools.render.GuiRenderUtils;
 
 public class MnaJSPlugin extends KubeJSPlugin {
     public static final Lazy<RegistryInfo<IFaction>> FACTION_REGISTRY
@@ -91,19 +103,37 @@ public class MnaJSPlugin extends KubeJSPlugin {
 
 	@Override
 	public void registerBindings(BindingsEvent event) {
-		event.add("MNARecipesHelper", RecipesHelper.class);
-		event.add("ProgressionEventIDs",ProgressionEventIDs.class);
-		event.add("PlayerMagic", PlayerUtil.class);
-		event.add("WorldMagic", WorldMagic.class);
-		event.add("MnaUtils", MnaUtils.class);
+		// Common bindings (both sides)
 		event.add("Affinity", Affinity.class);
 		event.add("SpellAttribute", Attribute.class);
+		event.add("CollectionUtils", CollectionUtils.class);
+		event.add("MATags", MATags.class);
+		event.add("MathUtils", MathUtils.class);
+		event.add("PlayerMagic", PlayerUtil.class);
+		event.add("WorldMagic", WorldMagic.class);
+		event.add("BiomeUtils", BiomeUtils.class);
+		event.add("ProjectileHelper", ProjectileHelper.class);
 
-		event.add("MnaFactionUtil", Factions.class);
-		event.add("ManaItemUtil", ItemUtils.class);
-		event.add("WorldRenderUtils", WorldRenderUtils.class);
-		event.add("MnaEntityHelper", EntityHelper.class);
-		event.add("MnaFactionRaidHelper", FactionRaidHelper.class);
+		if (event.getType().isServer()) {
+			event.add("MNARecipesHelper", RecipesHelper.class);
+			event.add("ProgressionEventIDs",ProgressionEventIDs.class);
+
+			event.add("StructureUtils", StructureUtils.class);
+			event.add("EntityUtil", EntityUtil.class);
+			event.add("SummonUtils", SummonUtils.class);
+			event.add("ShearHelper", ShearHelper.class);
+
+			event.add("MnaFactionUtil", Factions.class);
+			event.add("ManaItemUtil", ItemUtils.class);
+			event.add("MnaEntityHelper", EntityHelper.class);
+			event.add("MnaFactionRaidHelper", FactionRaidHelper.class);
+		}
+
+		if (event.getType().isClient()) {
+			event.add("WorldRenderUtils", WorldRenderUtils.class);
+			event.add("GuiRenderUtils", GuiRenderUtils.class);
+			event.add("ParticleConfigurations", ParticleConfigurations.class);
+		}
 	}
 
 	@Override

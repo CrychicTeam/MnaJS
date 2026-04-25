@@ -98,6 +98,7 @@ public class MnaJSPlugin extends KubeJSPlugin {
     @Override
     public void registerEvents() {
         MnaJSEvents.GROUP.register();
+        MnaJSEvents.PLAYER_GROUP.register();
         MnaJSEvents.RUNE_FORGE_GROUP.register();
         MnaJSEvents.SPELL_GROUP.register();
     }

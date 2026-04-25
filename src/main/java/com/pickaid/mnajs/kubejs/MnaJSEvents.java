@@ -15,8 +15,8 @@ import dev.latvian.mods.kubejs.event.EventHandler;
 
 public interface MnaJSEvents {
     EventGroup GROUP = EventGroup.of("MnaEvent");
-    EventGroup PLAYER_GROUP = EventGroup.of("MnaEvent");
-    EventGroup SPELL_GROUP = EventGroup.of("SpellEvent");;
+    EventGroup PLAYER_GROUP = EventGroup.of("MnaPlayerEvent");
+    EventGroup SPELL_GROUP = EventGroup.of("SpellEvent");
     EventGroup RUNE_FORGE_GROUP = EventGroup.of("RuneForgeEvent");
 
     EventHandler REGISTER_GUIDE_BOOK = GROUP.startup("registerGuideBook", () -> GuideBookRegisterEventJS.class);
@@ -37,6 +37,6 @@ public interface MnaJSEvents {
     EventHandler COMPONENT_APPLYING = SPELL_GROUP.server("componentApplying", () -> ComponentApplyingEventJS.class).hasResult();
 
 
-    EventHandler ANVIL_SHOULD_ACTIVE = SPELL_GROUP.server("shouldActivate", () -> RunicAnvilShouldActiveEventJS.class).hasResult();
-    EventHandler ANVIL_ITEM_USED = SPELL_GROUP.server("itemUsed", () -> RunicAnvilItemUsedEventJS.class).hasResult();
+    EventHandler ANVIL_SHOULD_ACTIVE = RUNE_FORGE_GROUP.server("shouldActivate", () -> RunicAnvilShouldActiveEventJS.class).hasResult();
+    EventHandler ANVIL_ITEM_USED = RUNE_FORGE_GROUP.server("itemUsed", () -> RunicAnvilItemUsedEventJS.class).hasResult();
 }

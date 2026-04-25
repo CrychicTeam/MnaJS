@@ -55,6 +55,18 @@ def configureCommonRun = { runConfig, String workingDirectory ->
     runConfig.property 'mixin.env.remapRefMap', 'true'
     runConfig.property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
 
+    runConfig.setArgs(['--mixin', "mixins.${prop('mod_id')}.json"])
+
+    runConfig.mods {
+        "${prop('mod_id')}" {
+            source sourceSets.main
+        }
+    }
+}
+
+def configureClientRun = { runConfig, String workingDirectory ->
+    configureCommonRun(runConfig, workingDirectory)
+
     def args = ['--mixin', "mixins.${prop('mod_id')}.json"]
     if (hasProp('mc_user')) {
         def userId = prop('mc_user').split(',', 2)
@@ -62,12 +74,6 @@ def configureCommonRun = { runConfig, String workingDirectory ->
         args.addAll(['--uuid', userId.length > 1 ? userId[1] : '00000000000000000000000000000001'])
     }
     runConfig.setArgs(args)
-
-    runConfig.mods {
-        "${prop('mod_id')}" {
-            source sourceSets.main
-        }
-    }
 }
 
 minecraft {
@@ -77,7 +83,7 @@ minecraft {
 
     runs {
         client {
-            configureCommonRun(delegate, 'run/client')
+            configureClientRun(delegate, 'run/client')
         }
         server {
             configureCommonRun(delegate, 'run/server')

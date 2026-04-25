@@ -45,7 +45,7 @@ final class MnaJSLegacyProbeTypes {
 
     static void rewriteWrapperFiles(RequestAwareFiles files) {
         for (MnaJSLegacyProbeIdAliases.IdAlias alias : MnaJSLegacyProbeIdAliases.all()) {
-            TypeScriptFile file = files.requestOrCreate(ClassPath.ofJava(alias.wrapperClass()));
+            TypeScriptFile file = files.requestOrCreate(ClassPath.fromJava(alias.wrapperClass()));
             rewriteWrapperCodes(file.codes, alias.wrapperClass().getSimpleName(), alias.alias());
         }
     }

@@ -61,7 +61,7 @@ mna_all_id = "6847805"
 mna_api_id = "6847805"
 mna_id = "406360"
 piserializekit_version = "0.0.4"
-probejs_legacy_version = "7615033"
+probejs_legacy_version = "6773935"
 rhino_version = "2001.2.3-build.10"
 
 [publish]

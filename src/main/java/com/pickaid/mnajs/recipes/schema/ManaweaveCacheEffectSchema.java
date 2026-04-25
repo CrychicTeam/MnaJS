@@ -49,8 +49,8 @@ public interface ManaweaveCacheEffectSchema extends TierBaseSchema {
     };
 
     RecipeKey<MobEffect> EFFECT = EFFECT_COMPONENT.key("effect");
-    RecipeKey<Integer> DURATION_MIN = NumberComponent.INT.key("duration_min");
-    RecipeKey<Integer> DURATION_MAX = NumberComponent.INT.key("duration_max");
+    RecipeKey<Integer> DURATION_MIN = NumberComponent.INT.key("duration_min").optional((Integer) null);
+    RecipeKey<Integer> DURATION_MAX = NumberComponent.INT.key("duration_max").optional((Integer) null);
     RecipeKey<Integer> MAGNITUDE = NumberComponent.INT.key("magnitude").optional(1);
 
     RecipeSchema SCHEMA = new RecipeSchema(ManaweaveCacheEffectRecipeJS.class, ManaweaveCacheEffectRecipeJS::new, EFFECT, DURATION_MIN, DURATION_MAX, MAGNITUDE, TIER, FACTION)

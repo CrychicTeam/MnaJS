@@ -12,7 +12,7 @@ import dev.latvian.mods.kubejs.recipe.schema.RecipeSchema;
 
 public interface FumerFliterSchema extends TierBaseSchema {
     RecipeKey<MnaItemOrTag> ITEM_OR_TAG_ID = MnaRecipeComponents.ITEM_OR_TAG.key("item");
-    RecipeKey<RecipeComponentBuilderMap> POWER_PROVIDED = PowerProvidedComponent.POWER_PROVIDED_COMPONENT.outputRole().key("power_provided");
+    RecipeKey<RecipeComponentBuilderMap> POWER_PROVIDED = PowerProvidedComponent.POWER_PROVIDED_COMPONENT.outputRole().key("power_provided").optional((RecipeComponentBuilderMap) null);
     RecipeKey<Float> AMOUNT = NumberComponent.FLOAT.key("amount");
     RecipeSchema SCHEMA = new RecipeSchema(FumeFilterRecipeJS.class, FumeFilterRecipeJS::new, ITEM_OR_TAG_ID, POWER_PROVIDED, TIER, FACTION)
             .constructor()

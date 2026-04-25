@@ -10,8 +10,8 @@ import dev.latvian.mods.kubejs.recipe.schema.RecipeSchema;
 
 public interface RunescribingSchema extends TierBaseSchema {
     RecipeKey<MnaItemId> OUTPUT = MnaRecipeComponents.ITEM_ID.key("output");
-    RecipeKey<Long> HMUTEX = NumberComponent.LONG.key("mutex_h").preferred("hMutex");
-    RecipeKey<Long> VMUTEX = NumberComponent.LONG.key("mutex_v").preferred("vMutex");
+    RecipeKey<Long> HMUTEX = NumberComponent.LONG.key("mutex_h").preferred("hMutex").optional((Long) null);
+    RecipeKey<Long> VMUTEX = NumberComponent.LONG.key("mutex_v").preferred("vMutex").optional((Long) null);
 
     RecipeSchema SCHEMA = new RecipeSchema(RuneScribingRecipeJS.class, RuneScribingRecipeJS::new, OUTPUT, HMUTEX, VMUTEX, TIER, FACTION)
             .constructor()

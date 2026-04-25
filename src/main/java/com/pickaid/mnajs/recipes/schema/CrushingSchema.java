@@ -10,7 +10,7 @@ import dev.latvian.mods.kubejs.recipe.schema.RecipeSchema;
 
 public interface CrushingSchema extends TierBaseSchema {
     RecipeKey<MnaItemId> INPUT = MnaRecipeComponents.ITEM_ID.key("input");
-    RecipeKey<MnaItemId> OUTPUT = MnaRecipeComponents.ITEM_ID.key("output");
+    RecipeKey<MnaItemId> OUTPUT = MnaRecipeComponents.ITEM_ID.key("output").optional((MnaItemId) null);
     RecipeKey<Integer> QUANTITY = NumberComponent.INT.key("output_quantity").preferred("outputQuantity").optional(1).alt("outputQuantity", "quantity");
     RecipeSchema SCHEMA = new RecipeSchema(CrushingRecipeJS.class, CrushingRecipeJS::new, INPUT, OUTPUT, QUANTITY, TIER, FACTION)
             .constructor()

@@ -75,9 +75,9 @@ public interface RitualRecipeSchema extends TierBaseSchema {
         }
     };
 
-    RecipeKey<int[][]> PATTERN = INT_GRID_COMPONENT.key("pattern");
-    RecipeKey<String[]> REAGENTS = StringComponent.ANY.asArray().key("reagents");
-    RecipeKey<TinyMap<Character, RecipeComponentBuilderMap>> KEYS = RITUAL_PATTERN_KEY.key("keys");
+    RecipeKey<int[][]> PATTERN = INT_GRID_COMPONENT.key("pattern").optional((int[][]) null);
+    RecipeKey<String[]> REAGENTS = StringComponent.ANY.asArray().key("reagents").optional(type -> new String[0]).allowEmpty();
+    RecipeKey<TinyMap<Character, RecipeComponentBuilderMap>> KEYS = RITUAL_PATTERN_KEY.key("keys").defaultOptional().allowEmpty();
     RecipeKey<int[][]> DISPLAY_PATTERN = INT_GRID_COMPONENT.key("displayPattern").optional((int[][]) null);
     RecipeKey<MnaManaweavePatternId[]> MANAWEAVE = MnaRecipeComponents.MANAWEAVE_PATTERN_ID.asArray().key("manaweave").optional((MnaManaweavePatternId[]) null);
     RecipeKey<RecipeComponentBuilderMap> PARAMETERS = RITUAL_PARAMETERS.key("parameters").defaultOptional().allowEmpty();
@@ -87,7 +87,7 @@ public interface RitualRecipeSchema extends TierBaseSchema {
     RecipeSchema SCHEMA = new RecipeSchema(
             RitualRecipeJS.class,
             RitualRecipeJS::new,
-            PATTERN, REAGENTS, KEYS, DISPLAY_PATTERN, TIER, FACTION, CREATES_ITEM, MANAWEAVE,
+            CREATES_ITEM, PATTERN, REAGENTS, KEYS, DISPLAY_PATTERN, TIER, FACTION, MANAWEAVE,
             PARAMETERS, COMMAND
     ).constructor()
             .constructor((recipe, schemaType, keys, from) -> {

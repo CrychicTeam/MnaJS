@@ -3,19 +3,20 @@ package com.pickaid.mnajs.recipes.builders;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.pickaid.mnajs.recipes.builders.base.MABaseBuilder;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import dev.latvian.mods.kubejs.typings.Info;
 
 public class ManaweavingPatternBuilder extends MABaseBuilder {
-    private byte[][] pattern;
+    private int[][] pattern;
     private static final int X_BOUND = 11;
     private static final int Y_BOUND = 11;
 
     public ManaweavingPatternBuilder() {
-        this.pattern = new byte[X_BOUND][Y_BOUND];
+        this.pattern = new int[X_BOUND][Y_BOUND];
     }
 
     @Info("Set the entire 11x11 manaweaving pattern at once")
-    public ManaweavingPatternBuilder pattern(byte[][] pattern) {
+    public ManaweavingPatternBuilder pattern(int[][] pattern) {
         if (pattern.length != X_BOUND) {
             throw new IllegalArgumentException("Pattern must be exactly " + X_BOUND + " rows");
         }
@@ -30,8 +31,20 @@ public class ManaweavingPatternBuilder extends MABaseBuilder {
         return this;
     }
 
+    @HideFromJS
+    public ManaweavingPatternBuilder pattern(byte[][] pattern) {
+        int[][] converted = new int[pattern.length][];
+        for (int row = 0; row < pattern.length; row++) {
+            converted[row] = new int[pattern[row].length];
+            for (int column = 0; column < pattern[row].length; column++) {
+                converted[row][column] = pattern[row][column];
+            }
+        }
+        return pattern(converted);
+    }
+
     @Info("Set a specific point in the manaweaving pattern (values should be 0 or 1)")
-    public ManaweavingPatternBuilder setPoint(int x, int y, byte value) {
+    public ManaweavingPatternBuilder setPoint(int x, int y, int value) {
         if (x < 0 || x >= X_BOUND || y < 0 || y >= Y_BOUND) {
             throw new IllegalArgumentException("Pattern coordinates must be within bounds 0-" + (X_BOUND-1) + " for x and 0-" + (Y_BOUND-1) + " for y");
         }
@@ -45,7 +58,7 @@ public class ManaweavingPatternBuilder extends MABaseBuilder {
     }
 
     @Info("Fill a rectangular area in the pattern with the specified value (0 or 1)")
-    public ManaweavingPatternBuilder fillRect(int startX, int startY, int endX, int endY, byte value) {
+    public ManaweavingPatternBuilder fillRect(int startX, int startY, int endX, int endY, int value) {
         if (startX < 0 || startX >= X_BOUND || startY < 0 || startY >= Y_BOUND ||
                 endX < 0 || endX >= X_BOUND || endY < 0 || endY >= Y_BOUND) {
             throw new IllegalArgumentException("Rectangle coordinates must be within bounds 0-" + (X_BOUND-1) + " for x and 0-" + (Y_BOUND-1) + " for y");
@@ -65,7 +78,7 @@ public class ManaweavingPatternBuilder extends MABaseBuilder {
     }
 
     @Info("Draw a line in the pattern with the specified value (0 or 1)")
-    public ManaweavingPatternBuilder drawLine(int startX, int startY, int endX, int endY, byte value) {
+    public ManaweavingPatternBuilder drawLine(int startX, int startY, int endX, int endY, int value) {
         if (startX < 0 || startX >= X_BOUND || startY < 0 || startY >= Y_BOUND ||
                 endX < 0 || endX >= X_BOUND || endY < 0 || endY >= Y_BOUND) {
             throw new IllegalArgumentException("Line coordinates must be within bounds 0-" + (X_BOUND-1) + " for x and 0-" + (Y_BOUND-1) + " for y");

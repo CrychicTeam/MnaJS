@@ -1,0 +1,75 @@
+schema_version = 1
+template_version = "1.20.1-template-1.0.0"
+
+[mod]
+mod_id = "mnajs"
+mod_name = "MNAJS"
+version = "0.1.6"
+version_suffix = ""
+group = "com.mihono.pickaid"
+authors = ["PickAID"]
+license = "MIT"
+description = "A compat mod for MNA and KubeJS."
+credits = "None"
+issue_tracker_url = "https://github.com/PickAID/MnaJS/issues"
+
+[features]
+jei = false
+curios = false
+geckolib = false
+player_animator = false
+mixin_extras = false
+
+[overrides]
+# Optional built-in feature version overrides.
+# jei_version = "15.2.0.27"
+# curios_version = "5.9.1+1.20.1"
+# geckolib_version = "4.4.9"
+# player_animator_version = "1.0.2+1.20"
+# bendylib_version = "1.0.2"
+# mixin_extras_version = "0.2.0-beta.8"
+
+[repositories]
+# Common ecosystem repositories are listed directly so the project surface stays visible.
+blamejared = "https://maven.blamejared.com/"
+tterrag = "https://maven.tterrag.com/"
+sponge = "https://repo.spongepowered.org/maven"
+geckolib = "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/"
+curios = "https://maven.theillusivec4.top/"
+kosmx = "https://maven.kosmx.dev/"
+cursemaven = "https://cursemaven.com"
+architectury = "https://maven.architectury.dev"
+latvian = "https://maven.latvian.dev/releases"
+jitpack = "https://jitpack.io"
+mihono = "https://maven.mihono.cn/repository/pickaid1201/"
+
+[dependencies]
+# Generic dependency buckets stay available if this project later moves more logic out of build.gradle.
+
+[compat]
+# Legacy compatibility values still consumed by the current build.gradle.
+architectury_version = "9.2.14"
+caelus_version = "3.2.0+1.20.1"
+curios_version = "5.14.1+1.20.1"
+enable_annotation = "false"
+formal_version = "true"
+geckolib_version = "4.8.3"
+kubejs_version = "2001.6.5-build.22"
+mc_user = "Togawa_Sakiko_,b6a0483d-eaf2-4be6-8395-5eecdaa310a6"
+mixin_extras_version = "0.2.0-beta.8"
+mna_all_id = "6847805"
+mna_api_id = "6847805"
+mna_id = "406360"
+piserializekit_version = "0.0.4"
+probejs_legacy_version = "7615033"
+rhino_version = "2001.2.3-build.10"
+
+[publish]
+maven_url = "https://maven.mihono.cn/repository/pickaid1201/"
+curseforge_project = 0
+modrinth_project = ""
+release_type = "release"
+
+[naming]
+archive_name = "MnaJS"
+jar_format = "{archive_name}-{mc_version}-{version}"

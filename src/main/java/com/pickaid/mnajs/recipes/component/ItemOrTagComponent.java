@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.mna.api.tools.MATags;
 import com.mojang.datafixers.util.Either;
+import com.pickaid.mnajs.util.KubeJSCompat;
 import dev.latvian.mods.kubejs.recipe.RecipeJS;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponent;
 import net.minecraft.core.registries.Registries;
@@ -28,7 +29,7 @@ public interface ItemOrTagComponent {
         public JsonElement write(RecipeJS recipe, Either<TagKey<Item>, Item> value) {
             return value.map(
                     tagKey -> new JsonPrimitive(tagKey.location().toString()),
-                    item -> new JsonPrimitive(item.kjs$getIdLocation().toString())
+                    item -> new JsonPrimitive(KubeJSCompat.itemId(item).toString())
             );
         }
 
@@ -37,7 +38,7 @@ public interface ItemOrTagComponent {
             ResourceLocation resourceLocation = null;
             if (from instanceof String string) {
                 if (string.startsWith("#")) string = string.substring(1);
-                resourceLocation = new ResourceLocation(string);
+                resourceLocation = ResourceLocation.parse(string);
             } else if (from instanceof ResourceLocation location) {
                 resourceLocation = location;
             } else if (from instanceof Item item) {

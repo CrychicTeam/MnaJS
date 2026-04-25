@@ -1,5 +1,7 @@
 package com.pickaid.mnajs.recipes.schema;
 
+import com.pickaid.mnajs.kubejs.recipe.ManaweaveCacheEffectRecipeJS;
+import com.pickaid.mnajs.kubejs.id.MnaIds;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.pickaid.mnajs.recipes.schema.base.TierBaseSchema;
@@ -34,10 +36,10 @@ public interface ManaweaveCacheEffectSchema extends TierBaseSchema {
             if (from instanceof ResourceLocation rl) {
                 resourceLocation = rl;
             } else if (from instanceof String s) {
-                resourceLocation = new ResourceLocation(s);
+                resourceLocation = MnaIds.parse(s, "effect", "minecraft", null);
             } else if (from instanceof JsonElement jsonElement && jsonElement.isJsonPrimitive()
                     && jsonElement.getAsJsonPrimitive().isString()) {
-                resourceLocation = new ResourceLocation(jsonElement.getAsString());
+                resourceLocation = MnaIds.parse(jsonElement.getAsString(), "effect", "minecraft", null);
             } else {
                 return null;
             }
@@ -51,5 +53,7 @@ public interface ManaweaveCacheEffectSchema extends TierBaseSchema {
     RecipeKey<Integer> DURATION_MAX = NumberComponent.INT.key("duration_max");
     RecipeKey<Integer> MAGNITUDE = NumberComponent.INT.key("magnitude").optional(1);
 
-    RecipeSchema SCHEMA = new RecipeSchema(EFFECT, DURATION_MIN, DURATION_MAX, MAGNITUDE, TIER, FACTION);
+    RecipeSchema SCHEMA = new RecipeSchema(ManaweaveCacheEffectRecipeJS.class, ManaweaveCacheEffectRecipeJS::new, EFFECT, DURATION_MIN, DURATION_MAX, MAGNITUDE, TIER, FACTION)
+            .constructor()
+            .constructor(EFFECT, DURATION_MIN, DURATION_MAX);
 }

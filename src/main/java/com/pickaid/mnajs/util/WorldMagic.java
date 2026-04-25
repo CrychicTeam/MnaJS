@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class WorldMagic {
     @Nullable
     public static IWorldMagic get(Level level) {
-        AtomicReference<IWorldMagic> magic = null;
+        AtomicReference<IWorldMagic> magic = new AtomicReference<>();
         level.getCapability(WorldMagicProvider.MAGIC).ifPresent(magic::set);
         return magic.get();
     }

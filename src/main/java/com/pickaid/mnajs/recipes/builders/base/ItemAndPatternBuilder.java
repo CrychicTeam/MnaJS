@@ -2,17 +2,20 @@ package com.pickaid.mnajs.recipes.builders.base;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.pickaid.mnajs.kubejs.id.MnaItemOrTag;
+import com.pickaid.mnajs.kubejs.id.MnaManaweavePatternId;
+import com.pickaid.mnajs.kubejs.id.MnaIds;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ItemAndPatternBuilder extends MABaseBuilder {
-    protected final List<ResourceLocation> requiredItems = new ArrayList<>();
-    protected final List<ResourceLocation> requiredPatterns = new ArrayList<>();
+    protected final List<MnaItemOrTag> requiredItems = new ArrayList<>();
+    protected final List<MnaManaweavePatternId> requiredPatterns = new ArrayList<>();
     protected ResourceLocation output;
     protected int outputQuantity = 1;
     protected JsonObject outputNBT = null;
@@ -28,7 +31,7 @@ public abstract class ItemAndPatternBuilder extends MABaseBuilder {
     protected abstract int maxPatterns();
 
     @Info("Add an input item for the recipe")
-    public ItemAndPatternBuilder addItem(ResourceLocation item) {
+    public ItemAndPatternBuilder addItem(MnaItemOrTag item) {
         if (requiredItems.size() >= maxItems()) {
             throw new IllegalStateException("Cannot add more than " + maxItems() + " input items");
         }
@@ -36,18 +39,23 @@ public abstract class ItemAndPatternBuilder extends MABaseBuilder {
         return this;
     }
 
-    @Info("Add an input item for the recipe using an Item")
+    @HideFromJS
     public ItemAndPatternBuilder addItem(Item item) {
-        return addItem(ForgeRegistries.ITEMS.getKey(item));
+        return addItem(MnaItemOrTag.parse(item));
     }
 
-    @Info("Add an input item for the recipe using a string")
+    @HideFromJS
+    public ItemAndPatternBuilder addItem(ResourceLocation item) {
+        return addItem(MnaItemOrTag.parse(item));
+    }
+
+    @HideFromJS
     public ItemAndPatternBuilder addItem(String item) {
-        return addItem(new ResourceLocation(item));
+        return addItem(MnaItemOrTag.parse(item));
     }
 
     @Info("Add a pattern for the recipe")
-    public ItemAndPatternBuilder addPattern(ResourceLocation pattern) {
+    public ItemAndPatternBuilder addPattern(MnaManaweavePatternId pattern) {
         if (requiredPatterns.size() >= maxPatterns()) {
             throw new IllegalStateException("Cannot add more than " + maxPatterns() + " patterns");
         }
@@ -55,20 +63,25 @@ public abstract class ItemAndPatternBuilder extends MABaseBuilder {
         return this;
     }
 
-    @Info("Add a pattern for the recipe using a string")
-    public ItemAndPatternBuilder addPattern(String pattern) {
-        return addPattern(new ResourceLocation(pattern));
+    @HideFromJS
+    public ItemAndPatternBuilder addPattern(ResourceLocation pattern) {
+        return addPattern(MnaManaweavePatternId.of(pattern));
     }
 
-    @Info("Set the output item or component for the recipe")
+    @HideFromJS
+    public ItemAndPatternBuilder addPattern(String pattern) {
+        return addPattern(MnaManaweavePatternId.parse(pattern));
+    }
+
+    @HideFromJS
     public ItemAndPatternBuilder output(ResourceLocation output) {
         this.output = output;
         return this;
     }
 
-    @Info("Set the output item or component for the recipe using a string")
+    @HideFromJS
     public ItemAndPatternBuilder output(String output) {
-        return output(new ResourceLocation(output));
+        return output(MnaIds.parse(output, "output"));
     }
 
     @Info("Set the output quantity for the recipe")
@@ -95,14 +108,14 @@ public abstract class ItemAndPatternBuilder extends MABaseBuilder {
             throw new IllegalStateException("Output cannot be null");
         }
         JsonArray itemsArray = new JsonArray();
-        for (ResourceLocation item : requiredItems) {
-            itemsArray.add(item.toString());
+        for (MnaItemOrTag item : requiredItems) {
+            itemsArray.add(item.scriptValue());
         }
         json.add("items", itemsArray);
         if (!requiredPatterns.isEmpty()) {
             JsonArray patternsArray = new JsonArray();
-            for (ResourceLocation pattern : requiredPatterns) {
-                patternsArray.add(pattern.toString());
+            for (MnaManaweavePatternId pattern : requiredPatterns) {
+                patternsArray.add(pattern.id());
             }
             json.add("patterns", patternsArray);
         }

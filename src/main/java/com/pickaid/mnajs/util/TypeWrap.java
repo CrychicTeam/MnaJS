@@ -17,7 +17,7 @@ public class TypeWrap {
     public interface ResourceHolder<T extends ResourceHolder<T>> {
         static <T extends ResourceHolder<T>> T of(Object o, Function<ResourceLocation, T> constructor){
             if (o instanceof String str) {
-                return constructor.apply(new ResourceLocation(str));
+                return constructor.apply(ResourceLocation.parse(str));
             }
             if (o instanceof ResourceLocation rl) {
                 return constructor.apply(rl);

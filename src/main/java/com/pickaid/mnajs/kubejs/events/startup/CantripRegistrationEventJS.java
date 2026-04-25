@@ -7,7 +7,11 @@ import com.mna.api.timing.TimedDelayedEvent;
 import com.mna.cantrips.Cantrip;
 import com.mna.cantrips.CantripRegistry;
 import com.pickaid.mnajs.MnaJS;
+import com.pickaid.mnajs.kubejs.id.MnaCantripId;
+import com.pickaid.mnajs.kubejs.id.MnaManaweavePatternId;
+import com.pickaid.mnajs.kubejs.texture.MnaTexture;
 import dev.latvian.mods.kubejs.event.EventJS;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
@@ -22,9 +26,13 @@ import java.util.*;
 import java.util.function.Function;
 
 public class CantripRegistrationEventJS extends EventJS {
+    public CantripBuilder create(MnaCantripId id) {
+        return new CantripBuilder(id.location());
+    }
 
+    @HideFromJS
     public CantripBuilder create(String id) {
-        return new CantripBuilder(new ResourceLocation(id));
+        return create(MnaCantripId.parse(id));
     }
 
     public static class CantripBuilder {
@@ -54,7 +62,7 @@ public class CantripRegistrationEventJS extends EventJS {
         }
 
         public CantripBuilder requiredAdvancement(String advancement) {
-            this.requiredAdvancement = new ResourceLocation(advancement);
+            this.requiredAdvancement = ResourceLocation.parse(advancement);
             return this;
         }
 
@@ -63,16 +71,34 @@ public class CantripRegistrationEventJS extends EventJS {
             return this;
         }
 
+        public CantripBuilder icon(MnaTexture icon) {
+            this.icon = icon.location();
+            return this;
+        }
+
+        public CantripBuilder addPattern(MnaManaweavePatternId pattern) {
+            this.pattern.add(pattern.location());
+            return this;
+        }
+
+        public CantripBuilder pattern(MnaManaweavePatternId... patterns) {
+            this.pattern = Arrays.stream(patterns)
+                    .map(MnaManaweavePatternId::location)
+                    .toList();
+            return this;
+        }
+
+        @HideFromJS
         public CantripBuilder icon(String icon) {
-            this.icon = new ResourceLocation(icon);
-            return this;
+            return icon(MnaTexture.parse(icon));
         }
 
+        @HideFromJS
         public CantripBuilder addPattern(String pattern) {
-            this.pattern.add(new ResourceLocation(pattern));
-            return this;
+            return addPattern(MnaManaweavePatternId.parse(pattern));
         }
 
+        @HideFromJS
         public CantripBuilder pattern(ResourceLocation... patterns) {
             this.pattern = Arrays.asList(patterns);
             return this;
@@ -149,13 +175,13 @@ public class CantripRegistrationEventJS extends EventJS {
         public ICantrip register() {
             if (icon == null) {
                 MnaJS.LOGGER.warn("Cantrip " + id + " has no icon set. Using default.");
-                icon = new ResourceLocation("mna:textures/gui/cantrips/default.png");
+                icon = ResourceLocation.parse("mna:textures/gui/cantrips/default.png");
             }
 
             if (pattern.isEmpty()) {
                 MnaJS.LOGGER.warn("Cantrip " + id + " has no pattern set. Using default pattern.");
-                pattern.add(new ResourceLocation("mna:manaweave_patterns/circle"));
-                pattern.add(new ResourceLocation("mna:manaweave_patterns/square"));
+                pattern.add(ResourceLocation.parse("mna:manaweave_patterns/circle"));
+                pattern.add(ResourceLocation.parse("mna:manaweave_patterns/square"));
             }
 
             ResourceLocation[] patternArray = pattern.toArray(new ResourceLocation[0]);
@@ -224,15 +250,16 @@ public class CantripRegistrationEventJS extends EventJS {
         }
     }
 
-    public boolean removeCantrip(String cantripId) {
+    public boolean removeCantrip(MnaCantripId cantripId) {
         try {
+            ResourceLocation targetId = cantripId.location();
             Field cantripsField = CantripRegistry.class.getDeclaredField("cantrips");
             cantripsField.setAccessible(true);
 
             @SuppressWarnings("unchecked")
             List<ICantrip> cantrips = (List<ICantrip>) cantripsField.get(CantripRegistry.INSTANCE);
 
-            Optional<ICantrip> target = CantripRegistry.INSTANCE.getCantrip(new ResourceLocation(cantripId));
+            Optional<ICantrip> target = CantripRegistry.INSTANCE.getCantrip(targetId);
             if (!target.isPresent()) {
                 MnaJS.LOGGER.warn("Cannot remove cantrip " + cantripId + ": not found in registry");
                 return false;
@@ -242,7 +269,7 @@ public class CantripRegistrationEventJS extends EventJS {
             Iterator<ICantrip> iterator = cantrips.iterator();
             while (iterator.hasNext()) {
                 ICantrip cantrip = iterator.next();
-                if (cantrip.getId().equals(new ResourceLocation(cantripId))) {
+                if (cantrip.getId().equals(targetId)) {
                     iterator.remove();
                     removed = true;
                     break;
@@ -260,6 +287,11 @@ public class CantripRegistrationEventJS extends EventJS {
             MnaJS.LOGGER.error("Error removing cantrip " + cantripId, e);
             return false;
         }
+    }
+
+    @HideFromJS
+    public boolean removeCantrip(String cantripId) {
+        return removeCantrip(MnaCantripId.parse(cantripId));
     }
 
     private static class EffectorHandler {

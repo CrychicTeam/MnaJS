@@ -1,6 +1,7 @@
 package com.pickaid.mnajs.recipes.builders.base;
 
 import com.google.gson.JsonObject;
+import com.pickaid.mnajs.kubejs.id.MnaFactionId;
 import dev.latvian.mods.kubejs.typings.Info;
 import net.minecraft.resources.ResourceLocation;
 
@@ -14,7 +15,7 @@ public abstract class MABaseBuilder {
     };
 
     public int tier = 1;
-    public ResourceLocation faction = new ResourceLocation("mna:none");
+    public ResourceLocation faction = ResourceLocation.fromNamespaceAndPath("mna", "none");
 
     @Info("set the tier requirement")
     public MABaseBuilder tier(int value) {
@@ -26,6 +27,17 @@ public abstract class MABaseBuilder {
     public MABaseBuilder faction(ResourceLocation value) {
         this.faction = value;
         return this;
+    }
+
+    @Info("set the faction requirement")
+    public MABaseBuilder faction(MnaFactionId value) {
+        this.faction = value.location();
+        return this;
+    }
+
+    @Info("set the faction requirement")
+    public MABaseBuilder faction(String value) {
+        return faction(MnaFactionId.parse(value));
     }
 
     public JsonObject build() {

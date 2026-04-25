@@ -1,37 +1,68 @@
 package com.pickaid.mnajs.recipes.builders;
 
 import com.google.gson.JsonObject;
-import com.mna.api.tools.MATags;
+import com.mna.api.affinity.Affinity;
+import com.pickaid.mnajs.kubejs.id.MnaItemOrTag;
 import com.pickaid.mnajs.recipes.builders.base.MABaseBuilder;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.ItemStack;
 
 public class FumeFilterBuilder extends MABaseBuilder {
-    private ResourceLocation itemOrTagID;
+    private MnaItemOrTag itemOrTag;
     private String affinity;
-    private float powerAmount;
+    private Float powerAmount;
 
-    @Info("Set the item or tag ID for the Fume Filter recipe")
+    @Info("Set the item or tag input for the Fume Filter recipe")
+    public FumeFilterBuilder item(MnaItemOrTag itemOrTag) {
+        this.itemOrTag = itemOrTag;
+        return this;
+    }
+
+    public FumeFilterBuilder input(MnaItemOrTag itemOrTag) {
+        return item(itemOrTag);
+    }
+
+    @HideFromJS
     public FumeFilterBuilder item(ResourceLocation itemOrTag) {
-        if (MATags.smartLookupItem(itemOrTag).size() <= 1) throw new IllegalStateException("Item or tag ID cannot be invalid");
-        this.itemOrTagID = itemOrTag;
-        return this;
+        return item(MnaItemOrTag.parse(itemOrTag));
     }
 
-    @Info("Set the item for the Fume Filter recipe using an Item")
+    @HideFromJS
     public FumeFilterBuilder item(Item item) {
-        if (MATags.smartLookupItem(item.kjs$getIdLocation()).size() <= 1) throw new IllegalStateException("Item or tag ID cannot be invalid");
-        this.itemOrTagID = ForgeRegistries.ITEMS.getKey(item);
-        return this;
+        return item(MnaItemOrTag.parse(item));
     }
 
-    @Info("Set the item or tag for the Fume Filter recipe using a string")
+    @HideFromJS
+    public FumeFilterBuilder item(ItemStack item) {
+        return item(MnaItemOrTag.parse(item));
+    }
+
+    @HideFromJS
     public FumeFilterBuilder item(String itemOrTag) {
-        if (MATags.smartLookupItem(ResourceLocation.tryParse(itemOrTag)).size() <= 1) throw new IllegalStateException("Item or tag ID cannot be invalid");
-        this.itemOrTagID = new ResourceLocation(itemOrTag);
-        return this;
+        return item(MnaItemOrTag.parse(itemOrTag));
+    }
+
+    @HideFromJS
+    public FumeFilterBuilder input(ResourceLocation itemOrTag) {
+        return input(MnaItemOrTag.parse(itemOrTag));
+    }
+
+    @HideFromJS
+    public FumeFilterBuilder input(Item item) {
+        return input(MnaItemOrTag.parse(item));
+    }
+
+    @HideFromJS
+    public FumeFilterBuilder input(ItemStack item) {
+        return input(MnaItemOrTag.parse(item));
+    }
+
+    @HideFromJS
+    public FumeFilterBuilder input(String itemOrTag) {
+        return input(MnaItemOrTag.parse(itemOrTag));
     }
 
     @Info("Set the affinity type for power generation")
@@ -40,10 +71,25 @@ public class FumeFilterBuilder extends MABaseBuilder {
         return this;
     }
 
+    @HideFromJS
+    public FumeFilterBuilder affinity(Affinity affinity) {
+        return affinity(String.valueOf(affinity));
+    }
+
     @Info("Set the amount of power generated")
     public FumeFilterBuilder powerAmount(float amount) {
         this.powerAmount = amount;
         return this;
+    }
+
+    @Info("Set both affinity and amount for the power output")
+    public FumeFilterBuilder powerProvided(String affinity, Number amount) {
+        return affinity(affinity).powerAmount(amount.floatValue());
+    }
+
+    @HideFromJS
+    public FumeFilterBuilder powerProvided(Affinity affinity, Number amount) {
+        return powerProvided(String.valueOf(affinity), amount);
     }
 
     @Info("get the JsonObject for event.custom()")
@@ -51,17 +97,16 @@ public class FumeFilterBuilder extends MABaseBuilder {
         JsonObject json = super.build();
         json.addProperty("type", "mna:eldrin-fume");
 
-        if (itemOrTagID == null) {
+        if (itemOrTag == null) {
             throw new IllegalStateException("Item or tag ID cannot be null");
-        } else {
-            json.addProperty("item", itemOrTagID.toString());
         }
+        json.addProperty("item", itemOrTag.scriptValue());
 
         if (affinity == null || affinity.isEmpty()) {
             throw new IllegalStateException("Affinity cannot be null or empty");
         }
 
-        if (powerAmount <= 0) {
+        if (powerAmount == null || powerAmount <= 0) {
             throw new IllegalStateException("Power amount must be greater than 0");
         }
 

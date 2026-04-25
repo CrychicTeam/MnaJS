@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.mna.api.tools.MATags;
 import com.mojang.datafixers.util.Either;
+import com.pickaid.mnajs.util.KubeJSCompat;
 import dev.latvian.mods.kubejs.recipe.RecipeJS;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponent;
 import dev.latvian.mods.kubejs.util.ConsoleJS;
@@ -39,7 +40,7 @@ public interface ItemsOrTagsComponent {
             for (Either<TagKey<Item>, Item> value : values) {
                 JsonElement element = value.map(
                         tagKey -> (JsonElement) new JsonPrimitive(tagKey.location().toString()),
-                        item -> (JsonElement) new JsonPrimitive(item.kjs$getIdLocation().toString())
+                        item -> (JsonElement) new JsonPrimitive(KubeJSCompat.itemId(item).toString())
                 );
                 json.add(element);
             }
@@ -105,9 +106,9 @@ public interface ItemsOrTagsComponent {
 
         private ResourceLocation ensureNamespace(String string) {
             if (!string.contains(":")) {
-                return new ResourceLocation("minecraft", string);
+                return ResourceLocation.fromNamespaceAndPath("minecraft", string);
             }
-            return new ResourceLocation(string);
+            return ResourceLocation.parse(string);
         }
 
         private Either<TagKey<Item>, Item> processResourceLocation(ResourceLocation resourcelocation) {

@@ -1,5 +1,6 @@
 package com.pickaid.mnajs.recipes.schema;
 
+import com.pickaid.mnajs.kubejs.recipe.ManaweavingPatternRecipeJS;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.pickaid.mnajs.recipes.schema.base.TierBaseSchema;
@@ -12,14 +13,14 @@ import dev.latvian.mods.kubejs.util.ConsoleJS;
 import java.util.List;
 
 public interface ManaweavingPatternSchema extends TierBaseSchema {
-    RecipeComponent<byte[][]> BYTE_ARRAY_ARRAY_COMPONENT = new RecipeComponent<>() {
+    RecipeComponent<int[][]> INT_ARRAY_ARRAY_COMPONENT = new RecipeComponent<>() {
         @Override
         public Class<?> componentClass() {
-            return byte.class;
+            return int.class;
         }
 
         @Override
-        public JsonElement write(RecipeJS recipe, byte[][] value) {
+        public JsonElement write(RecipeJS recipe, int[][] value) {
             JsonArray patternArray = new JsonArray();
 
             if (value.length != 11) {
@@ -44,9 +45,9 @@ public interface ManaweavingPatternSchema extends TierBaseSchema {
         }
 
         @Override
-        public byte[][] read(RecipeJS recipe, Object from) {
+        public int[][] read(RecipeJS recipe, Object from) {
             if (from instanceof JsonArray patternArray) {
-                byte[][] pattern = new byte[11][11];
+                int[][] pattern = new int[11][11];
 
                 for (int i = 0; i < Math.min(patternArray.size(), 11); i++) {
                     JsonElement rowElement = patternArray.get(i);
@@ -55,7 +56,7 @@ public interface ManaweavingPatternSchema extends TierBaseSchema {
                         for (int j = 0; j < Math.min(rowArray.size(), 11); j++) {
                             JsonElement cell = rowArray.get(j);
                             if (cell.isJsonPrimitive()) {
-                                pattern[i][j] = cell.getAsJsonPrimitive().getAsByte();
+                                pattern[i][j] = cell.getAsJsonPrimitive().getAsInt();
                             }
                         }
                     }
@@ -63,7 +64,7 @@ public interface ManaweavingPatternSchema extends TierBaseSchema {
 
                 return pattern;
             } else if (from instanceof List<?> patternList) {
-                byte[][] pattern = new byte[11][11];
+                int[][] pattern = new int[11][11];
 
                 for (int i = 0; i < Math.min(patternList.size(), 11); i++) {
                     Object row = patternList.get(i);
@@ -73,15 +74,18 @@ public interface ManaweavingPatternSchema extends TierBaseSchema {
                             Object cell = rowList.get(j);
 
                             if (cell instanceof Number) {
-                                pattern[i][j] = ((Number) cell).byteValue();
+                                pattern[i][j] = ((Number) cell).intValue();
                             } else if (cell instanceof String) {
                                 try {
-                                    pattern[i][j] = Byte.parseByte((String) cell);
+                                    pattern[i][j] = Integer.parseInt((String) cell);
                                 } catch (NumberFormatException e) {
                                     pattern[i][j] = 0;
                                 }
                             }
                         }
+                    } else if (row instanceof int[]) {
+                        int[] rowArray = (int[]) row;
+                        System.arraycopy(rowArray, 0, pattern[i], 0, Math.min(rowArray.length, 11));
                     } else if (row instanceof byte[]) {
                         byte[] rowArray = (byte[]) row;
                         System.arraycopy(rowArray, 0, pattern[i], 0, Math.min(rowArray.length, 11));
@@ -90,10 +94,12 @@ public interface ManaweavingPatternSchema extends TierBaseSchema {
                 return pattern;
             }
 
-            return new byte[11][11];
+            return new int[11][11];
         }
     };
 
-    RecipeKey<byte[][]> PATTERN = BYTE_ARRAY_ARRAY_COMPONENT.key("pattern");
-    RecipeSchema SCHEMA = new RecipeSchema(PATTERN, TIER, FACTION);
+    RecipeKey<int[][]> PATTERN = INT_ARRAY_ARRAY_COMPONENT.key("pattern");
+    RecipeSchema SCHEMA = new RecipeSchema(ManaweavingPatternRecipeJS.class, ManaweavingPatternRecipeJS::new, PATTERN, TIER, FACTION)
+            .constructor()
+            .constructor(PATTERN);
 }

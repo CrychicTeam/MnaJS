@@ -1,8 +1,10 @@
 package com.pickaid.mnajs.recipes.builders;
 
 import com.google.gson.JsonObject;
+import com.pickaid.mnajs.kubejs.id.MnaIds;
 import com.pickaid.mnajs.recipes.builders.base.MABaseBuilder;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -18,15 +20,16 @@ public class ManaweaveCacheEffectBuilder extends MABaseBuilder {
         this.effect = effect;
         return this;
     }
-    @Info("Set the effect for the Manaweave Cache Effect recipe")
+
+    @HideFromJS
     public ManaweaveCacheEffectBuilder effect(ResourceLocation effect) {
         this.effect = ForgeRegistries.MOB_EFFECTS.getValue(effect);
         return this;
     }
-    @Info("Set the effect for the Manaweave Cache Effect recipe")
+
+    @HideFromJS
     public ManaweaveCacheEffectBuilder effect(String effect) {
-        this.effect =  ForgeRegistries.MOB_EFFECTS.getValue(new ResourceLocation(effect));
-        return this;
+        return effect(MnaIds.parse(effect, "effect", "minecraft", null));
     }
 
     @Info("Set the magnitude for the Manaweave Cache Effect recipe")
@@ -64,13 +67,17 @@ public class ManaweaveCacheEffectBuilder extends MABaseBuilder {
     @Info("get the JsonObject for event.custom()")
     public JsonObject build() {
         JsonObject json = super.build();
-        json.addProperty("type", "mna:manaweave-cache_effect");
+        json.addProperty("type", "mna:manaweave-cache-effect");
 
         if (effect == null) {
             throw new IllegalStateException("Effect cannot be null");
         }
 
-        json.addProperty("effect", effect.toString());
+        ResourceLocation effectId = ForgeRegistries.MOB_EFFECTS.getKey(effect);
+        if (effectId == null) {
+            throw new IllegalStateException("Effect id cannot be resolved");
+        }
+        json.addProperty("effect", effectId.toString());
 
         if (magnitude != 1) {
             json.addProperty("magnitude", magnitude);

@@ -2,88 +2,81 @@ package com.pickaid.mnajs.recipes.builders;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.mna.api.affinity.Affinity;
+import com.pickaid.mnajs.kubejs.id.MnaItemId;
+import com.pickaid.mnajs.kubejs.id.MnaItemOrTag;
 import com.pickaid.mnajs.recipes.builders.base.ItemAndPatternBuilder;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class EldrinAltarBuilder extends ItemAndPatternBuilder {
-    private String data;
-    private final Map<String, Float> powerRequirements = new HashMap<>();
+    private final Map<String, Float> powerRequirements = new LinkedHashMap<>();
     private final int[] colors = new int[]{0, 0};
 
-    @Info("Add an input item / TagKey for the Eldrin Altar recipe using an ResourceLocation")
+    @Info("Add an input item or tag for the Eldrin Altar recipe")
     @Override
-    public EldrinAltarBuilder addItem(ResourceLocation input) {
+    public EldrinAltarBuilder addItem(MnaItemOrTag input) {
         super.addItem(input);
         return this;
     }
 
-    @Info("Add an input item / TagKey for the Eldrin Altar recipe using an Item")
+    @HideFromJS
     @Override
     public EldrinAltarBuilder addItem(Item input) {
         super.addItem(input);
         return this;
     }
 
-    @Info("Add an input item / TagKey for the Eldrin Altar recipe using an String")
+    @HideFromJS
+    @Override
+    public EldrinAltarBuilder addItem(ResourceLocation input) {
+        super.addItem(input);
+        return this;
+    }
+
+    @HideFromJS
     @Override
     public EldrinAltarBuilder addItem(String input) {
         super.addItem(input);
         return this;
     }
 
-    @Info("Add a pattern for the Eldrin Altar recipe")
-    @Override
-    public EldrinAltarBuilder addPattern(ResourceLocation pattern) {
-        super.addPattern(pattern);
-        return this;
-    }
-
-    @Info("Add a pattern for the Eldrin Altar recipe using a string")
-    @Override
-    public EldrinAltarBuilder addPattern(String pattern) {
-        super.addPattern(pattern);
-        return this;
-    }
-
     @Info("Set the output item for the Eldrin Altar recipe")
+    public EldrinAltarBuilder output(MnaItemId output) {
+        this.output = output.location();
+        return this;
+    }
+
+    @HideFromJS
     @Override
     public EldrinAltarBuilder output(ResourceLocation output) {
-        super.output(output);
+        this.output = output;
         return this;
     }
 
-    @Info("Set the output item for the Eldrin Altar recipe using an Item")
-    public EldrinAltarBuilder output(ItemStack output) {
-        this.output = ForgeRegistries.ITEMS.getKey(output.getItem());
-        if (output.getTag() != null) {
-            this.data = output.getTag().getAsString();
-        }
-        return this;
-    }
-
-    @Info("Set the output item for the Eldrin Altar recipe using an Item")
+    @HideFromJS
     public EldrinAltarBuilder output(Item output) {
-        this.output = ForgeRegistries.ITEMS.getKey(output);
-        return this;
+        return output(MnaItemId.parse(output));
     }
 
-    @Info("Set the output item for the Eldrin Altar recipe using a string")
+    @HideFromJS
+    public EldrinAltarBuilder output(ItemStack output) {
+        if (output.getTag() != null && !output.getTag().isEmpty()) {
+            throw new IllegalArgumentException("Tagged Eldrin altar outputs must use outputNBT(...)");
+        }
+        return output(MnaItemId.parse(output));
+    }
+
+    @HideFromJS
     @Override
     public EldrinAltarBuilder output(String output) {
-        super.output(output);
-        return this;
-    }
-
-    public EldrinAltarBuilder outputData(String data) {
-        this.data = data;
-        return this;
+        return output(MnaItemId.parse(output));
     }
 
     @Info("Set the output quantity for the Eldrin Altar recipe")
@@ -106,6 +99,20 @@ public class EldrinAltarBuilder extends ItemAndPatternBuilder {
         return this;
     }
 
+    @HideFromJS
+    public EldrinAltarBuilder addPowerRequirement(Affinity affinity, float amount) {
+        return addPowerRequirement(String.valueOf(affinity), amount);
+    }
+
+    public EldrinAltarBuilder powerRequirement(String affinity, float amount) {
+        return addPowerRequirement(affinity, amount);
+    }
+
+    @HideFromJS
+    public EldrinAltarBuilder powerRequirement(Affinity affinity, float amount) {
+        return addPowerRequirement(affinity, amount);
+    }
+
     @Info("Set the primary color for the Eldrin Altar recipe")
     public EldrinAltarBuilder primaryColor(int color) {
         this.colors[0] = color;
@@ -115,6 +122,12 @@ public class EldrinAltarBuilder extends ItemAndPatternBuilder {
     @Info("Set the secondary color for the Eldrin Altar recipe")
     public EldrinAltarBuilder secondaryColor(int color) {
         this.colors[1] = color;
+        return this;
+    }
+
+    public EldrinAltarBuilder colors(int primary, int secondary) {
+        this.colors[0] = primary;
+        this.colors[1] = secondary;
         return this;
     }
 
@@ -130,7 +143,7 @@ public class EldrinAltarBuilder extends ItemAndPatternBuilder {
 
     @Override
     protected String getRecipeType() {
-        return "mna:eldrin_altar";
+        return "mna:eldrin-altar";
     }
 
     @Info("get the JsonObject for event.custom()")
@@ -148,8 +161,8 @@ public class EldrinAltarBuilder extends ItemAndPatternBuilder {
         }
 
         JsonArray inputs = new JsonArray();
-        for (ResourceLocation input : requiredItems) {
-            inputs.add(input.toString());
+        for (MnaItemOrTag input : requiredItems) {
+            inputs.add(input.scriptValue());
         }
         json.add("inputs", inputs);
 

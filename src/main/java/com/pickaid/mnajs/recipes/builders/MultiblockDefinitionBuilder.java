@@ -74,7 +74,7 @@ public class MultiblockDefinitionBuilder extends MABaseBuilder {
         }
 
         public VariationEntry addReplacement(int x, int y, int z, String blockId) {
-            Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(blockId));
+            Block block = ForgeRegistries.BLOCKS.getValue(ResourceLocation.parse(blockId));
             if (block == null) {
                 throw new IllegalArgumentException("Unknown block: " + blockId);
             }
@@ -155,7 +155,7 @@ public class MultiblockDefinitionBuilder extends MABaseBuilder {
 
     @Info("Set the structure file path for the Multiblock Definition using a string")
     public MultiblockDefinitionBuilder structure(String structure) {
-        return structure(new ResourceLocation(structure));
+        return structure(ResourceLocation.parse(structure));
     }
 
     @Info("Set whether the multiblock is symmetrical (can be rotated)")
@@ -167,8 +167,8 @@ public class MultiblockDefinitionBuilder extends MABaseBuilder {
     @Info("Add a tag entry to the multiblock structure")
     public MultiblockDefinitionBuilder addTag(String block, String tag) {
         this.tags.add(new TagEntry(
-                new ResourceLocation(block),
-                new ResourceLocation(tag)
+                ResourceLocation.parse(block),
+                ResourceLocation.parse(tag)
         ));
         return this;
     }
@@ -184,7 +184,7 @@ public class MultiblockDefinitionBuilder extends MABaseBuilder {
 
     @Info("Add a raw block check to the multiblock structure")
     public MultiblockDefinitionBuilder addRawBlockCheck(String blockId) {
-        this.rawBlockChecks.add(new ResourceLocation(blockId));
+        this.rawBlockChecks.add(ResourceLocation.parse(blockId));
         return this;
     }
 
@@ -196,14 +196,14 @@ public class MultiblockDefinitionBuilder extends MABaseBuilder {
 
     @Info("Add a block matcher by position offset")
     public MultiblockDefinitionBuilder addBlockMatcher(String matcherType, long offset) {
-        this.blockMatchers.add(new BlockMatcherEntry(new ResourceLocation(matcherType), offset));
+        this.blockMatchers.add(new BlockMatcherEntry(ResourceLocation.parse(matcherType), offset));
         return this;
     }
 
     @Info("Add a block matcher by block type")
     public MultiblockDefinitionBuilder addBlockMatcher(String matcherType, Block block) {
         this.blockMatchers.add(new BlockMatcherEntry(
-                new ResourceLocation(matcherType),
+                ResourceLocation.parse(matcherType),
                 ForgeRegistries.BLOCKS.getKey(block)
         ));
         return this;
@@ -212,8 +212,8 @@ public class MultiblockDefinitionBuilder extends MABaseBuilder {
     @Info("Add a block matcher by block identifier")
     public MultiblockDefinitionBuilder addBlockMatcher(String matcherType, String blockId) {
         this.blockMatchers.add(new BlockMatcherEntry(
-                new ResourceLocation(matcherType),
-                new ResourceLocation(blockId)
+                ResourceLocation.parse(matcherType),
+                ResourceLocation.parse(blockId)
         ));
         return this;
     }

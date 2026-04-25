@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.pickaid.mnajs.util.KubeJSCompat;
 import dev.latvian.mods.kubejs.recipe.RecipeJS;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponent;
 import net.minecraft.nbt.CompoundTag;
@@ -38,10 +39,10 @@ public interface ItemStackComponent {
         @Override
         public JsonElement write(RecipeJS recipe, ItemStack value) {
             if (value.getTag() == null) {
-                return new JsonPrimitive(value.getItem().kjs$getId());
+                return new JsonPrimitive(KubeJSCompat.itemIdString(value.getItem()));
             }
             var json = new JsonObject();
-            json.addProperty("item", value.kjs$getIdLocation().toString());
+            json.addProperty("item", KubeJSCompat.itemId(value).toString());
 
             JsonObject data = toJSON(value.getTag());
             json.add("data", data);
@@ -52,13 +53,13 @@ public interface ItemStackComponent {
         @Override
         public ItemStack read(RecipeJS recipe, Object from) {
             if (from instanceof String string) {
-                var item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(string));
+                var item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(string));
                 if (item != null) {
                     return new ItemStack(item);
                 }
             } else if (from instanceof JsonObject object) {
                 if (object.has("item")) {
-                    var item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(object.get("item").getAsString()));
+                    var item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(object.get("item").getAsString()));
                     if (item != null) {
                         ItemStack itemStack = new ItemStack(item);
                         if (object.has("data")) {

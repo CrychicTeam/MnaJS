@@ -1,8 +1,12 @@
 package com.pickaid.mnajs.recipes.builders;
 
 import com.google.gson.JsonObject;
+import com.pickaid.mnajs.kubejs.id.MnaItemOrTag;
+import com.pickaid.mnajs.kubejs.id.MnaManaweavePatternId;
+import com.pickaid.mnajs.kubejs.id.MnaModifierId;
 import com.pickaid.mnajs.recipes.builders.base.ItemAndPatternBuilder;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 
@@ -10,19 +14,26 @@ public class ModifierBuilder extends ItemAndPatternBuilder {
 
     @Info("Add an input item for the Modifier recipe")
     @Override
-    public ModifierBuilder addItem(ResourceLocation item) {
+    public ModifierBuilder addItem(MnaItemOrTag item) {
         super.addItem(item);
         return this;
     }
 
-    @Info("Add an input item for the Modifier recipe using an Item")
+    @HideFromJS
     @Override
     public ModifierBuilder addItem(Item item) {
         super.addItem(item);
         return this;
     }
 
-    @Info("Add an input item for the Modifier recipe using a string")
+    @HideFromJS
+    @Override
+    public ModifierBuilder addItem(ResourceLocation item) {
+        super.addItem(item);
+        return this;
+    }
+
+    @HideFromJS
     @Override
     public ModifierBuilder addItem(String item) {
         super.addItem(item);
@@ -31,34 +42,42 @@ public class ModifierBuilder extends ItemAndPatternBuilder {
 
     @Info("Add a pattern for the Modifier recipe")
     @Override
+    public ModifierBuilder addPattern(MnaManaweavePatternId pattern) {
+        super.addPattern(pattern);
+        return this;
+    }
+
+    @HideFromJS
+    @Override
     public ModifierBuilder addPattern(ResourceLocation pattern) {
         super.addPattern(pattern);
         return this;
     }
 
-    @Info("Add a pattern for the Modifier recipe using a string")
+    @HideFromJS
     @Override
     public ModifierBuilder addPattern(String pattern) {
         super.addPattern(pattern);
         return this;
     }
 
-    @Info("Set the output modifier for the recipe")
+    @HideFromJS
     @Override
     public ModifierBuilder output(ResourceLocation output) {
-        // For modifier recipes, we handle the special namespace behavior
-        if (output.getNamespace().equals("mna") && !output.getPath().startsWith("modifiers/")) {
-            this.output = new ResourceLocation(output.getNamespace(), "modifiers/" + output.getPath());
-        } else {
-            this.output = output;
-        }
+        this.output = output;
         return this;
     }
 
-    @Info("Set the output modifier for the recipe using a string")
+    @Info("Set the output modifier for the recipe")
+    public ModifierBuilder output(MnaModifierId output) {
+        this.output = output.location();
+        return this;
+    }
+
+    @HideFromJS
     @Override
     public ModifierBuilder output(String output) {
-        return output(new ResourceLocation(output));
+        return output(MnaModifierId.parse(output));
     }
 
     @Info("Set the output quantity for the Modifier recipe")

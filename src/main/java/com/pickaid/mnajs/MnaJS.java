@@ -1,22 +1,23 @@
 package com.pickaid.mnajs;
 
-import com.mna.api.capabilities.ChronoAnchorData;
-import net.minecraft.resources.ResourceLocation;
+import com.mojang.logging.LogUtils;
+import com.pickaid.mnajs.kubejs.id.MnaTypedIdPiSerializers;
+import com.pickaid.mnajs.kubejs.probe.MnaJSLegacyProbeCompat;
 import net.minecraftforge.fml.common.Mod;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.minecraftforge.fml.ModList;
+import org.slf4j.Logger;
 
-@Mod(MnaJS.ID)
-public class MnaJS {
-    public static final String ID = "mnajs";
-    public static final Logger LOGGER = LogManager.getLogger();
-    public static ChronoAnchorData ManaManger;
+@Mod(MnaJS.MOD_ID)
+public final class MnaJS {
+    public static final String MOD_ID = "mnajs";
+    public static final String ID = MOD_ID;
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public MnaJS() {
-        ManaManger = new ChronoAnchorData();
-    }
-
-    public static ResourceLocation source(String path) {
-        return new ResourceLocation(MnaJS.ID, path);
+        LOGGER.info("Initializing {}", MOD_ID);
+        MnaTypedIdPiSerializers.bootstrap();
+        if (ModList.get().isLoaded("probejs_legacy")) {
+            MnaJSLegacyProbeCompat.install();
+        }
     }
 }

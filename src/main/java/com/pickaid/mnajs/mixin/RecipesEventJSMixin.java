@@ -1,6 +1,12 @@
 package com.pickaid.mnajs.mixin;
 
-import com.pickaid.mnajs.recipes.schema.*;
+import com.pickaid.mnajs.recipes.schema.ArcaneFurnaceSchema;
+import com.pickaid.mnajs.recipes.schema.EldrinAltarSchema;
+import com.pickaid.mnajs.recipes.schema.FumerFliterSchema;
+import com.pickaid.mnajs.recipes.schema.ManaweaveCacheEffectSchema;
+import com.pickaid.mnajs.recipes.schema.ManaweavingAltarSchema;
+import com.pickaid.mnajs.recipes.schema.ManaweavingPatternSchema;
+import com.pickaid.mnajs.recipes.schema.ProgressionSchema;
 import dev.latvian.mods.kubejs.recipe.NamespaceFunction;
 import dev.latvian.mods.kubejs.recipe.RecipeTypeFunction;
 import dev.latvian.mods.kubejs.recipe.RecipesEventJS;
@@ -17,57 +23,74 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 @Mixin(RecipesEventJS.class)
 public class RecipesEventJSMixin {
+    @Unique
+    private static final List<MnaSchemaAlias> MNA_SCHEMA_ALIASES = List.of(
+            new MnaSchemaAlias("progression-condition", "progression", ProgressionSchema.SCHEMA),
+            new MnaSchemaAlias("manaweaving-recipe", "manaweavingAltar", ManaweavingAltarSchema.SCHEMA),
+            new MnaSchemaAlias("arcane-furnace", "arcaneFurnace", ArcaneFurnaceSchema.SCHEMA),
+            new MnaSchemaAlias("eldrin-altar", "eldrinAltar", EldrinAltarSchema.SCHEMA),
+            new MnaSchemaAlias("eldrin-fume", "eldrinFume", FumerFliterSchema.SCHEMA),
+            new MnaSchemaAlias("manaweaving-pattern", "pattern", ManaweavingPatternSchema.SCHEMA),
+            new MnaSchemaAlias("manaweave-cache-effect", "cacheEffect", ManaweaveCacheEffectSchema.SCHEMA)
+    );
+
     @Final
     @Shadow(remap = false)
     private Map<String, Object> recipeFunctions;
 
     @Inject(method = "<init>", at = @At(value = "RETURN"), remap = false)
+    @SuppressWarnings("unchecked")
     private void mna$injectSchemas(CallbackInfo ci) {
         RecipesEventJS self = (RecipesEventJS) (Object) this;
+        RecipeNamespace namespace = RecipeNamespace.getAll().get("mna");
+        if (namespace == null) {
+            return;
+        }
+
         try {
             Object mnaNamespaceObj = recipeFunctions.get("mna");
-
-            if (mnaNamespaceObj instanceof NamespaceFunction) {
-                NamespaceFunction mnaNamespace = (NamespaceFunction) mnaNamespaceObj;
-                Field mapField = NamespaceFunction.class.getDeclaredField("map");
-                mapField.setAccessible(true);
-                Map<String, RecipeTypeFunction> mnaMap = (Map<String, RecipeTypeFunction>) mapField.get(mnaNamespace);
-                if (mnaMap != null) {
-                    mnaJS$addAliasIfPresent(self, mnaMap, "progression-condition", "progression");
-                    mnaJS$addAliasIfPresent(self, mnaMap, "manaweaving-recipe", "manaweavingAltar");
-                    mnaJS$addAliasIfPresent(self, mnaMap, "arcane-furnace", "arcaneFurnace");
-                    mnaJS$addAliasIfPresent(self, mnaMap, "eldrin-altar", "eldrinAltar");
-                    mnaJS$addAliasIfPresent(self, mnaMap, "eldrin-fume", "eldrinFume");
-                    mnaJS$addAliasIfPresent(self, mnaMap, "manaweaving-pattern", "pattern");
-//                    mnaJS$addAliasIfPresent(self, mnaMap, "manaweave-cache-effect", "cacheEffect");
-                }
+            if (!(mnaNamespaceObj instanceof NamespaceFunction mnaNamespace)) {
+                return;
             }
-        } catch (Exception e) {
-            System.err.println("Failed to inject MNA recipe schema aliases: " + e.getMessage());
-            e.printStackTrace();
+
+            Field mapField = NamespaceFunction.class.getDeclaredField("map");
+            mapField.setAccessible(true);
+            Map<String, RecipeTypeFunction> mnaMap = (Map<String, RecipeTypeFunction>) mapField.get(mnaNamespace);
+            if (mnaMap == null) {
+                return;
+            }
+
+            for (MnaSchemaAlias alias : MNA_SCHEMA_ALIASES) {
+                mnaJS$addAliasIfMissing(self, namespace, mnaMap, alias);
+            }
+        } catch (ReflectiveOperationException exception) {
+            System.err.println("Failed to inject MNA recipe schema aliases: " + exception.getMessage());
+            exception.printStackTrace();
         }
     }
 
     @Unique
-    private void mnaJS$addAliasIfPresent(RecipesEventJS event, Map<String, RecipeTypeFunction> map, String originalKey, String aliasKey) {
-        RecipeSchema schema = switch (originalKey) {
-            case "progression-condition" -> ProgressionSchema.SCHEMA;
-            case "manaweaving-recipe" -> ManaweavingAltarSchema.SCHEMA;
-            case "arcane-furnace" -> ArcaneFurnaceSchema.SCHEMA;
-            case "eldrin-altar" -> EldrinAltarSchema.SCHEMA;
-            case "eldrin-fume" -> FumerFliterSchema.SCHEMA;
-            case "manaweaving-pattern" -> ManaweavingPatternSchema.SCHEMA;
-            case "manaweave-cache-effect" -> ManaweaveCacheEffectSchema.SCHEMA;
-            default -> null;
-        };
-        if (schema == null) return;
-        RecipeSchemaType type = new RecipeSchemaType(RecipeNamespace.getAll().get("mna"), new ResourceLocation("mna:" + originalKey), schema);
-        RecipeTypeFunction function = new RecipeTypeFunction(event, type);
-        map.put(aliasKey, function);
-        recipeFunctions.put("mna:" + aliasKey, function);
+    private void mnaJS$addAliasIfMissing(RecipesEventJS event, RecipeNamespace namespace, Map<String, RecipeTypeFunction> map, MnaSchemaAlias alias) {
+        RecipeTypeFunction function = map.get(alias.aliasKey());
+        if (function == null) {
+            RecipeSchemaType type = new RecipeSchemaType(
+                    namespace,
+                    ResourceLocation.fromNamespaceAndPath("mna", alias.originalKey()),
+                    alias.schema()
+            );
+            function = new RecipeTypeFunction(event, type);
+            map.put(alias.aliasKey(), function);
+        }
+
+        recipeFunctions.putIfAbsent("mna:" + alias.aliasKey(), function);
+    }
+
+    @Unique
+    private record MnaSchemaAlias(String originalKey, String aliasKey, RecipeSchema schema) {
     }
 }

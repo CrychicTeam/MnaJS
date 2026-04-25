@@ -16,7 +16,9 @@ import com.mna.api.spells.parts.SpellEffect;
 import com.mna.api.spells.targeting.SpellContext;
 import com.mna.api.spells.targeting.SpellSource;
 import com.mna.api.spells.targeting.SpellTarget;
+import com.mna.factions.Factions;
 import com.mna.spells.SpellCaster;
+import com.pickaid.mnajs.kubejs.id.MnaFactionId;
 import com.pickaid.mnajs.kubejs.MnaJSPlugin;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
@@ -683,6 +685,12 @@ public class CustomPotionEffectComponent extends SpellEffect {
         @Info("Sets the faction requirement for this spell")
         public Builder factionRequirement(IFaction faction) {
             this.factionRequirement = faction;
+            return this;
+        }
+
+        @Info("Sets the faction requirement for this spell")
+        public Builder factionRequirement(MnaFactionId faction) {
+            this.factionRequirement = Factions.INSTANCE.getFaction(faction.location());
             return this;
         }
 

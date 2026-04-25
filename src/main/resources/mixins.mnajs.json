@@ -1,15 +1,13 @@
 {
-  "required": true,
-  "priority": 800,
+  "required": false,
   "minVersion": "0.8",
   "package": "com.pickaid.mnajs.mixin",
+  "compatibilityLevel": "JAVA_17",
   "refmap": "mnajs.refmap.json",
-  "minVersion": "0.8",
   "mixins": [
     "RecipesEventJSMixin"
   ],
-  "client": [
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }

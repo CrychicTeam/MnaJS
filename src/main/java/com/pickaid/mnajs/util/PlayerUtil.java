@@ -32,7 +32,7 @@ public class PlayerUtil {
 
     @Nullable
     public static IPlayerProgression getProgressionCao(Player player) {
-        AtomicReference<IPlayerProgression> progression = null;
+        AtomicReference<IPlayerProgression> progression = new AtomicReference<>();
         player.getCapability(PlayerProgressionProvider.PROGRESSION).ifPresent(progression::set);
         return progression.get();
     }

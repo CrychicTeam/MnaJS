@@ -1,50 +1,69 @@
 package com.pickaid.mnajs.recipes.builders;
 
 import com.google.gson.JsonObject;
-import com.mna.api.tools.MATags;
+import com.pickaid.mnajs.kubejs.id.MnaItemId;
 import com.pickaid.mnajs.recipes.builders.base.MABaseBuilder;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.ItemStack;
 
 public class CrushingBuilder extends MABaseBuilder {
-    private ResourceLocation inputItem;
-    private ResourceLocation outputItem;
+    private MnaItemId inputItem;
+    private MnaItemId outputItem;
     private int outputQuantity = 1;
 
     @Info("Set the input item for the Crushing recipe")
+    public CrushingBuilder input(MnaItemId input) {
+        this.inputItem = input;
+        return this;
+    }
+
+    @HideFromJS
     public CrushingBuilder input(ResourceLocation input) {
-        this.inputItem = MATags.lookupItem(input).getItem().kjs$getIdLocation();
-        return this;
+        return input(MnaItemId.of(input));
     }
 
-    @Info("Set the input item for the Crushing recipe using an Item")
+    @HideFromJS
     public CrushingBuilder input(Item input) {
-        this.inputItem = ForgeRegistries.ITEMS.getKey(input);
-        return this;
+        return input(MnaItemId.parse(input));
     }
 
-    @Info("Set the input item for the Crushing recipe using a string")
+    @HideFromJS
+    public CrushingBuilder input(ItemStack input) {
+        return input(MnaItemId.parse(input));
+    }
+
+    @HideFromJS
     public CrushingBuilder input(String input) {
-        return input(new ResourceLocation(input));
+        return input(MnaItemId.parse(input));
     }
 
     @Info("Set the output item for the Crushing recipe")
+    public CrushingBuilder output(MnaItemId output) {
+        this.outputItem = output;
+        return this;
+    }
+
+    @HideFromJS
     public CrushingBuilder output(ResourceLocation output) {
-        this.outputItem = MATags.lookupItem(output).getItem().kjs$getIdLocation();
-        return this;
+        return output(MnaItemId.of(output));
     }
 
-    @Info("Set the output item for the Crushing recipe using an Item")
+    @HideFromJS
     public CrushingBuilder output(Item output) {
-        this.outputItem = ForgeRegistries.ITEMS.getKey(output);
-        return this;
+        return output(MnaItemId.parse(output));
     }
 
-    @Info("Set the output item for the Crushing recipe using a string")
+    @HideFromJS
+    public CrushingBuilder output(ItemStack output) {
+        return output(MnaItemId.parse(output));
+    }
+
+    @HideFromJS
     public CrushingBuilder output(String output) {
-        return output(new ResourceLocation(output));
+        return output(MnaItemId.parse(output));
     }
 
     @Info("Set the output quantity for the Crushing recipe")
@@ -60,19 +79,19 @@ public class CrushingBuilder extends MABaseBuilder {
 
         if (inputItem == null) {
             throw new IllegalStateException("Input item cannot be null");
-        } else {
-            json.addProperty("input", inputItem.toString());
         }
+        json.addProperty("input", inputItem.id());
 
         if (outputItem == null) {
             throw new IllegalStateException("Output item cannot be null");
-        } else {
-            json.addProperty("output", outputItem.toString());
         }
+        json.addProperty("output", outputItem.id());
 
-        if (outputQuantity > 0) {
-            json.addProperty("output_quantity", outputQuantity);
+        if (outputQuantity <= 0) {
+            throw new IllegalStateException("Output quantity must be greater than 0");
         }
+        json.addProperty("output_quantity", outputQuantity);
+
         return json;
     }
 }

@@ -31,3 +31,6 @@ bin/
 # fabric
 
 run/
+docs/superpowers
+
+project.local.toml

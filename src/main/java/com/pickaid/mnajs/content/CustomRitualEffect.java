@@ -2,6 +2,7 @@ package com.pickaid.mnajs.content;
 
 import com.mna.api.rituals.IRitualContext;
 import com.mna.api.rituals.RitualEffect;
+import com.pickaid.mnajs.kubejs.id.MnaRitualId;
 import com.pickaid.mnajs.kubejs.MnaJSPlugin;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
@@ -123,7 +124,7 @@ public class CustomRitualEffect extends RitualEffect {
     }
 
     public static class Builder extends BuilderBase<CustomRitualEffect> {
-        private ResourceLocation ritualName = new ResourceLocation("mna", "none");
+        private ResourceLocation ritualName = ResourceLocation.fromNamespaceAndPath("mna", "none");
         private ApplyEffectCallback applyEffect;
         private ApplicationTicksCallback applicationTicks;
         private int defaultApplicationTicks = 0;
@@ -151,6 +152,12 @@ public class CustomRitualEffect extends RitualEffect {
         @Info("Sets the name/identifier for this ritual effect.")
         public Builder ritualName(ResourceLocation name) {
             this.ritualName = name;
+            return this;
+        }
+
+        @Info("Sets the name/identifier for this ritual effect.")
+        public Builder ritualName(MnaRitualId name) {
+            this.ritualName = name.location();
             return this;
         }
 

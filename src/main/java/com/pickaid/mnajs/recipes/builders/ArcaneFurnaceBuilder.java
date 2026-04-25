@@ -1,51 +1,70 @@
 package com.pickaid.mnajs.recipes.builders;
 
 import com.google.gson.JsonObject;
-import com.mna.api.tools.MATags;
+import com.pickaid.mnajs.kubejs.id.MnaItemId;
 import com.pickaid.mnajs.recipes.builders.base.MABaseBuilder;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.world.item.ItemStack;
 
 public class ArcaneFurnaceBuilder extends MABaseBuilder {
-    private ResourceLocation inputItem;
-    private ResourceLocation outputItem;
-    private int burnTime;
+    private MnaItemId inputItem;
+    private MnaItemId outputItem;
+    private Integer burnTime;
     private int outputQuantity = 1;
 
     @Info("Set the input item for the Arcane Furnace recipe")
+    public ArcaneFurnaceBuilder input(MnaItemId input) {
+        this.inputItem = input;
+        return this;
+    }
+
+    @HideFromJS
     public ArcaneFurnaceBuilder input(ResourceLocation input) {
-        this.inputItem = MATags.lookupItem(input).getItem().kjs$getIdLocation();
-        return this;
+        return input(MnaItemId.of(input));
     }
 
-    @Info("Set the input item for the Arcane Furnace recipe using an Item")
+    @HideFromJS
     public ArcaneFurnaceBuilder input(Item input) {
-        this.inputItem = ForgeRegistries.ITEMS.getKey(input);
-        return this;
+        return input(MnaItemId.parse(input));
     }
 
-    @Info("Set the input item for the Arcane Furnace recipe using a string")
+    @HideFromJS
+    public ArcaneFurnaceBuilder input(ItemStack input) {
+        return input(MnaItemId.parse(input));
+    }
+
+    @HideFromJS
     public ArcaneFurnaceBuilder input(String input) {
-        return input(new ResourceLocation(input));
+        return input(MnaItemId.parse(input));
     }
 
     @Info("Set the output item for the Arcane Furnace recipe")
+    public ArcaneFurnaceBuilder output(MnaItemId output) {
+        this.outputItem = output;
+        return this;
+    }
+
+    @HideFromJS
     public ArcaneFurnaceBuilder output(ResourceLocation output) {
-        this.outputItem = MATags.lookupItem(output).getItem().kjs$getIdLocation();
-        return this;
+        return output(MnaItemId.of(output));
     }
 
-    @Info("Set the output item for the Arcane Furnace recipe using an Item")
+    @HideFromJS
     public ArcaneFurnaceBuilder output(Item output) {
-        this.outputItem = ForgeRegistries.ITEMS.getKey(output);
-        return this;
+        return output(MnaItemId.parse(output));
     }
 
-    @Info("Set the output item for the Arcane Furnace recipe using a string")
+    @HideFromJS
+    public ArcaneFurnaceBuilder output(ItemStack output) {
+        return output(MnaItemId.parse(output));
+    }
+
+    @HideFromJS
     public ArcaneFurnaceBuilder output(String output) {
-        return output(new ResourceLocation(output));
+        return output(MnaItemId.parse(output));
     }
 
     @Info("Set the burn time for the Arcane Furnace recipe")
@@ -67,25 +86,23 @@ public class ArcaneFurnaceBuilder extends MABaseBuilder {
 
         if (inputItem == null) {
             throw new IllegalStateException("Input item cannot be null");
-        } else {
-            json.addProperty("input", inputItem.toString());
         }
+        json.addProperty("input", inputItem.id());
 
         if (outputItem == null) {
             throw new IllegalStateException("Output item cannot be null");
-        } else {
-            json.addProperty("output", outputItem.toString());
         }
+        json.addProperty("output", outputItem.id());
 
-        if (burnTime <= 0) {
+        if (burnTime == null || burnTime <= 0) {
             throw new IllegalStateException("Burn time must be greater than 0");
-        } else {
-            json.addProperty("burnTime", burnTime);
         }
+        json.addProperty("burnTime", burnTime);
 
-        if (outputQuantity > 0) {
-            json.addProperty("outputQuantity", outputQuantity);
+        if (outputQuantity <= 0) {
+            throw new IllegalStateException("Output quantity must be greater than 0");
         }
+        json.addProperty("outputQuantity", outputQuantity);
 
         return json;
     }

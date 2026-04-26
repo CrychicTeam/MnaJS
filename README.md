@@ -34,9 +34,10 @@ Verified in this repo:
 
 ## Example Scripts
 
-- Startup examples: `run/client/kubejs/startup_scripts/example.js`
-- Server examples: `run/client/kubejs/server_scripts/example.js`
-- Minimal ritual example: `run/server/kubejs/server_scripts/example.js`
+- Usage notes: `example/README.md`
+- Startup examples: `example/startup_scripts/example.js`
+- Server examples: `example/server_scripts/example.js`
+- Client examples: `example/client_scripts/example.js`
 
 ## Documentation Scope
 

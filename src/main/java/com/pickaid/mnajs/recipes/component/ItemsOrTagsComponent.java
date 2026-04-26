@@ -2,6 +2,7 @@ package com.pickaid.mnajs.recipes.component;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mna.api.tools.MATags;
 import com.mojang.datafixers.util.Either;
@@ -84,6 +85,20 @@ public interface ItemsOrTagsComponent {
             if (from == null) return null;
 
             try {
+                if (from instanceof JsonElement element) {
+                    if (element.isJsonPrimitive()) {
+                        return readSingleItem(element.getAsString());
+                    }
+                    if (element.isJsonObject()) {
+                        JsonObject object = element.getAsJsonObject();
+                        if (object.has("item")) {
+                            return readSingleItem(object.get("item").getAsString());
+                        }
+                        if (object.has("tag")) {
+                            return readSingleItem("#" + object.get("tag").getAsString());
+                        }
+                    }
+                }
                 if (from instanceof String string) {
                     if (string.startsWith("#")) string = string.substring(1);
                     ResourceLocation resourcelocation = ensureNamespace(string);

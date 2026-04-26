@@ -1,0 +1,90 @@
+---
+title: MnaJS KubeJS 支持
+hide_meta: true
+---
+
+# MnaJS KubeJS 支持
+
+最后审阅：2026-04-26
+
+这组参考文档记录当前仓库已经实现的 Mana and Artifice Forge 1.20.1 KubeJS 支持面。
+
+## 适用读者
+
+适合以下场景：
+
+- 编写 M&A 内容的 KubeJS 启动脚本。
+- 使用 `event.recipes.mna` 编写服务端配方。
+- 围绕 M&A 事件编写玩法逻辑。
+- 依赖 ProbeJS 补全和类型化 id。
+
+## 约定
+
+- 优先使用类型化 id 或 id 字符串，避免裸 `Object` 风格输入。
+- 如果需要 Builder 补全，将 Builder 保存在带 JSDoc 类型的本地变量中。
+- 启动期内容放在 `startup_scripts`。
+- 配方和运行时钩子放在 `server_scripts`。
+- 客户端渲染辅助 API 应放在客户端脚本或客户端代码路径。
+
+## Builder 类型标注模式
+
+`event.create(id, type)` 不总是能让补全足够精确。推荐写法：
+
+```js
+/**
+ * @type {Internal.CustomRitualEffect$Builder}
+ */
+const builder = event.create("kubejs:lightning_ritual_effect", "basic");
+
+builder
+    .ritualName("kubejs:lightning_ritual")
+    .applicationTicks(20);
+```
+
+## 文档地图
+
+- [绑定]($reference/mnajs-kubejs/bindings)
+  - `registerBindings` 暴露的 KubeJS 全局变量
+  - 法术常量和回调结果类型
+  - 构装体系统 Java 绑定
+  - 服务端专用和客户端专用绑定
+- [注册]($reference/mnajs-kubejs/registries)
+  - 自定义派系
+  - 仪式效果
+  - 法术效果、伤害组件、药水组件
+  - 形状、修饰符、构装体任务
+  - 构装体材料和构装体部件
+  - 物品和方块
+- [配方]($reference/mnajs-kubejs/recipes)
+  - 当前所有 `event.recipes.mna.*` 链
+  - `MNARecipesHelper`
+  - 多方块定义 helper
+- [事件]($reference/mnajs-kubejs/events)
+  - 启动期事件
+  - 玩家事件
+  - 法术事件
+  - 符文锻造事件
+- [辅助与 Probe]($reference/mnajs-kubejs/helpers-and-probe)
+  - 类型化 id
+  - 试剂和图案 helper
+  - 玩家和世界状态 helper
+  - PiSerializeKit 类型化 id 互操作
+  - ProbeJS 现代版和 Legacy 支持
+  - 图案编辑器文档工具
+
+## 验证状态
+
+这些文档按当前仓库支持面核对，而不是按愿望清单编写。
+
+本轮审阅记录过：
+
+- `./gradlew compileJava`
+- `./gradlew runServer`
+- 启动脚本注册链
+- 服务端配方和事件脚本加载
+
+## 重要限制
+
+- `construct_task` 当前不支持在 JS 中创作全新的原生 `ConstructAITask` 实现。当前支持是元数据加复用已有 AI 类，通过 `basedOn(...)` 或 `aiTask(...)` 完成。
+- `registerGuideBook` 当前暴露的是原始 GuideBook 注册表。深度 GuideBook 页面创作仍由 M&A guidebook JSON 和外部工具驱动。
+- 现代 ProbeJS 和 ProbeJS Legacy 的接入已经安装，但这里记录的是兼容层和生成表面，不表示每个可能的补全分支都已人工测试。

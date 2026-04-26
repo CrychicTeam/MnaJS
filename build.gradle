@@ -176,11 +176,17 @@ dependencies {
     implementation fg.deobf("dev.latvian.mods:rhino-forge:${prop('rhino_version')}")
     implementation fg.deobf("dev.architectury:architectury-forge:${prop('architectury_version')}")
 
+    compileOnly fg.deobf("curse.maven:probejs-585406:${prop('probejs_version')}")
+    runtimeOnly fg.deobf("curse.maven:probejs-585406:${prop('probejs_version')}")
     compileOnly fg.deobf("curse.maven:probejs-legacy-956446:${prop('probejs_legacy_version')}")
     runtimeOnly fg.deobf("curse.maven:probejs-legacy-956446:${prop('probejs_legacy_version')}")
 
     compileOnly fg.deobf("curse.maven:mana-and-artifice-${prop('mna_id')}:${prop('mna_all_id')}")
     runtimeOnly fg.deobf("curse.maven:mana-and-artifice-${prop('mna_id')}:${prop('mna_all_id')}")
+
+    if (project.ext.enabledFeatures.jei) {
+        runtimeOnly fg.deobf("mezz.jei:jei-${prop('mc_version')}-forge:${project.ext.resolvedFeatureVersions.jei}")
+    }
 
     if (hasProp('curios_version')) {
         compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${prop('curios_version')}")

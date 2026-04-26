@@ -9,8 +9,9 @@ import com.pickaid.mnajs.util.KubeJSCompat;
 import dev.latvian.mods.kubejs.recipe.RecipeExceptionJS;
 import dev.latvian.mods.kubejs.recipe.RecipeJS;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponentBuilderMap;
+import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.kubejs.typings.Param;
 import dev.latvian.mods.kubejs.util.TinyMap;
-import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -53,22 +54,31 @@ public abstract class MnaBaseRecipeJS<T extends MnaBaseRecipeJS<T>> extends Reci
     }
 
     @Override
+    public void afterLoaded() {
+        if (!newRecipe) {
+            super.afterLoaded();
+            validateRecipe();
+        }
+    }
+
+    @Override
     public void serialize() {
         validateRecipe();
         super.serialize();
     }
 
+    @Info(value = "Set the Mana and Artifice recipe tier.", params = {
+            @Param(name = "value", value = "Tier number from 1 to 5.")
+    })
     public T tier(int value) {
         return setKey("tier", value);
     }
 
+    @Info(value = "Set the required faction for this recipe.", params = {
+            @Param(name = "value", value = "Faction id such as mna:council.")
+    })
     public T faction(MnaFactionId value) {
         return setKey("requiredFaction", value);
-    }
-
-    @HideFromJS
-    public T faction(String value) {
-        return faction(MnaFactionId.parse(value));
     }
 
     protected final LinkedHashMap<String, Object> editableObject(String key) {

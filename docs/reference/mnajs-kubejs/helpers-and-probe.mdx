@@ -1,0 +1,321 @@
+---
+title: Helpers And Probe
+hide_meta: true
+---
+
+# Helpers And Probe
+
+This page covers typed ids, state helpers, pattern helpers, PiSerializeKit-backed interop, and ProbeJS support.
+
+## Typed Ids
+
+MnaJS favors typed ids and stable string ids over loose `Object` surfaces.
+
+Current typed id family:
+
+| Type | Purpose |
+|---|---|
+| `MnaAdvancementId` | vanilla or modded advancement ids |
+| `MnaProgressionEventId` | M&A progression event ids |
+| `MnaFactionId` | faction ids |
+| `MnaCastingResourceId` | casting resource ids |
+| `MnaConstructMaterialId` | construct material ids |
+| `MnaConstructSlotId` | lower-case construct slot ids such as `head` |
+| `MnaConstructCapabilityId` | lower-case construct capability ids such as `cast_spell` |
+| `MnaMobEffectId` | mob effect ids |
+| `MnaRitualEffectId` | ritual effect ids |
+| `MnaSpellEffectId` | spell component ids |
+| `MnaShapeId` | shape ids |
+| `MnaModifierId` | modifier ids |
+| `MnaConstructTaskId` | construct task ids |
+| `MnaRitualId` | ritual recipe ids |
+| `MnaManaweavePatternId` | manaweave pattern ids |
+| `MnaCantripId` | cantrip ids |
+| `MnaItemId` | item ids |
+| `MnaBlockId` | block ids |
+| `MnaItemOrTag` | item or tag reference |
+| `MnaLootTableId` | loot table ids |
+| `MnaSoundId` | sound ids |
+| `MnaStructureId` | structure ids |
+| `MnaTexture` | texture resource ids |
+
+Guideline:
+
+- If a surface accepts an id type, prefer that typed id or a matching id string.
+- For construct slots and construct capabilities, prefer lower-case strings such as `"head"` and `"cast_spell"`.
+
+## PiSerializeKit Typed-Id Interop
+
+MnaJS also bootstraps typed-id serializers through `MnaTypedIdPiSerializers`.
+
+Current scope:
+
+- resource-location-backed serializers for ids such as advancement, faction, casting resource, ritual, shape, modifier, cantrip, item, block, loot table, sound, structure, and texture
+- string-backed serializers for construct slot ids and construct capability ids
+- shared codec, NBT, and packet support through PiSerializeKit's serializer service
+
+Practical meaning:
+
+- the same typed ids used in KubeJS-facing APIs can be serialized consistently for editor, packet, or stored-document workflows
+- construct slot and construct capability remain lower-case string style at the serialized boundary even though they are wrapped in typed classes on the MnaJS side
+- pattern editor document state is built on the same PiSerializeKit-oriented infrastructure rather than ad-hoc string blobs
+
+## `MnaRitualReagent`
+
+Use this helper for readable ritual reagent definitions.
+
+Core methods:
+
+- `MnaRitualReagent.of(symbol, itemOrTag)`
+- `optional()`
+- `keep()`
+- `manualReturn()`
+- `dynamic()`
+- `dynamicSource()`
+
+Example:
+
+```js
+const reagent = MnaRitualReagent.of("A", "minecraft:amethyst_shard")
+    .optional()
+    .keep();
+```
+
+## `MnaPatternHelper`
+
+Use it for quick creation of ritual, reagent, and manaweave grids.
+
+Available helpers:
+
+- `ritualGrid(size)`
+- `ritualFilled(size, value)`
+- `ritualRows(...rows)`
+- `reagentGrid(size)`
+- `reagentRows(...rows)`
+- `manaweaveGrid()`
+- `manaweaveFilled(value)`
+- `manaweaveRows(...rows)`
+- `filledGrid(rows, columns, value)`
+
+Examples:
+
+```js
+const ritualGrid = MnaPatternHelper.ritualRows("0 1 0", "1 1 1", "0 1 0");
+const reagentGrid = MnaPatternHelper.reagentRows(" A ", "BCD", " A ");
+const manaweaveGrid = MnaPatternHelper.manaweaveGrid();
+```
+
+Notes:
+
+- These helpers are for script ergonomics and examples.
+- They are not a replacement for a proper visual editor.
+- Ritual pattern values use `int`, not `byte`.
+
+## `PlayerMagic`
+
+Binding name: `PlayerMagic`
+
+Use it for M&A player magic state access.
+
+Entry points:
+
+- `PlayerMagic.of(player)`
+- `PlayerMagic.get(player)`
+- `PlayerMagic.raw(player)`
+
+State methods on `PlayerMagicState`:
+
+- `getMana()`
+- `setMana(float)`
+- `addMana(float)`
+- `subtractMana(float)`
+- `getMaxMana()`
+- `getMagicLevel()`
+- `setMagicLevel(int)`
+- `getMagicXP()`
+- `setMagicXP(int)`
+- `addMagicXP(int)`
+- `isMagicUnlocked()`
+- `unlockMagic()`
+- `getAffinityDepth(Affinity)`
+- `setAffinityDepth(Affinity, float)`
+- `getCastingResourceId()`
+- `setCastingResourceId(MnaCastingResourceId)`
+- `getCastingResource()`
+- `getProgression()`
+
+## `PlayerProgression`
+
+Binding name: `PlayerProgression`
+
+Use it for progression and faction-standing state.
+
+Entry point:
+
+- `PlayerProgression.of(player)`
+
+State methods on `PlayerProgressionState`:
+
+- `getTier()`
+- `setTier(int)`
+- `getTierProgress()`
+- `getCompletedSteps()`
+- `hasCompletedStep(MnaProgressionEventId)`
+- `addCompletedStep(MnaProgressionEventId)`
+- `getAlliedFactionId()`
+- `setAlliedFaction(MnaFactionId)`
+- `getFactionStanding()`
+- `setFactionStanding(int)`
+- `increaseFactionStanding(int)`
+- `canBeRaided()`
+- `canBeRaidedBy(MnaFactionId)`
+- `getRelativeRaidStrength(MnaFactionId)`
+- `getRaidChance(MnaFactionId)`
+- `setRaidChance(MnaFactionId, double)`
+- `forceRaid(MnaFactionId)`
+- `hasForcedRaid()`
+- `getForcedRaidFactionId()`
+- `clearForceRaid()`
+
+## `ProgressionEvents`
+
+Binding name: `ProgressionEvents`
+
+Use it for typed built-in progression event constants.
+
+Current built-ins include:
+
+- `CONSTRUCT_LODESTAR_ASSIGNED`
+- `APPLY_POUCH_PATCH`
+- `ELDRIN_FUME_LIT`
+- `STUDY_DESK_USED`
+- `SPELL_AFFINITY_TINKERED`
+- `REMOVE_ENCHANTMENT`
+- `TRANSCRIBE_SPELL`
+- `CAPTURE_WELLSPRING`
+- `OPEN_CACHE`
+- `values()`
+
+## `WorldMagic`
+
+Binding name: `WorldMagic`
+
+Use it for world magic state and wellspring power manipulation.
+
+Entry points:
+
+- `WorldMagic.get(level)`
+- `WorldMagic.of(level)`
+- `WorldMagic.addNode(level, pos, affinity, strength, force)`
+- `WorldMagic.getPower(level, player, affinity)`
+- `WorldMagic.addPower(level, player, affinity, amount)`
+- `WorldMagic.subtractPower(level, player, affinity, amount)`
+- `WorldMagic.setPower(level, player, affinity, amount)`
+
+State methods on `WorldMagicState`:
+
+- `hasWellspringRegistry()`
+- `addNode(...)`
+- `getPower(...)`
+- `addPower(...)`
+- `subtractPower(...)`
+- `setPower(...)`
+
+## General Utility Bindings
+
+These are exposed as direct bindings:
+
+- `CollectionUtils`
+- `MathUtils`
+- `MATags`
+- `BiomeUtils`
+- `ProjectileHelper`
+- `InventoryUtilities`
+- `RecipeUtil`
+
+Good use cases:
+
+- random selection
+- clamping and interpolation
+- tag contents and item-tag comparisons
+- biome enumeration
+- inventory-room checks
+- recipe lookup helpers
+
+## Server-Only Utility Bindings
+
+Only exposed on server scripts:
+
+- `MNARecipesHelper`
+- `ProgressionEventIDs`
+- `StructureUtils`
+- `EntityUtil`
+- `SummonUtils`
+- `ShearHelper`
+- `MnaFactionUtil`
+- `ManaItemUtil`
+- `MnaEntityHelper`
+- `MnaFactionRaidHelper`
+
+Use these for:
+
+- low-level recipe JSON builders
+- structure queries
+- cone-based entity searches
+- summon management
+- shearing checks
+- faction and raid integration
+- mana item charge lookups
+- present-item entity spawning
+
+## Client-Only Utility Bindings
+
+Only exposed on client scripts:
+
+- `WorldRenderUtils`
+- `GuiRenderUtils`
+- `ParticleConfigurations`
+
+These are direct Java-side rendering helpers and should stay on client-side execution paths.
+
+## ProbeJS Support
+
+MnaJS installs compatibility layers for:
+
+- modern ProbeJS through `MnaJSProbeCompat`
+- ProbeJS Legacy through `MnaJSLegacyProbeCompat`
+
+Current Probe support goals:
+
+- typed ids resolve to narrow string unions where possible
+- custom builders and recipe classes are added to exposed Java surfaces
+- snippets are registered for M&A recipe chains
+- modern and legacy ProbeJS both receive MnaJS plugin installation
+
+Practical guidance:
+
+- keep a typed local builder for best completions
+- prefer typed ids and narrow string ids
+- use the generated `Internal.CustomXxx$Builder` builder types in JSDoc when `event.create(...)` alone is not enough
+
+Example typing pattern:
+
+```js
+/**
+ * @type {Internal.CustomConstructMaterial$Builder}
+ */
+const builder = event.create("kubejs:moonsteel", "basic");
+```
+
+## Pattern Editor Documents
+
+Pattern document helpers are exposed through Java utilities rather than plain KubeJS globals, but they are part of the current pattern-editor support layer.
+
+Available document helpers:
+
+- `MnaPatternEditorDocuments.newManaweaveDocument()`
+- `MnaPatternEditorDocuments.newRitualDocument(size)`
+- `MnaPatternEditorDocuments.replaceGrid(document, int[][])`
+- `MnaPatternEditorDocuments.toGrid(document)`
+
+These utilities are backed by the repo's PiSerializeKit-based document state and are intended for editor-oriented tooling rather than everyday handwritten scripts.

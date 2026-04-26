@@ -2,8 +2,10 @@ package com.pickaid.mnajs.recipes.builders;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.pickaid.mnajs.kubejs.id.MnaStructureId;
 import com.pickaid.mnajs.recipes.builders.base.MABaseBuilder;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -148,14 +150,20 @@ public class MultiblockDefinitionBuilder extends MABaseBuilder {
     }
 
     @Info("Set the structure file path for the Multiblock Definition")
+    public MultiblockDefinitionBuilder structure(MnaStructureId structure) {
+        this.structure = structure.location();
+        return this;
+    }
+
+    @HideFromJS
     public MultiblockDefinitionBuilder structure(ResourceLocation structure) {
         this.structure = structure;
         return this;
     }
 
-    @Info("Set the structure file path for the Multiblock Definition using a string")
+    @HideFromJS
     public MultiblockDefinitionBuilder structure(String structure) {
-        return structure(ResourceLocation.parse(structure));
+        return structure(MnaStructureId.parse(structure));
     }
 
     @Info("Set whether the multiblock is symmetrical (can be rotated)")

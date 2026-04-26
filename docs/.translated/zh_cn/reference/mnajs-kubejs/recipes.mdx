@@ -1,0 +1,386 @@
+---
+title: 配方
+hide_meta: true
+---
+
+# 配方
+
+本页记录当前 `event.recipes.mna` 表面，以及用于 `event.custom()` 的底层 `MNARecipesHelper` Builder。
+
+## 通用说明
+
+- 普通 KubeJS 配方优先使用 `event.recipes.mna.*()`。
+- 尽量使用类型化 id 或 id 字符串，不要传裸对象。
+- 支持的 schema 会通过共享基类提供 `tier(...)` 和 `faction(...)`。
+- `MnaRitualReagent` 和 `MnaPatternHelper` 见 [辅助与 Probe]($reference/mnajs-kubejs/helpers-and-probe)。
+
+## Schema 名称与自定义组件
+
+MnaJS 同时注册链式 recipe entry 和底层 schema/component，用于 `event.custom(...)`。
+
+| KubeJS 入口 | 底层类型 |
+|---|---|
+| `ritual()` | `mna:ritual` |
+| `transmutation()` | `mna:transmutation` |
+| `crushing()` | `mna:crushing` |
+| `runeforging()` | `mna:runeforging` |
+| `runescribing()` | `mna:runescribing` |
+| `component()` | `mna:component` |
+| `modifier()` | `mna:modifier` |
+| `shape()` | `mna:shape` |
+| `progression()` | `mna:progression-condition` |
+| `manaweavingAltar()` | `mna:manaweaving-recipe` |
+| `arcaneFurnace()` | `mna:arcane-furnace` |
+| `eldrinAltar()` | `mna:eldrin-altar` |
+| `eldrinFume()` | `mna:eldrin-fume` |
+| `pattern()` | `mna:manaweaving-pattern` |
+| `cacheEffect()` | `mna:manaweave-cache-effect` |
+
+底层 recipe components：
+
+- `mnaAdvancementId`
+- `power_key`
+- `item`
+- `itemStack`
+- `itemOrTagComponent`
+- `itemsOrTagsComponent`
+- `mnaItemId`
+- `mnaBlockId`
+- `mnaItemOrTag`
+- `mnaLootTableId`
+- `mnaFactionId`
+- `mnaCastingResourceId`
+- `mnaMobEffectId`
+- `mnaRitualEffectId`
+- `mnaSpellEffectId`
+- `mnaShapeId`
+- `mnaModifierId`
+- `mnaRitualId`
+- `mnaManaweavePatternId`
+- `mnaCantripId`
+- `mnaSoundId`
+- `mnaStructureId`
+
+## `event.recipes.mna.ritual()`
+
+用于仪式配方，支持链式图案、试剂、输出和颜色设置。
+
+常用方法：
+
+- `pattern(int[][] | rows)`
+- `displayPattern(int[][] | rows)`
+- `reagentRows(...)`
+- `reagent(MnaRitualReagent)`
+- `dynamicReagent(...)`
+- `dynamicSourceReagent(...)`
+- `manualReturnReagent(...)`
+- `manaweavePatterns(...)`
+- `innerColor(long)`
+- `outerColor(long)`
+- `beamColor(long)`
+- `connectBeam(boolean)`
+- `displayIndexes(boolean)`
+- `kittable(boolean)`
+- `outputItem(MnaItemId)`
+- `command(String)`
+
+示例：
+
+```js
+event.recipes.mna
+    .ritual()
+    .tier(1)
+    .patternRows("1")
+    .displayPatternRows("1")
+    .reagentRows("A")
+    .reagent(MnaRitualReagent.of("A", "minecraft:amethyst_shard"))
+    .innerColor(0xffd54f)
+    .outerColor(0xfff176)
+    .beamColor(0xfbc02d)
+    .connectBeam(true)
+    .outputItem("minecraft:lightning_rod")
+    .id("kubejs:lightning_ritual");
+```
+
+说明：
+
+- `outputItem(...)` 是主要输出字段，正常新增仪式应始终设置。
+- 仪式是当前最深的链式配方表面。
+
+## `event.recipes.mna.crushing()`
+
+用于简单粉碎转换。
+
+方法：
+
+- `input(MnaItemId)`
+- `output(MnaItemId)`
+- `outputQuantity(int)`
+
+```js
+event.recipes.mna
+    .crushing()
+    .input("minecraft:amethyst_block")
+    .output("minecraft:amethyst_shard")
+    .outputQuantity(4)
+    .tier(1);
+```
+
+## `event.recipes.mna.arcaneFurnace()`
+
+用于奥术熔炉配方。
+
+方法：
+
+- `input(...)`
+- `output(...)`
+- `burnTime(int)`
+- `outputQuantity(int)`
+
+```js
+event.recipes.mna
+    .arcaneFurnace()
+    .input("minecraft:raw_gold")
+    .output("minecraft:gold_ingot")
+    .burnTime(200)
+    .outputQuantity(1)
+    .tier(1);
+```
+
+## `event.recipes.mna.runeforging()`
+
+用于符文锻造配方。
+
+方法：
+
+- `pattern(MnaItemId)`
+- `material(MnaItemId)`
+- `output(MnaItemId)`
+- `hits(int)`
+- `outputQuantity(int)`
+
+## `event.recipes.mna.runescribing()`
+
+用于符文铭刻配方。
+
+方法：
+
+- `output(MnaItemId)`
+- `hMutex(int)`
+- `vMutex(int)`
+
+```js
+event.recipes.mna
+    .runescribing()
+    .output("minecraft:paper")
+    .hMutex(0b00000000001)
+    .vMutex(0b00000010000)
+    .tier(1);
+```
+
+## `event.recipes.mna.component()`
+
+用于法术组件合成配方。
+
+方法：
+
+- `output(MnaSpellEffectId)`
+- `input(MnaItemOrTag)`
+- `addInput(MnaItemOrTag)`
+- `pattern(MnaManaweavePatternId)`
+- `addPattern(MnaManaweavePatternId)`
+- `outputQuantity(int)`
+
+## `event.recipes.mna.modifier()`
+
+用于修饰符合成配方。
+
+方法：
+
+- `output(MnaModifierId)`
+- `input(...)`
+- `addInput(...)`
+- `pattern(...)`
+- `addPattern(...)`
+- `outputQuantity(int)`
+
+## `event.recipes.mna.shape()`
+
+用于形状合成配方。
+
+方法：
+
+- `output(MnaShapeId)`
+- `input(...)`
+- `addInput(...)`
+- `pattern(...)`
+- `addPattern(...)`
+- `outputQuantity(int)`
+
+## `event.recipes.mna.manaweavingAltar()`
+
+用于法力编织祭坛输出配方。
+
+方法：
+
+- `output(...)`
+- `outputStack(ItemStack)`
+- `inputs(...)`
+- `addInput(...)`
+- `patterns(...)`
+- `addPattern(...)`
+- `enchant(String)`
+- `enchantment(String)`
+- `magnitude(int)`
+- `copyNBT(boolean)`
+- `outputQuantity(int)`
+
+## `event.recipes.mna.progression()`
+
+用于进度条件配方。
+
+方法：
+
+- `advancement(MnaAdvancementId)`
+- `desc(String)`
+- `description(String)`
+- `tier(int)`
+- `faction(MnaFactionId)`
+
+```js
+event.recipes.mna
+    .progression()
+    .advancement("minecraft:story/root")
+    .desc("kubejs.progression.mna_example")
+    .tier(1)
+    .faction("mna:none");
+```
+
+## `event.recipes.mna.transmutation()`
+
+用于方块转化定义。
+
+方法：
+
+- `targetBlock(MnaBlockId)`
+- `replaceBlock(MnaBlockId)`
+- `lootTable(MnaLootTableId)`
+- `representationItem(MnaItemId)`
+
+## `event.recipes.mna.eldrinFume()`
+
+用于 Eldrin 熏烟能量配方。
+
+方法：
+
+- `item(MnaItemOrTag)`
+- `input(MnaItemOrTag)`
+- `powerProvided(String | Affinity, Number)`
+- `affinity(...)`
+- `powerAmount(Number)`
+
+## `event.recipes.mna.eldrinAltar()`
+
+用于带能量需求的 Eldrin 祭坛合成。
+
+方法：
+
+- `output(...)`
+- `outputStack(ItemStack)`
+- `inputs(...)`
+- `addInput(...)`
+- `powerRequirement(Affinity, Number)`
+- `addPowerRequirement(Affinity, Number)`
+- `colors(primary, secondary)`
+- `count(int)`
+
+## `event.recipes.mna.cacheEffect()`
+
+用于法力编织缓存效果配方。
+
+方法：
+
+- `effect(MnaMobEffectId)`
+- `durationMin(int)`
+- `durationMax(int)`
+- `duration(int, int)`
+- `magnitude(int)`
+
+## `event.recipes.mna.pattern()`
+
+用于法力编织图案配方。
+
+方法：
+
+- `pattern(int[][])`
+- `cell(row, column, value)`
+
+```js
+event.recipes.mna
+    .pattern(MnaPatternHelper.manaweaveGrid())
+    .cell(5, 5, 1)
+    .cell(5, 4, 1)
+    .cell(5, 6, 1)
+    .cell(4, 5, 1)
+    .cell(6, 5, 1)
+    .tier(1);
+```
+
+## `MNARecipesHelper`
+
+服务端绑定通过 `MNARecipesHelper` 暴露底层 Builder，用于 `event.custom()`。
+
+可用 helper：
+
+- `ritual`
+- `progression`
+- `crushing`
+- `eldrinAltarBuilder`
+- `fumeFilterBuilder`
+- `manaweavingAltarBuilder`
+- `runeForgingBuilder`
+- `runeScribingBuilder`
+- `arcaneFurnaceBuilder`
+- `transmutationBuilder`
+- `componentBuilder`
+- `modifierBuilder`
+- `shapeBuilder`
+- `manaweavingPatternBuilder`
+- `multiblockDefinitionBuilder`
+
+示例：
+
+```js
+const json = MNARecipesHelper.progression
+    .advancement("minecraft:story/root")
+    .desc("kubejs.progression.mna_example")
+    .tier(1)
+    .faction("mna:none")
+    .build();
+
+event.custom(json);
+```
+
+## `MNARecipesHelper.multiblockDefinitionBuilder`
+
+用于 `mna:multiblock` 定义。
+
+常用方法：
+
+- `structure(MnaStructureId)`
+- `symmetrical(boolean)`
+- `addTag(block, tag)`
+- `addRawBlockCheck(block)`
+- `addBlockMatcher(matcherType, offsetOrBlock)`
+- `createVariation(id)`
+- `addStairsMatcher(Block)`
+- `addStatelessMatcher(Block)`
+- `addChalkMatcher(Block)`
+- `addRefractionLensMatcher(Block)`
+- `addPedestalMatcher(Block)`
+- `build()`
+
+说明：
+
+- 这是当前 MnaJS 内生成多方块 JSON 的文档化路径。
+- `structure(...)` 使用结构 id，不依赖硬编码文件路径。

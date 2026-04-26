@@ -1,5 +1,6 @@
 package com.pickaid.mnajs.kubejs.id;
 
+import com.mna.api.spells.parts.SpellEffect;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Objects;
@@ -17,6 +18,15 @@ public record MnaSpellEffectId(ResourceLocation location) implements MnaTypedId 
     public static MnaSpellEffectId parse(Object value) {
         if (value instanceof MnaSpellEffectId id) {
             return id;
+        }
+        if (value instanceof SpellEffect effect) {
+            try {
+                MnaSpellEffectId wrapped = MnaTypedIdLookups.wrapSpellEffect(effect);
+                if (wrapped != null) {
+                    return wrapped;
+                }
+            } catch (NullPointerException ignored) {
+            }
         }
         return new MnaSpellEffectId(MnaIds.parse(value, "spellEffectId", "mna", null));
     }

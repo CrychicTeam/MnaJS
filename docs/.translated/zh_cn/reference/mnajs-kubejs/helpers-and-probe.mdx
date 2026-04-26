@@ -1,0 +1,295 @@
+---
+title: 辅助与 Probe
+hide_meta: true
+---
+
+# 辅助与 Probe
+
+本页记录类型化 id、状态 helper、图案 helper、PiSerializeKit 互操作和 ProbeJS 支持。
+
+## 类型化 id
+
+MnaJS 优先使用类型化 id 和稳定字符串 id，而不是松散的 `Object` 输入。
+
+当前类型化 id：
+
+| 类型 | 用途 |
+|---|---|
+| `MnaAdvancementId` | 原版或模组进度 id |
+| `MnaProgressionEventId` | M&A 进度事件 id |
+| `MnaFactionId` | 派系 id |
+| `MnaCastingResourceId` | 施法资源 id |
+| `MnaConstructMaterialId` | 构装体材料 id |
+| `MnaConstructSlotId` | 小写构装体槽位 id，例如 `head` |
+| `MnaConstructCapabilityId` | 小写构装体能力 id，例如 `cast_spell` |
+| `MnaMobEffectId` | 药水效果 id |
+| `MnaRitualEffectId` | 仪式效果 id |
+| `MnaSpellEffectId` | 法术组件 id |
+| `MnaShapeId` | 形状 id |
+| `MnaModifierId` | 修饰符 id |
+| `MnaConstructTaskId` | 构装体任务 id |
+| `MnaRitualId` | 仪式配方 id |
+| `MnaManaweavePatternId` | 法力编织图案 id |
+| `MnaCantripId` | cantrip id |
+| `MnaItemId` | 物品 id |
+| `MnaBlockId` | 方块 id |
+| `MnaItemOrTag` | 物品或标签引用 |
+| `MnaLootTableId` | 战利品表 id |
+| `MnaSoundId` | 声音 id |
+| `MnaStructureId` | 结构 id |
+| `MnaTexture` | 贴图资源 id |
+
+规则：
+
+- 如果接口接受某个 id 类型，优先传对应类型化 id 或匹配的字符串 id。
+- 构装体槽位和构装体能力优先使用 `"head"`、`"cast_spell"` 这类小写字符串。
+
+## PiSerializeKit 类型化 id 互操作
+
+MnaJS 通过 `MnaTypedIdPiSerializers` 注册类型化 id 序列化器。
+
+当前范围：
+
+- 基于 `ResourceLocation` 的 id：进度、派系、施法资源、仪式、形状、修饰符、cantrip、物品、方块、战利品表、声音、结构和贴图等。
+- 基于字符串的 id：构装体槽位和构装体能力。
+- 通过 PiSerializeKit serializer service 提供 Codec、NBT 和 packet 支持。
+
+这意味着脚本 API 使用的同一套类型化 id 可以在编辑器、网络包和持久化文档工作流中保持一致。
+
+## `MnaRitualReagent`
+
+用于可读地构造仪式试剂。
+
+核心方法：
+
+- `MnaRitualReagent.of(symbol, itemOrTag)`
+- `optional()`
+- `keep()`
+- `manualReturn()`
+- `dynamic()`
+- `dynamicSource()`
+
+示例：
+
+```js
+const reagent = MnaRitualReagent.of("A", "minecraft:amethyst_shard")
+    .optional()
+    .keep();
+```
+
+## `MnaPatternHelper`
+
+用于快速创建仪式、试剂和法力编织网格。
+
+可用方法：
+
+- `ritualGrid(size)`
+- `ritualFilled(size, value)`
+- `ritualRows(...rows)`
+- `reagentGrid(size)`
+- `reagentRows(...rows)`
+- `manaweaveGrid()`
+- `manaweaveFilled(value)`
+- `manaweaveRows(...rows)`
+- `filledGrid(rows, columns, value)`
+
+示例：
+
+```js
+const ritualGrid = MnaPatternHelper.ritualRows("0 1 0", "1 1 1", "0 1 0");
+const reagentGrid = MnaPatternHelper.reagentRows(" A ", "BCD", " A ");
+const manaweaveGrid = MnaPatternHelper.manaweaveGrid();
+```
+
+说明：
+
+- 这些 helper 主要用于脚本易读性和示例。
+- 它们不是完整可视化编辑器的替代品。
+- 仪式 pattern 值使用 `int`，不是 `byte`。
+
+## `PlayerMagic`
+
+绑定名：`PlayerMagic`
+
+用于访问 M&A 玩家魔法状态。
+
+入口：
+
+- `PlayerMagic.of(player)`
+- `PlayerMagic.get(player)`
+- `PlayerMagic.raw(player)`
+
+`PlayerMagicState` 方法：
+
+- `getMana()`
+- `setMana(float)`
+- `addMana(float)`
+- `subtractMana(float)`
+- `getMaxMana()`
+- `getMagicLevel()`
+- `setMagicLevel(int)`
+- `getMagicXP()`
+- `setMagicXP(int)`
+- `addMagicXP(int)`
+- `isMagicUnlocked()`
+- `unlockMagic()`
+- `getAffinityDepth(Affinity)`
+- `setAffinityDepth(Affinity, float)`
+- `getCastingResourceId()`
+- `setCastingResourceId(MnaCastingResourceId)`
+- `getCastingResource()`
+- `getProgression()`
+
+## `PlayerProgression`
+
+绑定名：`PlayerProgression`
+
+用于访问进度和派系关系状态。
+
+入口：
+
+- `PlayerProgression.of(player)`
+
+`PlayerProgressionState` 方法：
+
+- `getTier()`
+- `setTier(int)`
+- `getTierProgress()`
+- `getCompletedSteps()`
+- `hasCompletedStep(MnaProgressionEventId)`
+- `addCompletedStep(MnaProgressionEventId)`
+- `getAlliedFactionId()`
+- `setAlliedFaction(MnaFactionId)`
+- `getFactionStanding()`
+- `setFactionStanding(int)`
+- `increaseFactionStanding(int)`
+- `canBeRaided()`
+- `canBeRaidedBy(MnaFactionId)`
+- `getRelativeRaidStrength(MnaFactionId)`
+- `getRaidChance(MnaFactionId)`
+- `setRaidChance(MnaFactionId, double)`
+- `forceRaid(MnaFactionId)`
+- `hasForcedRaid()`
+- `getForcedRaidFactionId()`
+- `clearForceRaid()`
+
+## `ProgressionEvents`
+
+绑定名：`ProgressionEvents`
+
+用于内置类型化进度事件常量。
+
+当前内置值包括：
+
+- `CONSTRUCT_LODESTAR_ASSIGNED`
+- `APPLY_POUCH_PATCH`
+- `ELDRIN_FUME_LIT`
+- `STUDY_DESK_USED`
+- `SPELL_AFFINITY_TINKERED`
+- `REMOVE_ENCHANTMENT`
+- `TRANSCRIBE_SPELL`
+- `CAPTURE_WELLSPRING`
+- `OPEN_CACHE`
+- `values()`
+
+## `WorldMagic`
+
+绑定名：`WorldMagic`
+
+用于世界魔法状态和 wellspring 能量操作。
+
+入口：
+
+- `WorldMagic.get(level)`
+- `WorldMagic.of(level)`
+- `WorldMagic.addNode(level, pos, affinity, strength, force)`
+- `WorldMagic.getPower(level, player, affinity)`
+- `WorldMagic.addPower(level, player, affinity, amount)`
+- `WorldMagic.subtractPower(level, player, affinity, amount)`
+- `WorldMagic.setPower(level, player, affinity, amount)`
+
+`WorldMagicState` 方法：
+
+- `hasWellspringRegistry()`
+- `addNode(...)`
+- `getPower(...)`
+- `addPower(...)`
+- `subtractPower(...)`
+- `setPower(...)`
+
+## 通用工具绑定
+
+直接暴露：
+
+- `CollectionUtils`
+- `MathUtils`
+- `MATags`
+- `BiomeUtils`
+- `ProjectileHelper`
+- `InventoryUtilities`
+- `RecipeUtil`
+
+常见用途包括随机选择、数值计算、标签检查、生物群系枚举、库存检查和配方查询。
+
+## 服务端专用工具绑定
+
+只在服务端脚本中暴露：
+
+- `MNARecipesHelper`
+- `ProgressionEventIDs`
+- `StructureUtils`
+- `EntityUtil`
+- `SummonUtils`
+- `ShearHelper`
+- `MnaFactionUtil`
+- `ManaItemUtil`
+- `MnaEntityHelper`
+- `MnaFactionRaidHelper`
+
+用途包括底层配方 JSON、结构查询、实体查询、召唤、剪切、派系、raid 和法力物品查询。
+
+## 客户端专用工具绑定
+
+只在客户端脚本中暴露：
+
+- `WorldRenderUtils`
+- `GuiRenderUtils`
+- `ParticleConfigurations`
+
+这些是客户端渲染 helper，应保留在客户端执行路径。
+
+## ProbeJS 支持
+
+MnaJS 为以下 ProbeJS 版本安装兼容层：
+
+- 现代 ProbeJS：`MnaJSProbeCompat`
+- ProbeJS Legacy：`MnaJSLegacyProbeCompat`
+
+当前目标：
+
+- 类型化 id 尽可能解析为窄字符串联合。
+- 自定义 Builder 和配方类加入暴露 Java 表面。
+- 为 M&A 配方链注册 snippets。
+- 现代版和 Legacy 都安装 MnaJS 插件。
+
+推荐写法：
+
+```js
+/**
+ * @type {Internal.CustomConstructMaterial$Builder}
+ */
+const builder = event.create("kubejs:moonsteel", "basic");
+```
+
+## 图案编辑器文档
+
+图案文档工具通过 Java 工具类暴露，属于当前图案编辑器支持层。
+
+可用方法：
+
+- `MnaPatternEditorDocuments.newManaweaveDocument()`
+- `MnaPatternEditorDocuments.newRitualDocument(size)`
+- `MnaPatternEditorDocuments.replaceGrid(document, int[][])`
+- `MnaPatternEditorDocuments.toGrid(document)`
+
+这些工具面向编辑器和 toolkit，而不是普通手写脚本。

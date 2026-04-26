@@ -1,0 +1,26 @@
+{
+  "overview.mdx": {
+    "name": "Overview",
+    "icon": "BookOpen"
+  },
+  "bindings.mdx": {
+    "name": "Bindings",
+    "icon": "Cable"
+  },
+  "registries.mdx": {
+    "name": "Registries",
+    "icon": "PackagePlus"
+  },
+  "recipes.mdx": {
+    "name": "Recipes",
+    "icon": "ScrollText"
+  },
+  "events.mdx": {
+    "name": "Events",
+    "icon": "RadioTower"
+  },
+  "helpers-and-probe.mdx": {
+    "name": "Helpers And Probe",
+    "icon": "WandSparkles"
+  }
+}

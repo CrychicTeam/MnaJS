@@ -6,6 +6,7 @@ import com.pickaid.mnajs.kubejs.id.MnaItemId;
 import com.pickaid.mnajs.kubejs.id.MnaItemOrTag;
 import com.pickaid.mnajs.kubejs.id.MnaManaweavePatternId;
 import com.pickaid.mnajs.kubejs.pattern.MnaPatternHelper;
+import com.pickaid.mnajs.kubejs.recipe.MnaRitualReagent;
 import com.pickaid.mnajs.recipes.builders.base.MABaseBuilder;
 import dev.latvian.mods.kubejs.typings.Info;
 import dev.latvian.mods.rhino.util.HideFromJS;
@@ -45,6 +46,15 @@ public class RitualRecipeBuilder extends MABaseBuilder {
 
         public ReagentInfo(MnaItemOrTag item) {
             this.item = Objects.requireNonNull(item, "item");
+        }
+
+        public ReagentInfo(MnaRitualReagent reagent) {
+            this(Objects.requireNonNull(reagent, "reagent").item());
+            this.optional = reagent.isOptional();
+            this.consume = reagent.consumes();
+            this.dynamic = reagent.isDynamic();
+            this.dynamicSource = reagent.isDynamicSource();
+            this.manualReturn = reagent.isManualReturn();
         }
 
         public ReagentInfo optional(boolean value) {
@@ -126,28 +136,40 @@ public class RitualRecipeBuilder extends MABaseBuilder {
     }
 
     @Info("The method that is mandatory to set the key of the reagents")
+    public RitualRecipeBuilder reagent(MnaRitualReagent reagent) {
+        return putReagent(reagent);
+    }
+
+    @HideFromJS
     public RitualRecipeBuilder reagent(char key, MnaItemOrTag item) {
-        return putReagent(key, item, false, true, false, false, false);
+        return reagent(new MnaRitualReagent(key, item));
     }
 
-    @Info("The method that is mandatory to set the key of the reagents with options")
+    @HideFromJS
     public RitualRecipeBuilder reagent(char key, MnaItemOrTag item, boolean optional, boolean consume) {
-        return putReagent(key, item, optional, consume, false, false, false);
+        MnaRitualReagent reagent = new MnaRitualReagent(key, item);
+        if (optional) {
+            reagent.optional();
+        }
+        if (!consume) {
+            reagent.keep();
+        }
+        return reagent(reagent);
     }
 
-    @Info("The method that is mandatory to set the key of the reagents with dynamic source")
+    @HideFromJS
     public RitualRecipeBuilder dynamicSourceReagent(char key, MnaItemOrTag item) {
-        return putReagent(key, item, false, true, false, false, true);
+        return reagent(new MnaRitualReagent(key, item).dynamicSource());
     }
 
-    @Info("The method that is mandatory to set the key of the reagents with dynamic boolean")
+    @HideFromJS
     public RitualRecipeBuilder dynamicReagent(char key, MnaItemOrTag item) {
-        return putReagent(key, item, false, true, false, true, false);
+        return reagent(new MnaRitualReagent(key, item).dynamic());
     }
 
-    @Info("The method that is mandatory to set the key of the reagents with manual return")
+    @HideFromJS
     public RitualRecipeBuilder manualReturnReagent(char key, MnaItemOrTag item) {
-        return putReagent(key, item, false, true, true, false, false);
+        return reagent(new MnaRitualReagent(key, item).manualReturn());
     }
 
     @HideFromJS
@@ -396,7 +418,7 @@ public class RitualRecipeBuilder extends MABaseBuilder {
             JsonObject reagentObject = new JsonObject();
             ReagentInfo reagent = entry.getValue();
 
-            reagentObject.addProperty("item", reagent.item.scriptValue());
+            reagentObject.addProperty("item", reagent.item.recipeValue());
             if (reagent.optional) {
                 reagentObject.addProperty("optional", true);
             }
@@ -465,17 +487,13 @@ public class RitualRecipeBuilder extends MABaseBuilder {
         return json;
     }
 
-    private RitualRecipeBuilder putReagent(char key, MnaItemOrTag item, boolean optional, boolean consume, boolean manualReturn, boolean dynamic, boolean dynamicSource) {
+    private RitualRecipeBuilder putReagent(MnaRitualReagent reagent) {
+        char key = reagent.symbolChar();
         if (Character.isWhitespace(key)) {
             throw new IllegalArgumentException("Reagent key cannot be whitespace");
         }
 
-        reagentMap.put(key, new ReagentInfo(item)
-                .optional(optional)
-                .consume(consume)
-                .manualReturn(manualReturn)
-                .dynamic(dynamic)
-                .dynamicSource(dynamicSource));
+        reagentMap.put(key, new ReagentInfo(reagent));
         return this;
     }
 

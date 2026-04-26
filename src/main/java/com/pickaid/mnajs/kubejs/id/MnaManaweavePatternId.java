@@ -5,9 +5,18 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.Objects;
 
 public record MnaManaweavePatternId(ResourceLocation location) implements MnaTypedId {
+    private static final String LEGACY_RECIPE_PATH = "manaweave_patterns/";
+
     public MnaManaweavePatternId {
         Objects.requireNonNull(location, "location");
-        location = MnaIds.normalize(location, "mna", "manaweave_patterns");
+        location = MnaIds.normalize(location, "mna", null);
+        String path = location.getPath();
+        if (path.startsWith(LEGACY_RECIPE_PATH)) {
+            location = ResourceLocation.fromNamespaceAndPath(
+                    location.getNamespace(),
+                    path.substring(LEGACY_RECIPE_PATH.length())
+            );
+        }
     }
 
     public static MnaManaweavePatternId of(ResourceLocation location) {
@@ -18,7 +27,19 @@ public record MnaManaweavePatternId(ResourceLocation location) implements MnaTyp
         if (value instanceof MnaManaweavePatternId id) {
             return id;
         }
-        return new MnaManaweavePatternId(MnaIds.parse(value, "manaweavePatternId", "mna", "manaweave_patterns"));
+        return new MnaManaweavePatternId(MnaIds.parse(value, "manaweavePatternId", "mna", null));
+    }
+
+    public ResourceLocation recipeLocation() {
+        String path = location.getPath();
+        if ("mna".equals(location.getNamespace()) && !path.startsWith(LEGACY_RECIPE_PATH)) {
+            return ResourceLocation.fromNamespaceAndPath(location.getNamespace(), LEGACY_RECIPE_PATH + path);
+        }
+        return location;
+    }
+
+    public String recipeId() {
+        return recipeLocation().toString();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.pickaid.mnajs.recipes.component;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mna.api.tools.MATags;
 import com.mojang.datafixers.util.Either;
@@ -35,6 +36,20 @@ public interface ItemOrTagComponent {
 
         @Override
         public Either<TagKey<Item>, Item> read(RecipeJS recipe, Object from) {
+            if (from instanceof JsonElement element) {
+                if (element.isJsonPrimitive()) {
+                    return read(recipe, element.getAsString());
+                }
+                if (element.isJsonObject()) {
+                    JsonObject object = element.getAsJsonObject();
+                    if (object.has("item")) {
+                        return read(recipe, object.get("item").getAsString());
+                    }
+                    if (object.has("tag")) {
+                        return read(recipe, "#" + object.get("tag").getAsString());
+                    }
+                }
+            }
             ResourceLocation resourceLocation = null;
             if (from instanceof String string) {
                 if (string.startsWith("#")) string = string.substring(1);

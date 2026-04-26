@@ -1,17 +1,25 @@
 package com.pickaid.mnajs.kubejs.events.startup;
 
 import com.mna.api.cantrips.ICantrip;
+import com.mna.api.capabilities.IPlayerCantrip;
+import com.mna.api.capabilities.IPlayerCantrips;
+import com.mna.api.capabilities.IPlayerMagic;
 import com.mna.api.sound.SFX;
 import com.mna.api.timing.DelayedEventQueue;
 import com.mna.api.timing.TimedDelayedEvent;
-import com.mna.cantrips.Cantrip;
 import com.mna.cantrips.CantripRegistry;
 import com.pickaid.mnajs.MnaJS;
+import com.pickaid.mnajs.kubejs.id.MnaAdvancementId;
 import com.pickaid.mnajs.kubejs.id.MnaCantripId;
+import com.pickaid.mnajs.kubejs.id.MnaItemId;
 import com.pickaid.mnajs.kubejs.id.MnaManaweavePatternId;
+import com.pickaid.mnajs.kubejs.id.MnaSoundId;
+import com.pickaid.mnajs.kubejs.id.MnaTypedIdLookups;
 import com.pickaid.mnajs.kubejs.texture.MnaTexture;
+import com.pickaid.mnajs.util.PlayerUtil;
 import dev.latvian.mods.kubejs.event.EventJS;
-import dev.latvian.mods.rhino.util.HideFromJS;
+import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.kubejs.typings.Param;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
@@ -21,18 +29,17 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.tuple.Triple;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Function;
 
 public class CantripRegistrationEventJS extends EventJS {
+    private static final Map<ResourceLocation, Function<Player, ItemStack>> DYNAMIC_ITEM_PROVIDERS = new HashMap<>();
+
+    @Info(value = "Create a cantrip builder for the provided id.", params = {
+            @Param(name = "id", value = "Cantrip id such as kubejs:flare_orb.")
+    })
     public CantripBuilder create(MnaCantripId id) {
         return new CantripBuilder(id.location());
-    }
-
-    @HideFromJS
-    public CantripBuilder create(String id) {
-        return create(MnaCantripId.parse(id));
     }
 
     public static class CantripBuilder {
@@ -51,88 +58,114 @@ public class CantripRegistrationEventJS extends EventJS {
             this.id = id;
         }
 
+        @Info(value = "Set the cantrip tier shown by Mana and Artifice.", params = {
+                @Param(name = "tier", value = "Numeric progression tier for this cantrip.")
+        })
         public CantripBuilder tier(int tier) {
             this.tier = tier;
             return this;
         }
 
+        @Info(value = "Set the delay in ticks before the cantrip effect resolves.", params = {
+                @Param(name = "delay", value = "Tick delay before the cantrip fires.")
+        })
         public CantripBuilder delay(int delay) {
             this.delay = delay;
             return this;
         }
 
-        public CantripBuilder requiredAdvancement(String advancement) {
-            this.requiredAdvancement = ResourceLocation.parse(advancement);
+        @Info(value = "Set the advancement required before this cantrip can be used.", params = {
+                @Param(name = "advancement", value = "Advancement id such as mna:tier_1/cast_flare_cantrip.")
+        })
+        public CantripBuilder requiredAdvancement(MnaAdvancementId advancement) {
+            this.requiredAdvancement = advancement.location();
             return this;
         }
 
-        public CantripBuilder sound(SoundEvent sound) {
-            this.soundEffect = sound;
+        @Info(value = "Set the sound played by this cantrip.", params = {
+                @Param(name = "sound", value = "Sound id such as mna:cast_arcane.")
+        })
+        public CantripBuilder sound(MnaSoundId sound) {
+            this.soundEffect = MnaTypedIdLookups.requireSound(sound, "sound");
             return this;
         }
 
+        @Info(value = "Set the icon texture used by this cantrip.", params = {
+                @Param(name = "icon", value = "Texture id such as mna:textures/gui/guide_book.png.")
+        })
         public CantripBuilder icon(MnaTexture icon) {
             this.icon = icon.location();
             return this;
         }
 
+        @Info(value = "Append one manaweave pattern to this cantrip.", params = {
+                @Param(name = "pattern", value = "Manaweave pattern recipe id such as built-in mna:manaweave_patterns/circle or custom kubejs:circle.")
+        })
         public CantripBuilder addPattern(MnaManaweavePatternId pattern) {
-            this.pattern.add(pattern.location());
+            this.pattern.add(pattern.recipeLocation());
             return this;
         }
 
+        @Info(value = "Replace the full manaweave pattern list for this cantrip.", params = {
+                @Param(name = "patterns", value = "One or more manaweave pattern ids in the order MNA expects them.")
+        })
         public CantripBuilder pattern(MnaManaweavePatternId... patterns) {
             this.pattern = Arrays.stream(patterns)
-                    .map(MnaManaweavePatternId::location)
-                    .toList();
+                    .map(MnaManaweavePatternId::recipeLocation)
+                    .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
             return this;
         }
 
-        @HideFromJS
-        public CantripBuilder icon(String icon) {
-            return icon(MnaTexture.parse(icon));
-        }
-
-        @HideFromJS
-        public CantripBuilder addPattern(String pattern) {
-            return addPattern(MnaManaweavePatternId.parse(pattern));
-        }
-
-        @HideFromJS
-        public CantripBuilder pattern(ResourceLocation... patterns) {
-            this.pattern = Arrays.asList(patterns);
+        @Info(value = "Set the spell item displayed or granted by this cantrip.", params = {
+                @Param(name = "spellStack", value = "Item id used as the cantrip's spell stack.")
+        })
+        public CantripBuilder spellStack(MnaItemId spellStack) {
+            this.spellStack = MnaTypedIdLookups.stack(spellStack, "spellStack");
             return this;
         }
 
-        public CantripBuilder spellStack(ItemStack spellStack) {
-            this.spellStack = spellStack;
+        @Info(value = "Set a fixed dynamic item for this cantrip.", params = {
+                @Param(name = "item", value = "Item id returned by the cantrip's dynamic item provider.")
+        })
+        public CantripBuilder dynamicItem(MnaItemId item) {
+            Item resolved = MnaTypedIdLookups.requireItem(item, "dynamicItem");
+            this.dynamicItemProvider = player -> new ItemStack(resolved);
             return this;
         }
 
-        public CantripBuilder dynamicItem(@Nullable Item item) {
-            if (item == null) {
-                this.dynamicItemProvider = null;
-            } else {
-                this.dynamicItemProvider = (player) -> new ItemStack(item);
-            }
+        @Info("Clear the dynamic item provider so this cantrip no longer exposes a dynamic item.")
+        public CantripBuilder clearDynamicItem() {
+            this.dynamicItemProvider = null;
             return this;
         }
 
+        @Info(value = "Set a fully custom dynamic item provider.", params = {
+                @Param(name = "provider", value = "Callback returning the ItemStack shown for this cantrip.")
+        })
         public CantripBuilder dynamicItemProvider(Function<Player, ItemStack> provider) {
             this.dynamicItemProvider = provider;
             return this;
         }
 
+        @Info(value = "Set an immediate cantrip effect callback.", params = {
+                @Param(name = "effector", value = "Callback executed as soon as the cantrip resolves.")
+        })
         public CantripBuilder effect(CantripEffector effector) {
             this.effectorHandler = new EffectorHandler(effector, null, false);
             return this;
         }
 
+        @Info(value = "Set a delayed cantrip effect callback.", params = {
+                @Param(name = "delayedEffector", value = "Callback executed by the delayed event queue after the configured delay.")
+        })
         public CantripBuilder delayedEffect(DelayedCantripEffector delayedEffector) {
             this.effectorHandler = new EffectorHandler(null, delayedEffector, false);
             return this;
         }
 
+        @Info(value = "Use one of Mana and Artifice's built-in cantrip effects.", params = {
+                @Param(name = "name", value = "Built-in name such as firework, gust, ascend, dispel, drought, ward, reveal_ward, summon_grimoire, summon_faction_grimoire, or apply_spell.")
+        })
         public CantripBuilder builtInEffect(String name) {
             switch (name.toLowerCase()) {
                 case "firework":
@@ -172,16 +205,17 @@ public class CantripRegistrationEventJS extends EventJS {
             return this;
         }
 
+        @Info("Register this cantrip with Mana and Artifice and return the created cantrip instance.")
         public ICantrip register() {
             if (icon == null) {
                 MnaJS.LOGGER.warn("Cantrip " + id + " has no icon set. Using default.");
-                icon = ResourceLocation.parse("mna:textures/gui/cantrips/default.png");
+                icon = ResourceLocation.fromNamespaceAndPath("mna", "textures/gui/cantrips/default.png");
             }
 
             if (pattern.isEmpty()) {
                 MnaJS.LOGGER.warn("Cantrip " + id + " has no pattern set. Using default pattern.");
-                pattern.add(ResourceLocation.parse("mna:manaweave_patterns/circle"));
-                pattern.add(ResourceLocation.parse("mna:manaweave_patterns/square"));
+                pattern.add(ResourceLocation.fromNamespaceAndPath("mna", "manaweave_patterns/circle"));
+                pattern.add(ResourceLocation.fromNamespaceAndPath("mna", "manaweave_patterns/square"));
             }
 
             ResourceLocation[] patternArray = pattern.toArray(new ResourceLocation[0]);
@@ -192,6 +226,7 @@ public class CantripRegistrationEventJS extends EventJS {
 
             org.apache.logging.log4j.util.TriConsumer<Player, ICantrip, InteractionHand> finalEffector =
                     (player, cantrip, hand) -> {
+                        syncDynamicItem(player, cantrip);
                         if (finalHandler.isBuiltIn) {
                             if (finalHandler.immediateEffector != null) {
                                 finalHandler.immediateEffector.accept(player, cantrip, hand);
@@ -233,16 +268,9 @@ public class CantripRegistrationEventJS extends EventJS {
 
             if (dynamicItemProvider != null) {
                 cantrip.dynamicItem(null);
-
-                try {
-                    if (cantrip instanceof Cantrip cantripImpl) {
-                        java.lang.reflect.Field providerField = Cantrip.class.getDeclaredField("dynamicItemProvider");
-                        providerField.setAccessible(true);
-                        providerField.set(cantripImpl, dynamicItemProvider);
-                    }
-                } catch (Exception e) {
-                    MnaJS.LOGGER.error("Failed to set dynamic item provider for cantrip: " + id, e);
-                }
+                DYNAMIC_ITEM_PROVIDERS.put(id, dynamicItemProvider);
+            } else {
+                DYNAMIC_ITEM_PROVIDERS.remove(id);
             }
 
             MnaJS.LOGGER.info("Registered custom cantrip: " + id);
@@ -250,10 +278,13 @@ public class CantripRegistrationEventJS extends EventJS {
         }
     }
 
+    @Info(value = "Remove an existing cantrip from the registry.", params = {
+            @Param(name = "cantripId", value = "Cantrip id to remove.")
+    })
     public boolean removeCantrip(MnaCantripId cantripId) {
         try {
             ResourceLocation targetId = cantripId.location();
-            Field cantripsField = CantripRegistry.class.getDeclaredField("cantrips");
+            java.lang.reflect.Field cantripsField = CantripRegistry.class.getDeclaredField("cantrips");
             cantripsField.setAccessible(true);
 
             @SuppressWarnings("unchecked")
@@ -277,6 +308,7 @@ public class CantripRegistrationEventJS extends EventJS {
             }
 
             if (removed) {
+                DYNAMIC_ITEM_PROVIDERS.remove(targetId);
                 MnaJS.LOGGER.info("Successfully removed cantrip: " + cantripId);
                 return true;
             } else {
@@ -287,11 +319,6 @@ public class CantripRegistrationEventJS extends EventJS {
             MnaJS.LOGGER.error("Error removing cantrip " + cantripId, e);
             return false;
         }
-    }
-
-    @HideFromJS
-    public boolean removeCantrip(String cantripId) {
-        return removeCantrip(MnaCantripId.parse(cantripId));
     }
 
     private static class EffectorHandler {
@@ -307,12 +334,58 @@ public class CantripRegistrationEventJS extends EventJS {
     }
 
     @FunctionalInterface
+    @Info("Immediate cantrip callback receiving the player, registered cantrip, and hand used.")
     public interface CantripEffector {
         void accept(Player player, ICantrip cantrip, InteractionHand hand);
     }
 
     @FunctionalInterface
+    @Info("Delayed cantrip callback receiving the queued id and the stored player/cantrip/hand triple.")
     public interface DelayedCantripEffector {
         void apply(String id, Triple<Player, ICantrip, InteractionHand> data);
+    }
+
+    private static void syncDynamicItem(Player player, ICantrip cantrip) {
+        if (player == null || cantrip == null) {
+            return;
+        }
+
+        Function<Player, ItemStack> provider = DYNAMIC_ITEM_PROVIDERS.get(cantrip.getId());
+        if (provider == null) {
+            return;
+        }
+
+        ItemStack stack;
+        try {
+            stack = provider.apply(player);
+        } catch (RuntimeException exception) {
+            MnaJS.LOGGER.error("Dynamic item provider failed for cantrip {}", cantrip.getId(), exception);
+            return;
+        }
+
+        if (stack == null) {
+            stack = ItemStack.EMPTY;
+        } else {
+            stack = stack.copy();
+        }
+
+        IPlayerMagic magic = PlayerUtil.raw(player);
+        if (magic == null) {
+            return;
+        }
+
+        IPlayerCantrips cantrips = magic.getCantripData();
+        if (cantrips == null) {
+            return;
+        }
+
+        Optional<IPlayerCantrip> playerCantrip = cantrips.getCantrip(cantrip.getId());
+        if (playerCantrip.isEmpty()) {
+            return;
+        }
+
+        playerCantrip.get().setStack(stack);
+        cantrips.setNeedsSync();
+        magic.setSyncGrimoire();
     }
 }

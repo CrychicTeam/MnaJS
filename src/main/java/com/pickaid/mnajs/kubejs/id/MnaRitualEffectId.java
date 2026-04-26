@@ -1,5 +1,6 @@
 package com.pickaid.mnajs.kubejs.id;
 
+import com.mna.api.rituals.RitualEffect;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Objects;
@@ -17,6 +18,15 @@ public record MnaRitualEffectId(ResourceLocation location) implements MnaTypedId
     public static MnaRitualEffectId parse(Object value) {
         if (value instanceof MnaRitualEffectId id) {
             return id;
+        }
+        if (value instanceof RitualEffect effect) {
+            try {
+                MnaRitualEffectId wrapped = MnaTypedIdLookups.wrapRitualEffect(effect);
+                if (wrapped != null) {
+                    return wrapped;
+                }
+            } catch (NullPointerException ignored) {
+            }
         }
         return new MnaRitualEffectId(MnaIds.parse(value, "ritualEffectId", "mna", null));
     }

@@ -1,0 +1,234 @@
+---
+title: MnaJS KubeJS 支持
+hide_meta: true
+---
+
+# MnaJS KubeJS 支持
+
+MnaJS 是面向 Forge 1.20.1 的 Mana and Artifice KubeJS 扩展层。它的目标是让 M&A 内容可以用接近原生 KubeJS 的方式编写：使用类型化 id、ProbeJS 友好的 Builder、链式配方，以及服务端和运行时辅助 API，而不是让脚本作者直接处理零散的 Java 互操作细节。
+
+这篇是对外展示用概览。完整参考文档见 [MnaJS KubeJS 参考]($reference/mnajs-kubejs/overview)。
+
+## 提供的能力
+
+MnaJS 当前提供：
+
+- 启动期注册：M&A 派系、仪式效果、法术组件、形状、修饰符、构装体任务、构装体材料、构装体部件、法力物品，以及 M&A 感知方块。
+- 服务端配方链：仪式、转化、粉碎、符文锻造、符文铭刻、组件、修饰符、形状、进度、法力编织祭坛、奥术熔炉、Eldrin 祭坛、Eldrin 熏烟、法力编织缓存效果、法力编织图案。
+- 启动期和服务端事件：GuideBook 注册、Cantrip 注册、玩家魔法进度、施法、仪式完成、流浪巫师交易、符文锻造钩子。
+- 类型化 id 和包装器：派系、仪式、法术效果、形状、修饰符、构装体任务、构装体材料、构装体槽位、构装体能力、cantrip、结构、声音、战利品表、贴图等资源。
+- 辅助绑定：玩家魔法状态、玩家进度状态、世界魔法状态、仪式试剂、图案网格，以及底层配方 JSON 生成。
+- ProbeJS 和 ProbeJS Legacy 集成：Builder 类型、类型化 id 补全、代码片段和生成的 Java 表面。
+- 基于 PiSerializeKit 的类型化 id 序列化器：用于编辑器、网络包、Codec 和持久化文档工作流。
+
+## 启动期内容
+
+启动脚本可以通过 KubeJS 注册表注册新的 M&A 内容：
+
+- `mna:factions`
+- `mna:ritual-effects`
+- `mna:components`
+- `mna:shapes`
+- `mna:modifiers`
+- `mna:construct_task`
+- `mnajs:construct_material`
+- `item` 类型 `construct_part`、`mana_battery_item`、`tiered_item`
+- `block` 类型 `spell_interactible`、`manaweave_notifiable`
+
+推荐写法是类型化、链式的：
+
+```js
+StartupEvents.registry("mna:ritual-effects", (event) => {
+    /**
+     * @type {Internal.CustomRitualEffect$Builder}
+     */
+    const builder = event.create("kubejs:lightning_ritual_effect", "basic");
+
+    builder
+        .ritualName("kubejs:lightning_ritual")
+        .applicationTicks(20)
+        .applyEffect((context) => {
+            const level = context.getLevel();
+            if (level == null) return false;
+            const lightning = EntityType.LIGHTNING_BOLT.create(level);
+            if (lightning == null) return false;
+            lightning.setPos(context.getCenter().x, context.getCenter().y, context.getCenter().z);
+            level.addFreshEntity(lightning);
+            return true;
+        });
+});
+```
+
+显式写出 `Internal.CustomXxx$Builder` 的本地变量类型是推荐用法。`event.create(id, type)` 本身不一定能让 ProbeJS 完整收窄类型，而这个写法可以让 Builder 方法、参数和回调获得更稳定的补全。
+
+## 配方链
+
+MnaJS 通过 `event.recipes.mna.*()` 暴露配方链，避免脚本作者为常见场景手写完整 JSON。
+
+仪式配方示例：
+
+```js
+ServerEvents.recipes((event) => {
+    event.recipes.mna
+        .ritual()
+        .tier(1)
+        .patternRows("1")
+        .displayPatternRows("1")
+        .reagentRows("A")
+        .reagent(MnaRitualReagent.of("A", "minecraft:amethyst_shard"))
+        .innerColor(0xffd54f)
+        .outerColor(0xfff176)
+        .beamColor(0xfbc02d)
+        .connectBeam(true)
+        .outputItem("minecraft:lightning_rod")
+        .id("kubejs:lightning_ritual");
+});
+```
+
+已覆盖的配方组：
+
+- 仪式配方：图案网格、展示网格、试剂网格、颜色、法力编织图案需求、命令和输出物品。
+- 物品转换配方：粉碎、奥术熔炉等。
+- 符文锻造和符文铭刻配方。
+- 法术部件配方：组件、修饰符、形状。
+- 法力编织祭坛、法力编织图案、法力编织缓存效果配方。
+- 进度条件配方。
+- 转化配方：直接替换方块，或使用战利品表加展示物品。
+- Eldrin 祭坛和 Eldrin 熏烟配方。
+- 服务端 `MNARecipesHelper` 底层 Builder，用于 `event.custom(...)`。
+- `MNARecipesHelper.multiblockDefinitionBuilder` 多方块定义 JSON 生成。
+
+## 事件与运行时钩子
+
+MnaJS 注册了四个 KubeJS 事件组：
+
+- `MnaEvent`
+- `MnaPlayerEvent`
+- `SpellEvent`
+- `RuneForgeEvent`
+
+主要钩子包括：
+
+- `MnaEvent.registerGuideBook`
+- `MnaEvent.registerCantrip`
+- `MnaEvent.wanderingWizardSelectingTrade`
+- `MnaPlayerEvent.ritualCompleteEvent`
+- `MnaPlayerEvent.affinityChangedEvent`
+- `MnaPlayerEvent.genericProgression`
+- `MnaPlayerEvent.levelUp`
+- `MnaPlayerEvent.magicXPGained`
+- `MnaPlayerEvent.masteryGained`
+- `MnaPlayerEvent.roteProgression`
+- `SpellEvent.costingMana`
+- `SpellEvent.casted`
+- `SpellEvent.calculatingCooldown`
+- `SpellEvent.componentApplying`
+- `RuneForgeEvent.shouldActivate`
+- `RuneForgeEvent.itemUsed`
+
+示例：
+
+```js
+MnaPlayerEvent.magicXPGained((event) => {
+    event.setAmount(event.getAmount() + 5);
+});
+
+SpellEvent.costingMana((event) => {
+    event.setCost(Math.max(1, event.getCost() * 0.9));
+});
+```
+
+Cantrip 注册是启动期事件，支持类型化 id、前置进度、声音、图标贴图、法力编织图案、动态物品提供器、自定义回调、延迟回调，以及经过确认的内置效果名，例如 `firework`、`gust`、`ascend`、`ward`、`apply_spell`。
+
+## 类型化 id 与 ProbeJS
+
+MnaJS 尽量避免松散的脚本 API。常见输入会被包装为类型化 id，并暴露给 ProbeJS，从而获得更好的补全。
+
+主要类型化 id：
+
+- `MnaFactionId`
+- `MnaRitualEffectId`
+- `MnaSpellEffectId`
+- `MnaShapeId`
+- `MnaModifierId`
+- `MnaConstructTaskId`
+- `MnaConstructMaterialId`
+- `MnaConstructSlotId`
+- `MnaConstructCapabilityId`
+- `MnaRitualId`
+- `MnaManaweavePatternId`
+- `MnaCantripId`
+- `MnaItemId`
+- `MnaBlockId`
+- `MnaLootTableId`
+- `MnaSoundId`
+- `MnaStructureId`
+- `MnaTexture`
+
+Probe 支持会安装到现代 ProbeJS 和 ProbeJS Legacy。推荐脚本写法：
+
+```js
+/**
+ * @type {Internal.CustomConstructMaterial$Builder}
+ */
+const material = event.create("kubejs:moonsteel", "basic");
+```
+
+这个写法可以改善 Builder 方法、类型化 id 参数和回调签名的补全质量。
+
+要求：
+- 给 `material` 加上 JSDoc：`/** @type {Internal.CustomConstructMaterial$Builder} */`。
+- 以 `mna:iron` 为基础材料。
+- 设置构装体贴图 id 为 `kubejs:textures/entity/construct/moonsteel.png`。
+- 设置生命值、伤害倍率和 mana 容量。
+- 槽位和能力参数必须使用字符串 id，例如 `"head"`、`"cast_spell"`，不要传裸 Java 对象。
+- 返回完整可用的 startup_scripts 代码。
+```
+
+## 辅助 API
+
+MnaJS 暴露了一些常用脚本辅助全局变量：
+
+- `PlayerMagic`：读取和修改 mana、魔法 XP、魔法等级、亲和、施法资源和进度。
+- `PlayerProgression`：读取和修改 tier、已完成进度步骤、派系关系、盟友派系和 raid 状态。
+- `WorldMagic`：管理 wellspring 节点和亲和能量状态。
+- `ProgressionEvents`：内置类型化进度事件常量。
+- `MnaRitualReagent`：构造仪式试剂。
+- `MnaPatternHelper`：构造仪式、试剂、法力编织网格。
+- `MNARecipesHelper`：服务端底层 JSON Builder。
+
+示例：
+
+```js
+MnaPlayerEvent.levelUp((event) => {
+    const magic = PlayerMagic.of(event.getEntity());
+    magic.addMana(25);
+});
+```
+
+图案 helper 主要用于脚本示例和简单网格构造。复杂形状绘制更适合放在编辑器工具或 toolkit UI 中完成，而不是要求脚本作者手写类似 Java 的 helper 代码。
+
+## 当前限制
+
+以下限制是明确记录的当前行为：
+
+- `construct_task` 当前支持元数据和通过 `basedOn(...)` 或 `aiTask(...)` 复用已有 Java AI 任务；它不是 JS 原生 AI 任务创作系统。
+- `registerGuideBook` 当前暴露的是 M&A 原始 GuideBook 注册表。深度 GuideBook 创作应由 guidebook JSON 和外部工具承担。
+- ProbeJS 兼容层已安装到现代 ProbeJS 和 ProbeJS Legacy，但这里承诺的是支持接入和生成表面，不等于人工测试过每一个可能的补全分支。
+
+## 参考
+
+详细页面：
+
+- [绑定]($reference/mnajs-kubejs/bindings)
+- [注册]($reference/mnajs-kubejs/registries)
+- [配方]($reference/mnajs-kubejs/recipes)
+- [事件]($reference/mnajs-kubejs/events)
+- [辅助与 Probe]($reference/mnajs-kubejs/helpers-and-probe)
+
+参考文档记录的验证项：
+
+- `./gradlew compileJava`
+- `./gradlew runServer`
+- 启动脚本注册链
+- 服务端配方和事件脚本加载

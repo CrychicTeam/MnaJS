@@ -31,7 +31,7 @@ public final class EldrinAltarRecipeJS extends MnaBaseRecipeJS<EldrinAltarRecipe
     }
 
     public EldrinAltarRecipeJS inputs(MnaItemOrTag... values) {
-        return setKey("inputs", values);
+        return setKey("items", values);
     }
 
     @HideFromJS
@@ -42,9 +42,9 @@ public final class EldrinAltarRecipeJS extends MnaBaseRecipeJS<EldrinAltarRecipe
     }
 
     public EldrinAltarRecipeJS addInput(MnaItemOrTag value) {
-        var inputs = editableList("inputs");
+        var inputs = editableList("items");
         inputs.add(value);
-        return setKey("inputs", inputs);
+        return setKey("items", inputs);
     }
 
     @HideFromJS
@@ -54,7 +54,7 @@ public final class EldrinAltarRecipeJS extends MnaBaseRecipeJS<EldrinAltarRecipe
 
     @HideFromJS
     public EldrinAltarRecipeJS inputs(Collection<?> values) {
-        return setKey("inputs", values);
+        return setKey("items", values);
     }
 
     @HideFromJS

@@ -1,5 +1,8 @@
 package com.pickaid.mnajs.kubejs.id;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.mojang.datafixers.util.Either;
 import com.pickaid.mnajs.util.KubeJSCompat;
 import dev.latvian.mods.rhino.Wrapper;
@@ -30,6 +33,32 @@ public record MnaItemOrTag(Either<TagKey<Item>, Item> value) {
 
     public static MnaItemOrTag parse(Object rawValue) {
         Object value = Wrapper.unwrapped(rawValue);
+
+        if (value instanceof JsonElement element) {
+            if (element.isJsonNull()) {
+                throw new IllegalArgumentException("itemOrTag can't be null");
+            }
+
+            if (element.isJsonPrimitive()) {
+                JsonPrimitive primitive = element.getAsJsonPrimitive();
+                if (primitive.isString() || primitive.isNumber() || primitive.isBoolean()) {
+                    return parse(primitive.getAsString());
+                }
+            }
+
+            if (element.isJsonObject()) {
+                JsonObject object = element.getAsJsonObject();
+                if (object.has("item")) {
+                    return parse(object.get("item"));
+                }
+                if (object.has("tag")) {
+                    return parse("#" + object.get("tag").getAsString());
+                }
+                if (object.has("id")) {
+                    return parse(object.get("id"));
+                }
+            }
+        }
 
         if (value instanceof MnaItemOrTag itemOrTag) {
             return itemOrTag;
@@ -80,6 +109,10 @@ public record MnaItemOrTag(Either<TagKey<Item>, Item> value) {
 
     public String id() {
         return value.map(tag -> "#" + tag.location(), KubeJSCompat::itemIdString);
+    }
+
+    public String recipeValue() {
+        return value.map(tag -> tag.location().toString(), KubeJSCompat::itemIdString);
     }
 
     public String scriptValue() {

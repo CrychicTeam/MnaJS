@@ -2,54 +2,83 @@ package com.pickaid.mnajs.kubejs.probe;
 
 import com.mna.Registries;
 import com.mna.api.cantrips.ICantrip;
+import com.mna.api.capabilities.resource.CastingResourceIDs;
+import com.mna.api.entities.construct.ConstructCapability;
+import com.mna.api.entities.construct.ConstructSlot;
+import com.pickaid.mnajs.content.construct.MnaConstructMaterialSupport;
+import com.mna.api.events.ProgressionEventIDs;
 import com.mna.api.faction.FactionIDs;
 import com.mna.cantrips.CantripRegistry;
-import com.pickaid.mnajs.kubejs.id.MnaCantripId;
+import com.mna.capabilities.playerdata.magic.resources.CastingResourceRegistry;
+import com.mna.recipes.RecipeInit;
+import com.pickaid.mnajs.kubejs.id.MnaAdvancementId;
 import com.pickaid.mnajs.kubejs.id.MnaBlockId;
+import com.pickaid.mnajs.kubejs.id.MnaCantripId;
+import com.pickaid.mnajs.kubejs.id.MnaCastingResourceId;
+import com.pickaid.mnajs.kubejs.id.MnaConstructMaterialId;
+import com.pickaid.mnajs.kubejs.id.MnaConstructCapabilityId;
+import com.pickaid.mnajs.kubejs.id.MnaConstructSlotId;
+import com.pickaid.mnajs.kubejs.id.MnaEnumIds;
+import com.pickaid.mnajs.kubejs.id.MnaConstructTaskId;
 import com.pickaid.mnajs.kubejs.id.MnaFactionId;
 import com.pickaid.mnajs.kubejs.id.MnaItemId;
 import com.pickaid.mnajs.kubejs.id.MnaItemOrTag;
 import com.pickaid.mnajs.kubejs.id.MnaLootTableId;
 import com.pickaid.mnajs.kubejs.id.MnaManaweavePatternId;
+import com.pickaid.mnajs.kubejs.id.MnaMobEffectId;
 import com.pickaid.mnajs.kubejs.id.MnaModifierId;
+import com.pickaid.mnajs.kubejs.id.MnaProgressionEventId;
 import com.pickaid.mnajs.kubejs.id.MnaRitualEffectId;
 import com.pickaid.mnajs.kubejs.id.MnaRitualId;
 import com.pickaid.mnajs.kubejs.id.MnaShapeId;
+import com.pickaid.mnajs.kubejs.id.MnaSoundId;
 import com.pickaid.mnajs.kubejs.id.MnaSpellEffectId;
+import com.pickaid.mnajs.kubejs.id.MnaStructureId;
 import com.pickaid.mnajs.kubejs.texture.MnaTexture;
+import net.minecraft.advancements.Advancement;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.storage.loot.LootDataType;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.function.Supplier;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 final class MnaJSLegacyProbeIdAliases {
     private static final List<IdAlias> ID_ALIASES = List.of(
+            new IdAlias("MnaAdvancementId", MnaAdvancementId.class, MnaJSLegacyProbeIdAliases::advancementIds),
+            new IdAlias("MnaProgressionEventId", MnaProgressionEventId.class, MnaJSLegacyProbeIdAliases::progressionEventIds),
             new IdAlias("MnaFactionId", MnaFactionId.class, MnaJSLegacyProbeIdAliases::factionIds),
+            new IdAlias("MnaCastingResourceId", MnaCastingResourceId.class, MnaJSLegacyProbeIdAliases::castingResourceIds),
+            new IdAlias("MnaConstructMaterialId", MnaConstructMaterialId.class, () -> resourceLocationIds(MnaConstructMaterialSupport::resourceLocationIds)),
+            new IdAlias("MnaConstructSlotId", MnaConstructSlotId.class, () -> MnaEnumIds.valuesOf(ConstructSlot.class)),
+            new IdAlias("MnaConstructCapabilityId", MnaConstructCapabilityId.class, () -> MnaEnumIds.valuesOf(ConstructCapability.class)),
+            new IdAlias("MnaMobEffectId", MnaMobEffectId.class, () -> registryIds(() -> ForgeRegistries.MOB_EFFECTS), "MobEffect"),
             new IdAlias("MnaRitualEffectId", MnaRitualEffectId.class, () -> registryIds(Registries.RitualEffect)),
             new IdAlias("MnaSpellEffectId", MnaSpellEffectId.class, () -> registryIds(Registries.SpellEffect)),
             new IdAlias("MnaShapeId", MnaShapeId.class, () -> registryIds(Registries.Shape)),
             new IdAlias("MnaModifierId", MnaModifierId.class, () -> registryIds(Registries.Modifier)),
-            new IdAlias("MnaRitualId", MnaRitualId.class, () -> recipeIds("rituals")),
-            new IdAlias("MnaManaweavePatternId", MnaManaweavePatternId.class, () -> recipeIds("manaweave_patterns")),
+            new IdAlias("MnaConstructTaskId", MnaConstructTaskId.class, () -> registryIds(Registries.ConstructTasks)),
+            new IdAlias("MnaRitualId", MnaRitualId.class, () -> recipeIds(() -> RecipeInit.RITUAL_TYPE.get())),
+            new IdAlias("MnaManaweavePatternId", MnaManaweavePatternId.class, () -> recipeIds(() -> RecipeInit.MANAWEAVING_PATTERN_TYPE.get())),
             new IdAlias("MnaCantripId", MnaCantripId.class, MnaJSLegacyProbeIdAliases::cantripIds),
             IdAlias.rawType("MnaItemId", MnaItemId.class, "Item"),
             IdAlias.rawType("MnaBlockId", MnaBlockId.class, "Block"),
             IdAlias.rawType("MnaItemOrTag", MnaItemOrTag.class, "Item | ItemTag"),
             new IdAlias("MnaLootTableId", MnaLootTableId.class, MnaJSLegacyProbeIdAliases::lootTableIds),
-            new IdAlias("MnaTexture", MnaTexture.class, MnaJSLegacyProbeIdAliases::textureIds)
+            new IdAlias("MnaSoundId", MnaSoundId.class, () -> registryIds(() -> ForgeRegistries.SOUND_EVENTS), "SoundEvent"),
+            new IdAlias("MnaStructureId", MnaStructureId.class, MnaJSLegacyProbeIdAliases::structureIds),
+            new IdAlias("MnaTexture", MnaTexture.class, List::of, "Texture")
     );
 
     private MnaJSLegacyProbeIdAliases() {
@@ -57,6 +86,40 @@ final class MnaJSLegacyProbeIdAliases {
 
     static List<IdAlias> all() {
         return ID_ALIASES;
+    }
+
+    private static List<String> advancementIds() {
+        return resourceLocationIds(() -> {
+            MinecraftServer server = currentServer();
+            if (server == null) {
+                return List.of();
+            }
+
+            return server.getAdvancements().getAllAdvancements().stream()
+                    .map(Advancement::getId)
+                    .toList();
+        });
+    }
+
+    private static List<String> progressionEventIds() {
+        return resourceLocationIds(() -> {
+            LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
+            for (Field field : ProgressionEventIDs.class.getDeclaredFields()) {
+                if (!Modifier.isStatic(field.getModifiers()) || field.getType() != ResourceLocation.class) {
+                    continue;
+                }
+
+                try {
+                    field.setAccessible(true);
+                    Object value = field.get(null);
+                    if (value instanceof ResourceLocation id) {
+                        ids.add(id);
+                    }
+                } catch (ReflectiveOperationException ignored) {
+                }
+            }
+            return ids;
+        });
     }
 
     private static List<String> factionIds() {
@@ -70,10 +133,93 @@ final class MnaJSLegacyProbeIdAliases {
         });
     }
 
+    private static List<String> castingResourceIds() {
+        return resourceLocationIds(() -> {
+            LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
+            ids.add(CastingResourceIDs.MANA);
+            ids.add(CastingResourceIDs.COUNCIL_MANA);
+            ids.add(CastingResourceIDs.SOULS);
+            ids.add(CastingResourceIDs.BRIMSTONE);
+            ids.add(CastingResourceIDs.SUMMER_FIRE);
+            ids.add(CastingResourceIDs.WINTER_ICE);
+
+            try {
+                Field field = CastingResourceRegistry.class.getDeclaredField("_registry");
+                field.setAccessible(true);
+                Object raw = field.get(CastingResourceRegistry.Instance);
+                if (raw instanceof Map<?, ?> map) {
+                    for (Object key : map.keySet()) {
+                        if (key instanceof ResourceLocation id) {
+                            ids.add(id);
+                        }
+                    }
+                }
+            } catch (ReflectiveOperationException ignored) {
+            }
+
+            return ids;
+        });
+    }
+
     private static List<String> cantripIds() {
         return resourceLocationIds(() -> CantripRegistry.INSTANCE.getCantrips().stream()
                 .map(ICantrip::getId)
                 .toList());
+    }
+
+    private static List<String> lootTableIds() {
+        return resourceLocationIds(() -> {
+            MinecraftServer server = currentServer();
+            if (server == null) {
+                return List.of();
+            }
+            return server.getLootData().getKeys(LootDataType.TABLE);
+        });
+    }
+
+    private static List<String> structureIds() {
+        return resourceLocationIds(() -> {
+            MinecraftServer server = currentServer();
+            if (server == null) {
+                return List.of();
+            }
+            return server.getStructureManager().listTemplates().toList();
+        });
+    }
+
+    private static List<String> recipeIds(Supplier<? extends RecipeType<?>> recipeTypeSupplier) {
+        return resourceLocationIds(() -> loadedRecipeIds(recipeTypeSupplier));
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static Collection<ResourceLocation> loadedRecipeIds(Supplier<? extends RecipeType<?>> recipeTypeSupplier) {
+        if (recipeTypeSupplier == null) {
+            return List.of();
+        }
+
+        MinecraftServer server = currentServer();
+        if (server == null) {
+            return List.of();
+        }
+
+        try {
+            RecipeManager recipeManager = server.getRecipeManager();
+            RecipeType<?> recipeType = recipeTypeSupplier.get();
+            if (recipeManager == null || recipeType == null) {
+                return List.of();
+            }
+
+            LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
+            List<? extends Recipe<?>> recipes = recipeManager.getAllRecipesFor((RecipeType) recipeType);
+            for (Recipe<?> recipe : recipes) {
+                if (recipe != null && recipe.getId() != null) {
+                    ids.add(recipe.getId());
+                }
+            }
+            return ids;
+        } catch (RuntimeException exception) {
+            return List.of();
+        }
     }
 
     private static List<String> registryIds(Supplier<? extends IForgeRegistry<?>> registrySupplier) {
@@ -89,299 +235,12 @@ final class MnaJSLegacyProbeIdAliases {
         }
     }
 
-    private static List<String> recipeIds(String folder) {
-        return resourceLocationIds(() -> {
-            LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-            ids.addAll(scanRecipeFolderFromCodeSource(Registries.class, folder));
-            ids.addAll(scanRecipeFolderFromProject(folder));
-            return ids;
-        });
-    }
-
-    private static List<String> lootTableIds() {
-        return resourceLocationIds(() -> {
-            LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-            ids.addAll(scanLootTableFolderFromCodeSource(Registries.class));
-            ids.addAll(scanLootTableFolderFromProject());
-            return ids;
-        });
-    }
-
-    private static List<String> textureIds() {
-        return resourceLocationIds(() -> {
-            LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-            ids.addAll(scanTextureFolderFromCodeSource(Registries.class));
-            ids.addAll(scanTextureFolderFromProject());
-            return ids;
-        });
-    }
-
-    private static Collection<ResourceLocation> scanRecipeFolderFromCodeSource(Class<?> anchor, String folder) {
+    private static MinecraftServer currentServer() {
         try {
-            Path codeSourcePath = Paths.get(anchor.getProtectionDomain().getCodeSource().getLocation().toURI());
-            if (Files.isDirectory(codeSourcePath)) {
-                return scanRecipeFolderInDirectory(codeSourcePath, folder);
-            }
-            if (Files.isRegularFile(codeSourcePath)) {
-                return scanRecipeFolderInJar(codeSourcePath, folder);
-            }
-        } catch (RuntimeException | URISyntaxException ignored) {
+            return ServerLifecycleHooks.getCurrentServer();
+        } catch (RuntimeException exception) {
+            return null;
         }
-        return List.of();
-    }
-
-    private static Collection<ResourceLocation> scanRecipeFolderFromProject(String folder) {
-        Path root = findProjectRoot();
-        if (root == null) {
-            return List.of();
-        }
-
-        LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-        ids.addAll(scanRecipeFolderInDirectory(root.resolve("src/main/resources"), folder));
-        ids.addAll(scanRecipeFolderInDirectory(root.resolve("src/generated/resources"), folder));
-        ids.addAll(scanRecipeFolderInDirectory(root.resolve("build/resources/main"), folder));
-        return ids;
-    }
-
-    private static Collection<ResourceLocation> scanLootTableFolderFromCodeSource(Class<?> anchor) {
-        try {
-            Path codeSourcePath = Paths.get(anchor.getProtectionDomain().getCodeSource().getLocation().toURI());
-            if (Files.isDirectory(codeSourcePath)) {
-                return scanLootTableFolderInDirectory(codeSourcePath);
-            }
-            if (Files.isRegularFile(codeSourcePath)) {
-                return scanLootTableFolderInJar(codeSourcePath);
-            }
-        } catch (RuntimeException | URISyntaxException ignored) {
-        }
-        return List.of();
-    }
-
-    private static Collection<ResourceLocation> scanLootTableFolderFromProject() {
-        Path root = findProjectRoot();
-        if (root == null) {
-            return List.of();
-        }
-
-        LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-        ids.addAll(scanLootTableFolderInDirectory(root.resolve("src/main/resources")));
-        ids.addAll(scanLootTableFolderInDirectory(root.resolve("src/generated/resources")));
-        ids.addAll(scanLootTableFolderInDirectory(root.resolve("build/resources/main")));
-        return ids;
-    }
-
-    private static Collection<ResourceLocation> scanTextureFolderFromCodeSource(Class<?> anchor) {
-        try {
-            Path codeSourcePath = Paths.get(anchor.getProtectionDomain().getCodeSource().getLocation().toURI());
-            if (Files.isDirectory(codeSourcePath)) {
-                return scanTextureFolderInDirectory(codeSourcePath);
-            }
-            if (Files.isRegularFile(codeSourcePath)) {
-                return scanTextureFolderInJar(codeSourcePath);
-            }
-        } catch (RuntimeException | URISyntaxException ignored) {
-        }
-        return List.of();
-    }
-
-    private static Collection<ResourceLocation> scanTextureFolderFromProject() {
-        Path root = findProjectRoot();
-        if (root == null) {
-            return List.of();
-        }
-
-        LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-        ids.addAll(scanTextureFolderInDirectory(root.resolve("src/main/resources")));
-        ids.addAll(scanTextureFolderInDirectory(root.resolve("src/generated/resources")));
-        ids.addAll(scanTextureFolderInDirectory(root.resolve("build/resources/main")));
-        return ids;
-    }
-
-    private static Path findProjectRoot() {
-        Path current = Paths.get("").toAbsolutePath().normalize();
-        for (Path cursor = current; cursor != null; cursor = cursor.getParent()) {
-            if (Files.exists(cursor.resolve("build.gradle")) || Files.exists(cursor.resolve("settings.gradle"))) {
-                return cursor;
-            }
-        }
-        return null;
-    }
-
-    private static Collection<ResourceLocation> scanRecipeFolderInDirectory(Path root, String folder) {
-        if (root == null || !Files.exists(root)) {
-            return List.of();
-        }
-
-        Path dataRoot = root.resolve("data");
-        if (!Files.exists(dataRoot)) {
-            return List.of();
-        }
-
-        LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-        try (var stream = Files.walk(dataRoot)) {
-            stream.filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(".json"))
-                    .forEach(path -> addIfRecipePath(ids, dataRoot.relativize(path), folder));
-        } catch (IOException ignored) {
-        }
-        return ids;
-    }
-
-    private static Collection<ResourceLocation> scanRecipeFolderInJar(Path jarPath, String folder) {
-        LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-        try (ZipFile zip = new ZipFile(jarPath.toFile())) {
-            Enumeration<? extends ZipEntry> entries = zip.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                if (!entry.isDirectory() && entry.getName().endsWith(".json")) {
-                    addIfRecipePath(ids, Paths.get(entry.getName()), folder);
-                }
-            }
-        } catch (IOException ignored) {
-        }
-        return ids;
-    }
-
-    private static Collection<ResourceLocation> scanLootTableFolderInDirectory(Path root) {
-        if (root == null || !Files.exists(root)) {
-            return List.of();
-        }
-
-        Path dataRoot = root.resolve("data");
-        if (!Files.exists(dataRoot)) {
-            return List.of();
-        }
-
-        LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-        try (var stream = Files.walk(dataRoot)) {
-            stream.filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(".json"))
-                    .forEach(path -> addIfLootTablePath(ids, dataRoot.relativize(path)));
-        } catch (IOException ignored) {
-        }
-        return ids;
-    }
-
-    private static Collection<ResourceLocation> scanLootTableFolderInJar(Path jarPath) {
-        LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-        try (ZipFile zip = new ZipFile(jarPath.toFile())) {
-            Enumeration<? extends ZipEntry> entries = zip.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                if (!entry.isDirectory() && entry.getName().endsWith(".json")) {
-                    addIfLootTablePath(ids, Paths.get(entry.getName()));
-                }
-            }
-        } catch (IOException ignored) {
-        }
-        return ids;
-    }
-
-    private static Collection<ResourceLocation> scanTextureFolderInDirectory(Path root) {
-        if (root == null || !Files.exists(root)) {
-            return List.of();
-        }
-
-        Path assetsRoot = root.resolve("assets");
-        if (!Files.exists(assetsRoot)) {
-            return List.of();
-        }
-
-        LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-        try (var stream = Files.walk(assetsRoot)) {
-            stream.filter(Files::isRegularFile)
-                    .filter(path -> path.toString().endsWith(".png"))
-                    .forEach(path -> addIfTexturePath(ids, assetsRoot.relativize(path)));
-        } catch (IOException ignored) {
-        }
-        return ids;
-    }
-
-    private static Collection<ResourceLocation> scanTextureFolderInJar(Path jarPath) {
-        LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
-        try (ZipFile zip = new ZipFile(jarPath.toFile())) {
-            Enumeration<? extends ZipEntry> entries = zip.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                if (!entry.isDirectory() && entry.getName().endsWith(".png")) {
-                    addIfTexturePath(ids, Paths.get(entry.getName()));
-                }
-            }
-        } catch (IOException ignored) {
-        }
-        return ids;
-    }
-
-    private static void addIfRecipePath(Set<ResourceLocation> ids, Path relativePath, String folder) {
-        int startIndex = "data".equals(relativePath.getName(0).toString()) ? 1 : 0;
-        if (relativePath.getNameCount() < startIndex + 4) {
-            return;
-        }
-
-        if (!"recipes".equals(relativePath.getName(startIndex + 1).toString())) {
-            return;
-        }
-
-        if (!folder.equals(relativePath.getName(startIndex + 2).toString())) {
-            return;
-        }
-
-        String namespace = relativePath.getName(startIndex).toString();
-        StringBuilder recipePath = new StringBuilder(folder);
-        for (int i = startIndex + 3; i < relativePath.getNameCount(); i++) {
-            String segment = relativePath.getName(i).toString();
-            if (i == relativePath.getNameCount() - 1) {
-                segment = segment.substring(0, segment.length() - 5);
-            }
-            recipePath.append('/').append(segment);
-        }
-        ids.add(ResourceLocation.fromNamespaceAndPath(namespace, recipePath.toString()));
-    }
-
-    private static void addIfLootTablePath(Set<ResourceLocation> ids, Path relativePath) {
-        int startIndex = "data".equals(relativePath.getName(0).toString()) ? 1 : 0;
-        if (relativePath.getNameCount() < startIndex + 3) {
-            return;
-        }
-
-        if (!"loot_tables".equals(relativePath.getName(startIndex + 1).toString())) {
-            return;
-        }
-
-        String namespace = relativePath.getName(startIndex).toString();
-        StringBuilder lootTablePath = new StringBuilder();
-        for (int i = startIndex + 2; i < relativePath.getNameCount(); i++) {
-            String segment = relativePath.getName(i).toString();
-            if (i == relativePath.getNameCount() - 1) {
-                segment = segment.substring(0, segment.length() - 5);
-            }
-            if (lootTablePath.length() > 0) {
-                lootTablePath.append('/');
-            }
-            lootTablePath.append(segment);
-        }
-        ids.add(ResourceLocation.fromNamespaceAndPath(namespace, lootTablePath.toString()));
-    }
-
-    private static void addIfTexturePath(Set<ResourceLocation> ids, Path relativePath) {
-        int startIndex = "assets".equals(relativePath.getName(0).toString()) ? 1 : 0;
-        if (relativePath.getNameCount() < startIndex + 3) {
-            return;
-        }
-
-        if (!"textures".equals(relativePath.getName(startIndex + 1).toString())) {
-            return;
-        }
-
-        String namespace = relativePath.getName(startIndex).toString();
-        StringBuilder texturePath = new StringBuilder();
-        for (int i = startIndex + 1; i < relativePath.getNameCount(); i++) {
-            if (texturePath.length() > 0) {
-                texturePath.append('/');
-            }
-            texturePath.append(relativePath.getName(i));
-        }
-        ids.add(ResourceLocation.fromNamespaceAndPath(namespace, texturePath.toString()));
     }
 
     private static List<String> resourceLocationIds(Supplier<? extends Collection<ResourceLocation>> supplier) {
@@ -392,7 +251,7 @@ final class MnaJSLegacyProbeIdAliases {
             }
             return values.stream()
                     .filter(java.util.Objects::nonNull)
-                    .map((ResourceLocation id) -> id.toString())
+                    .map(ResourceLocation::toString)
                     .sorted()
                     .distinct()
                     .toList();

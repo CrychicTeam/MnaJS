@@ -1,0 +1,10 @@
+{
+  "introduction.mdx": {
+    "name": "简介",
+    "icon": "BookOpen"
+  },
+  "reference": {
+    "name": "参考",
+    "icon": "Braces"
+  }
+}

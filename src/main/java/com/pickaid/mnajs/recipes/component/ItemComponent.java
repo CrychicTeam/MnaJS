@@ -1,6 +1,7 @@
 package com.pickaid.mnajs.recipes.component;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.pickaid.mnajs.util.KubeJSCompat;
 import dev.latvian.mods.kubejs.recipe.RecipeJS;
@@ -27,6 +28,17 @@ public interface ItemComponent {
 
         @Override
         public Item read(RecipeJS recipe, Object from) {
+            if (from instanceof JsonElement element) {
+                if (element.isJsonPrimitive()) {
+                    return read(recipe, element.getAsString());
+                }
+                if (element.isJsonObject()) {
+                    JsonObject object = element.getAsJsonObject();
+                    if (object.has("item")) {
+                        return read(recipe, object.get("item").getAsString());
+                    }
+                }
+            }
             if (from instanceof String string) {
                 return ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(string)) == null ? ItemStack.EMPTY.getItem() : ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(string));
             } else if (from instanceof ItemStack stack) {

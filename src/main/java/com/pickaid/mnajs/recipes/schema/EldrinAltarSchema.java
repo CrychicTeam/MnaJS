@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 
 public interface EldrinAltarSchema extends TierBaseSchema {
     RecipeKey<ItemStack> OUTPUT = ItemStackComponent.ITEMSTACK.key("output");
-    RecipeKey<MnaItemOrTag[]> INPUTS = MnaRecipeComponents.ITEM_OR_TAG.asArray().key("inputs").optional(type -> new MnaItemOrTag[0]).allowEmpty();
+    RecipeKey<MnaItemOrTag[]> INPUTS = MnaRecipeComponents.ITEM_OR_TAG.asArray().key("items").optional(type -> new MnaItemOrTag[0]).allowEmpty().alt("inputs");
     RecipeKey<RecipeComponentBuilderMap[]> POWER_PROVIDED = PowerProvidedComponent.POWER_PROVIDED_COMPONENT.inputRole().asArray().key("power_requirements").optional(type -> new RecipeComponentBuilderMap[0]);
     RecipeKey<Integer[]> COLOR = NumberComponent.INT.asArray().key("colors").optional(new Integer[0]).allowEmpty();
     RecipeKey<Integer> QUANTITY = NumberComponent.INT.key("count").optional(1).alt("quantity");

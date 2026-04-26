@@ -1,0 +1,288 @@
+---
+title: Events
+hide_meta: true
+---
+
+# Events
+
+This page covers the event groups registered by `MnaJSEvents`.
+
+## Event Groups
+
+- `MnaEvent`
+- `MnaPlayerEvent`
+- `SpellEvent`
+- `RuneForgeEvent`
+
+## `MnaEvent.registerGuideBook`
+
+Startup event.
+
+Current surface:
+
+- `getRegistry()`
+
+Example:
+
+```js
+MnaEvent.registerGuideBook((event) => {
+    const registry = event.getRegistry();
+    registry.addGuidebookPath("kubejs:guidebooks/mna_example.json");
+    registry.registerGuidebookCategory(
+        "kubejs.mna_examples",
+        "mna:textures/gui/cantrips/ward.png"
+    );
+});
+```
+
+Notes:
+
+- This event currently exposes the raw M&A guidebook registry.
+- Deep guidebook page authoring is still driven by guidebook JSON plus surrounding tooling.
+
+## `MnaEvent.registerCantrip`
+
+Startup event.
+
+Current surface:
+
+- `create(MnaCantripId)`
+- `removeCantrip(MnaCantripId)`
+
+Cantrip builder methods:
+
+- `tier(int)`
+- `delay(int)`
+- `requiredAdvancement(MnaAdvancementId)`
+- `sound(MnaSoundId)`
+- `icon(MnaTexture)`
+- `addPattern(MnaManaweavePatternId)`
+- `pattern(MnaManaweavePatternId...)`
+- `spellStack(MnaItemId)`
+- `dynamicItem(MnaItemId)`
+- `clearDynamicItem()`
+- `dynamicItemProvider((player) => ItemStack)`
+- `effect((player, cantrip, hand) => ...)`
+- `delayedEffect((id, data) => ...)`
+- `builtInEffect(String)`
+- `register()`
+
+Verified built-in effect names:
+
+- `firework`
+- `gust`
+- `ascend`
+- `dispel`
+- `drought`
+- `ward`
+- `reveal_ward`
+- `summon_grimoire`
+- `summon_faction_grimoire`
+- `apply_spell`
+
+Example:
+
+```js
+MnaEvent.registerCantrip((event) => {
+    event
+        .create("kubejs:flare_orb")
+        .tier(1)
+        .delay(20)
+        .requiredAdvancement("mna:tier_4/craft_a_t4_spell")
+        .sound("geckolib:jack_in_the_box_music")
+        .icon("mna:textures/gui/affinity/air.png")
+        .pattern("mna:bolt", "mna:square")
+        .spellStack("minecraft:fire_charge")
+        .dynamicItem("minecraft:fire_charge")
+        .effect((player, cantrip, hand) => {
+            PlayerMagic.addMana(player, 5);
+        })
+        .register();
+});
+```
+
+Notes:
+
+- If no icon is set, the builder falls back to `mna:textures/gui/cantrips/default.png`.
+- If no pattern list is set, the builder falls back to `mna:manaweave_patterns/circle` plus `mna:manaweave_patterns/square`.
+- If no effect is configured, the builder falls back to built-in `apply_spell`.
+- `dynamicItemProvider(...)` synchronizes the owned cantrip stack for that player when the cantrip resolves.
+- `removeCantrip(id)` returns `true` only when the cantrip was actually removed and also clears any registered dynamic item provider for that id.
+
+## `MnaEvent.wanderingWizardSelectingTrade`
+
+Server event.
+
+Available methods:
+
+- `getWanderingWizard()`
+- `getOffers()`
+- `getNewTrades()`
+- `getMaxNumbers()`
+
+## `MnaPlayerEvent.ritualCompleteEvent`
+
+Server event.
+
+Available methods:
+
+- `getEntity()`
+- `getCenter()`
+- `getRitual()`
+- `getCollectedReagents()`
+- `getHandlers()`
+- `getEvent()`
+
+## `MnaPlayerEvent.affinityChangedEvent`
+
+Server event with result.
+
+Available methods:
+
+- `getEntity()`
+- `getAffinity()`
+- `getCurrentAmount()`
+- `getShift()`
+- `setShift(float)`
+
+Example:
+
+```js
+MnaPlayerEvent.affinityChangedEvent((event) => {
+    if (event.getAffinity() === Affinity.ARCANE) {
+        event.setShift(event.getShift() * 1.25);
+    }
+});
+```
+
+## `MnaPlayerEvent.genericProgression`
+
+Server event.
+
+Available methods:
+
+- `getEntity()`
+- `getId()`
+- `getRawId()`
+
+## `MnaPlayerEvent.levelUp`
+
+Server event.
+
+Available methods:
+
+- `getEntity()`
+- `getMagicLevel()`
+
+## `MnaPlayerEvent.magicXPGained`
+
+Server event with result.
+
+Available methods:
+
+- `getEntity()`
+- `getAmount()`
+- `setAmount(int)`
+
+Example:
+
+```js
+MnaPlayerEvent.magicXPGained((event) => {
+    event.setAmount(event.getAmount() + 5);
+});
+```
+
+## `MnaPlayerEvent.masteryGained`
+
+Server event with result.
+
+Available methods:
+
+- `getEntity()`
+- `getPart()`
+- `getAmount()`
+- `setAmount(float)`
+
+## `MnaPlayerEvent.roteProgression`
+
+Server event with result.
+
+Available methods:
+
+- `getEntity()`
+- `getPart()`
+- `getAmount()`
+- `setAmount(float)`
+
+## `SpellEvent.costingMana`
+
+Server event.
+
+Available methods:
+
+- `getEntity()`
+- `getCost()`
+- `getSpell()`
+- `setCost(float)`
+
+Example:
+
+```js
+SpellEvent.costingMana((event) => {
+    event.setCost(Math.max(0, event.getCost() - 2));
+});
+```
+
+## `SpellEvent.casted`
+
+Server event.
+
+Available methods:
+
+- `getSpell()`
+- `getSource()`
+- `getContext()`
+- `getStack()`
+- `getEntity()`
+
+## `SpellEvent.calculatingCooldown`
+
+Server event.
+
+Available methods:
+
+- `getSpell()`
+- `getCooldown()`
+- `setCooldown(int)`
+- `getEntity()`
+
+## `SpellEvent.componentApplying`
+
+Server event with result.
+
+Available methods:
+
+- `getSource()`
+- `getContext()`
+- `getTarget()`
+- `getComponent()`
+
+## `RuneForgeEvent.shouldActivate`
+
+Server event with result.
+
+Available methods:
+
+- `getPattern()`
+- `getMaterial()`
+
+## `RuneForgeEvent.itemUsed`
+
+Server event with result.
+
+Available methods:
+
+- `getPattern()`
+- `getMaterial()`
+- `getCatalyst()`
+- `getEntity()`

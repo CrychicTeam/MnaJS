@@ -1,0 +1,515 @@
+---
+title: Registries
+hide_meta: true
+---
+
+# Registries
+
+This page covers the current startup registration surface exposed by MnaJS.
+
+## `mna:factions`
+
+Register with `StartupEvents.registry("mna:factions", ...)`.
+
+Use it for new factions with script-configurable grimoire, token, sounds, icon, colors, structure, and casting-resource routing.
+
+Notable builder methods:
+
+- `factionGrimoire(MnaItemId)`
+- `tokenItem(MnaItemId)`
+- `raidSound(MnaSoundId)`
+- `hornSound(MnaSoundId)`
+- `factionIcon(MnaTexture)`
+- `manaweaveRGB("rgb(116, 182, 79)")`
+- `sanctumStructure(MnaStructureId)`
+- `castingResources(MnaCastingResourceId...)`
+- `factionIconTextureSize(int)`
+- `maxModifierBonus(Attribute, float)`
+- `minModifierBonus(Attribute, float)`
+- `resourceSelector((player, availableResources) => ...)`
+
+Example:
+
+```js
+StartupEvents.registry("mna:factions", (event) => {
+    event
+        .create("kubejs:verdant_court", "basic")
+        .factionGrimoire("minecraft:book")
+        .tokenItem("minecraft:emerald")
+        .raidSound("minecraft:event.raid.horn")
+        .factionIcon("mna:textures/gui/cantrips/ward.png")
+        .manaweaveRGB("rgb(116, 182, 79)")
+        .sanctumStructure("mna:multiblock/council_circle_of_power")
+        .castingResources("mna:mana", "mna:council_mana");
+});
+```
+
+Notes:
+
+- `manaweaveRGB` accepts frontend-style color strings.
+- `sanctumStructure` is typed as a structure id, not a raw path hack.
+- `resourceSelector` is the deep hook for choosing which casting resource a player should use.
+
+## `mna:ritual-effects`
+
+Register with `StartupEvents.registry("mna:ritual-effects", ...)`.
+
+Use it for the runtime handler that attaches behavior to a ritual recipe id.
+
+Notable builder methods:
+
+- `ritualName(MnaRitualId)`
+- `applicationTicks(int | callback)`
+- `applyEffect((context) => boolean)`
+- `matchReagents(...)`
+- `modifyReagents(...)`
+- `canStart(...)`
+- `applyStartCheckInCreative(boolean)`
+- `particles(...)`
+- `loopSound(...)`
+
+Example:
+
+```js
+StartupEvents.registry("mna:ritual-effects", (event) => {
+    /**
+     * @type {Internal.CustomRitualEffect$Builder}
+     */
+    const builder = event.create("kubejs:lightning_ritual_effect", "basic");
+
+    builder
+        .ritualName("kubejs:lightning_ritual")
+        .applicationTicks(20)
+        .applyEffect((context) => {
+            const level = context.getLevel();
+            if (level == null) return false;
+            const lightning = EntityType.LIGHTNING_BOLT.create(level);
+            if (lightning == null) return false;
+            lightning.setPos(context.getCenter().x, context.getCenter().y, context.getCenter().z);
+            level.addFreshEntity(lightning);
+            return true;
+        });
+});
+```
+
+Notes:
+
+- Keep the builder in a typed local for Probe completion.
+- `ritualName(...)` should match the ritual recipe id you actually generate.
+
+## `mna:components` type `basic`
+
+Register with `StartupEvents.registry("mna:components", ...)` and `event.create(id, "basic")`.
+
+Use it for a general spell effect component with fully scriptable `applyEffect`.
+
+Notable builder methods:
+
+- `guiIcon(MnaTexture)`
+- `affinity(Affinity)`
+- `initialComplexity(float)`
+- `addAttribute(Attribute, base, min, max, step, complexity)`
+- `baselineCooldown(int)`
+- `soundEffect(MnaSoundId)`
+- `factionRequirement(MnaFactionId)`
+- `addReagent(MnaItemId, ...)`
+- `addOptionalReagent(MnaItemId, ...)`
+- `applyEffect(...)`
+- `spawnParticles(...)`
+- `canBeCastAt(...)`
+- `getDescriptionTooltip(...)`
+
+Example:
+
+```js
+StartupEvents.registry("mna:components", (event) => {
+    /**
+     * @type {Internal.CustomSpellEffect$Builder}
+     */
+    const builder = event.create("kubejs:arcane_pulse", "basic");
+
+    builder
+        .guiIcon("mna:textures/gui/cantrips/ignite.png")
+        .affinity(Affinity.ARCANE)
+        .baselineCooldown(20)
+        .soundEffect("minecraft:entity.allay.item_given")
+        .factionRequirement("mna:council")
+        .addReagent("minecraft:lapis_lazuli")
+        .applyEffect((source, target, modificationData, context) => {
+            return ComponentApplicationResult.SUCCESS;
+        });
+});
+```
+
+## `mna:components` type `damage`
+
+Use `event.create(id, "damage")`.
+
+This is the damage-oriented spell effect surface. It inherits most of the common component API and adds damage-specific attributes and callbacks.
+
+Notable additions:
+
+- `addDamageAttribute(base, min, max, step, complexity)`
+- `damageEntity((source, target, damage, context) => ...)`
+- `isTargetFriendly(...)`
+- `magnitudeHealthCheck(...)`
+
+Example:
+
+```js
+/**
+ * @type {Internal.CustomDamageComponent$Builder}
+ */
+const builder = event.create("kubejs:searing_arc", "damage");
+
+builder
+    .affinity(Affinity.FIRE)
+    .soundEffect("minecraft:entity.blaze.shoot")
+    .addDamageAttribute(4.0, 2.0, 8.0, 1.0, 1.0)
+    .addOptionalReagent("minecraft:blaze_powder")
+    .damageEntity((source, target, damage, context) => {
+        return ComponentApplicationResult.SUCCESS;
+    });
+```
+
+## `mna:components` type `potion`
+
+Use `event.create(id, "potion")`.
+
+This is the potion-effect component surface.
+
+Notable builder methods:
+
+- `effect(MnaMobEffectId)`
+- `modifiesDuration(boolean)`
+- `addDurationAttribute(base, min, max, step, complexity)`
+- `modifiesMagnitude(boolean)`
+- `addMagnitudeAttribute(base, min, max, step, complexity)`
+- `addPermanencyReagent(MnaItemId)`
+- `permanentFor(MnaFactionId...)`
+
+Example:
+
+```js
+/**
+ * @type {Internal.CustomPotionEffectComponent$Builder}
+ */
+const builder = event.create("kubejs:swiftstep", "potion");
+
+builder
+    .affinity(Affinity.WIND)
+    .effect("minecraft:speed")
+    .modifiesDuration(true)
+    .addDurationAttribute(60, 20, 180, 20, 1.0)
+    .modifiesMagnitude(true)
+    .addMagnitudeAttribute(1, 1, 3, 1, 1.25)
+    .addPermanencyReagent("minecraft:ghast_tear")
+    .permanentFor("mna:fey");
+```
+
+## `mna:shapes`
+
+Register with `StartupEvents.registry("mna:shapes", ...)`.
+
+Use it for custom spell target selection logic.
+
+Notable builder methods:
+
+- `guiIcon(MnaTexture)`
+- `initialComplexity(float)`
+- `spawnsTargetEntity(boolean)`
+- `isChanneled(boolean)`
+- `baselineCooldown(int)`
+- `affectsCaster(boolean)`
+- `addReagent(MnaItemId, ...)`
+- `target((source, level, modificationData, recipe) => SpellTarget[])`
+- `targetNPCCast(...)`
+- `allowChanneledComponents(...)`
+- `maxChannelTime(...)`
+
+Example:
+
+```js
+StartupEvents.registry("mna:shapes", (event) => {
+    event
+        .create("kubejs:anchored_burst", "basic")
+        .guiIcon("mna:textures/gui/cantrips/ward.png")
+        .initialComplexity(1.5)
+        .spawnsTargetEntity(false)
+        .isChanneled(false)
+        .affectsCaster(true)
+        .target((source, level, modificationData, recipe) => {
+            return [SpellTarget.NONE];
+        });
+});
+```
+
+## `mna:modifiers`
+
+Register with `StartupEvents.registry("mna:modifiers", ...)`.
+
+Use it for custom spell modifiers with explicit attribute coverage and craftability checks.
+
+Notable builder methods:
+
+- `basedOn(Modifier)`
+- `guiIcon(MnaTexture)`
+- `attributes(Attribute...)`
+- `addAttribute(Attribute)`
+- `requiredXPForRote(int)`
+- `tier(int)`
+- `isUseableByPlayers(boolean)`
+- `isCraftable(...)`
+- `canBeCastAt(...)`
+
+Example:
+
+```js
+StartupEvents.registry("mna:modifiers", (event) => {
+    /**
+     * @type {Internal.CustomModifier$Builder}
+     */
+    const builder = event.create("kubejs:steady_focus", "basic");
+
+    builder
+        .guiIcon("mna:textures/gui/cantrips/ignite.png")
+        .attributes(Attribute.RANGE, Attribute.PRECISION)
+        .tier(1)
+        .requiredXPForRote(75);
+});
+```
+
+## `mna:construct_task`
+
+Register with `StartupEvents.registry("mna:construct_task", ...)`.
+
+Current support depth is for task metadata plus reuse of an existing AI implementation.
+
+Notable builder methods:
+
+- `basedOn(ConstructTask)`
+- `icon(MnaTexture)`
+- `aiTask(ConstructTask)`
+- `outputs(int)`
+- `lodestarAssignable(boolean)`
+- `lowTierAssignable(boolean)`
+- `condition(boolean)`
+
+Example:
+
+```js
+StartupEvents.registry("mna:construct_task", (event) => {
+    /**
+     * @type {Internal.CustomConstructTask$Builder}
+     */
+    const builder = event.create("kubejs:scripted_wait", "basic");
+
+    builder
+        .basedOn(MnaConstructTasks.WAIT)
+        .icon("mna:textures/gui/cantrips/ignite.png")
+        .outputs(2)
+        .lowTierAssignable(true);
+});
+```
+
+Notes:
+
+- You can reuse an existing AI class from another task.
+- A brand-new JS-authored `ConstructAITask` implementation is not currently exposed as a first-class script surface.
+
+## `mnajs:construct_material`
+
+Register with `StartupEvents.registry("mnajs:construct_material", ...)`.
+
+This is the custom construct material registry added by MnaJS.
+
+Notable builder methods:
+
+- `basedOn(MnaConstructMaterialId)`
+- `texture(MnaTexture)`
+- `health(int)`
+- `speed(float)`
+- `knockbackResistance(float)`
+- `explosionResistance(float)`
+- `equivalentTier(Tier)`
+- `cooldownMultiplier("cast_spell", float)`
+- `armorBonus("head", int)`
+- `toughnessBonus("torso", int)`
+- `damageBonus(float)`
+- `rangedDamageBonus(float)`
+- `rangedManaCost(float)`
+- `manaStorage(int)`
+- `intelligenceBonus(int)`
+- `backpackCapacityBoost(int)`
+- `castingTierEquivalent(int)`
+- `deathLoot(...)`
+- `modelSet(String)`
+- `headModels(...)`
+- `torsoModels(...)`
+- `legModels(...)`
+- `armModels(...)`
+
+Example:
+
+```js
+StartupEvents.registry("mnajs:construct_material", (event) => {
+    /**
+     * @type {Internal.CustomConstructMaterial$Builder}
+     */
+    const builder = event.create("kubejs:moonsteel", "basic");
+
+    builder
+        .basedOn("mna:iron")
+        .texture("mna:textures/entity/animated_construct/armor_iron.png")
+        .modelSet("iron")
+        .health(5)
+        .damageBonus(2.0)
+        .manaStorage(750)
+        .cooldownMultiplier("cast_spell", 0.85)
+        .armorBonus("head", 3)
+        .toughnessBonus("torso", 1);
+});
+```
+
+Notes:
+
+- `ConstructSlot` and `ConstructCapability` can be passed as typed ids or stable lower-case strings.
+- This custom registry is separate from M&A's built-in hardcoded material list, but MnaJS bridges registered materials into M&A lookup and model registration.
+
+## `item` type `construct_part`
+
+Register with `StartupEvents.registry("item", ...)` and `event.create(id, "construct_part")`.
+
+Use it for custom construct parts that reference built-in or custom construct materials.
+
+Notable builder methods:
+
+- `basedOn(ItemConstructPart)`
+- `material(MnaConstructMaterialId)`
+- `slot(MnaConstructSlotId)`
+- `modelMutex(int)`
+- stat overrides such as `armor`, `toughness`, `attackDamage`, `manaCapacity`
+- capability controls such as `actionSpeed`, `enabledCapabilities`, `addCapability`
+- `attackSpeedModifier(int)`
+- `inventorySizeBonus(int)`
+- `backpackCapacityBoost(int)`
+- `allowInLoot(boolean)`
+
+Example:
+
+```js
+StartupEvents.registry("item", (event) => {
+    /**
+     * @type {Internal.CustomConstructPartItem$Builder}
+     */
+    const builder = event.create("kubejs:moonsteel_basic_head", "construct_part");
+
+    builder
+        .material("kubejs:moonsteel")
+        .slot("head")
+        .modelMutex(ConstructMutexHead.BASIC)
+        .armor(3)
+        .intelligenceBonus(10);
+});
+```
+
+Notes:
+
+- A part can reference a custom material registered in the same startup load.
+- Custom material lookup is intentionally lazy, so same-pass registration is supported.
+- Prefer string ids like `"head"` and `"cast_spell"` or typed ids, not raw catch-all values.
+
+## `item` type `mana_battery_item`
+
+Use it for mana-storage items with Curios and inventory tick hooks.
+
+Notable builder methods:
+
+- `maxMana(float)`
+- `manaPerTick(int)`
+- `manaPerOperation(float)`
+- `curiosTick((entity, index, stack) => boolean)`
+- `tickEffect((stack, player, level, slot, mana, selected) => boolean)`
+- `onUseTick((level, living, stack, remainingUseDuration) => ...)`
+
+Example:
+
+```js
+event
+    .create("kubejs:reserve_battery", "mana_battery_item")
+    .maxMana(500)
+    .manaPerTick(10)
+    .manaPerOperation(25)
+    .curiosTick((entity, index, stack) => true)
+    .tickEffect((stack, player, level, slot, mana, selected) => {
+        if (selected && mana >= 25) {
+            PlayerMagic.addMana(player, 1);
+            return true;
+        }
+        return false;
+    });
+```
+
+## `item` type `tiered_item`
+
+Use it for script-defined mana items with faction, ire, tooltip, and player-use behavior.
+
+Notable builder methods:
+
+- `tier(int)`
+- `faction(MnaFactionId)`
+- `minIre(float)`
+- `maxIre(float)`
+- `sneakBypass(boolean)`
+- `doesSneakBypassUse(...)`
+- `appendHoverText(...)`
+- `usedByPlayer(...)`
+
+Example:
+
+```js
+event
+    .create("kubejs:court_signet", "tiered_item")
+    .tier(2)
+    .faction("mna:council")
+    .minIre(0.0)
+    .maxIre(0.02)
+    .sneakBypass(true)
+    .usedByPlayer((player) => {
+        PlayerMagic.addMana(player, 10);
+    });
+```
+
+## `block` type `spell_interactible`
+
+Use it for blocks that react when struck by an M&A spell.
+
+Notable builder method:
+
+- `onHitBySpell((level, pos, spell) => boolean)`
+
+Example:
+
+```js
+event
+    .create("kubejs:spell_echo_anchor", "spell_interactible")
+    .onHitBySpell((level, pos, spell) => true);
+```
+
+## `block` type `manaweave_notifiable`
+
+Use it for blocks that receive manaweave pattern notifications.
+
+Notable builder method:
+
+- `onNotify((level, pos, state, patterns, caster) => boolean)`
+
+Example:
+
+```js
+event
+    .create("kubejs:manaweave_listener", "manaweave_notifiable")
+    .onNotify((level, pos, state, patterns, caster) => {
+        return patterns != null && !patterns.isEmpty();
+    });
+```

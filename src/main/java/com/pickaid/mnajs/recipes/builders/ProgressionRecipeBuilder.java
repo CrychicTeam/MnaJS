@@ -1,26 +1,21 @@
 package com.pickaid.mnajs.recipes.builders;
 
 import com.google.gson.JsonObject;
-import com.pickaid.mnajs.kubejs.id.MnaIds;
+import com.pickaid.mnajs.kubejs.id.MnaAdvancementId;
 import com.pickaid.mnajs.recipes.builders.base.MABaseBuilder;
 import dev.latvian.mods.kubejs.typings.Info;
-import dev.latvian.mods.rhino.util.HideFromJS;
+import dev.latvian.mods.kubejs.typings.Param;
 import net.minecraft.resources.ResourceLocation;
 
 public class ProgressionRecipeBuilder extends MABaseBuilder {
     private ResourceLocation advancement;
     private String description = "";
 
-    @Info("set the advancement needed of the progression")
-    @HideFromJS
-    public ProgressionRecipeBuilder advancement(ResourceLocation advancement) {
-        this.advancement = advancement;
-        return this;
-    }
-
-    @Info("set the advancement needed of the progression")
-    public ProgressionRecipeBuilder advancement(String advancement) {
-        this.advancement = MnaIds.parse(advancement, "advancement", "minecraft", null);
+    @Info(value = "Set the advancement required by this progression recipe.", params = {
+            @Param(name = "advancement", value = "Advancement id such as mna:tier_1/cast_a_spell.")
+    })
+    public ProgressionRecipeBuilder advancement(MnaAdvancementId advancement) {
+        this.advancement = advancement.location();
         return this;
     }
 

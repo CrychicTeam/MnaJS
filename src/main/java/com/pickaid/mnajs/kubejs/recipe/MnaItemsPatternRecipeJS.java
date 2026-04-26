@@ -44,7 +44,9 @@ public abstract class MnaItemsPatternRecipeJS<T extends MnaItemsPatternRecipeJS<
 
     @HideFromJS
     public T patterns(String... values) {
-        return setKey("patterns", values);
+        return patterns(Arrays.stream(values)
+                .map(MnaManaweavePatternId::parse)
+                .toArray(MnaManaweavePatternId[]::new));
     }
 
     public T pattern(MnaManaweavePatternId value) {

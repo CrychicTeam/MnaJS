@@ -3,10 +3,12 @@ package com.pickaid.mnajs.kubejs.recipe;
 import com.pickaid.mnajs.kubejs.id.MnaItemId;
 import com.pickaid.mnajs.kubejs.id.MnaItemOrTag;
 import com.pickaid.mnajs.kubejs.id.MnaManaweavePatternId;
+import com.pickaid.mnajs.recipes.component.ItemStackComponent;
 import com.pickaid.mnajs.recipes.schema.ManaweavingAltarSchema;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
 import dev.latvian.mods.rhino.util.HideFromJS;
+import com.google.gson.JsonElement;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -63,7 +65,9 @@ public final class ManaweavingAltarRecipeJS extends MnaBaseRecipeJS<ManaweavingA
 
     @HideFromJS
     public ManaweavingAltarRecipeJS patterns(String... values) {
-        return setKey("patterns", values);
+        return patterns(Arrays.stream(values)
+                .map(MnaManaweavePatternId::parse)
+                .toArray(MnaManaweavePatternId[]::new));
     }
 
     public ManaweavingAltarRecipeJS addPattern(MnaManaweavePatternId value) {
@@ -107,13 +111,72 @@ public final class ManaweavingAltarRecipeJS extends MnaBaseRecipeJS<ManaweavingA
 
     @Override
     protected void validateRecipe() {
-        ItemStack output = getValue(ManaweavingAltarSchema.OUTPUT);
         MnaItemOrTag[] inputs = getValue(ManaweavingAltarSchema.INPUTS);
-        require(output != null && !output.isEmpty(), "Manaweaving recipe output must be set");
+        if (newRecipe) {
+            ItemStack output = resolvedOutput();
+            require(output != null && !output.isEmpty(), "Manaweaving recipe output must be set");
+        } else {
+            require(hasConfiguredOutput(), "Manaweaving recipe output must be set");
+        }
         require(inputs != null && inputs.length > 0, "Manaweaving recipe must define at least one input item");
         Integer quantity = (Integer) currentValue("quantity");
         Integer magnitude = (Integer) currentValue("magnitude");
         require(quantity == null || quantity > 0, "Manaweaving recipe quantity must be greater than 0");
         require(magnitude == null || magnitude > 0, "Manaweaving recipe magnitude must be greater than 0");
+    }
+
+    private boolean hasConfiguredOutput() {
+        ItemStack output = getValue(ManaweavingAltarSchema.OUTPUT);
+        if (output != null && !output.isEmpty()) {
+            return true;
+        }
+
+        JsonElement rawOutput = null;
+        if (json != null && json.has("output")) {
+            rawOutput = json.get("output");
+        } else if (originalJson != null && originalJson.has("output")) {
+            rawOutput = originalJson.get("output");
+        }
+
+        if (rawOutput == null || rawOutput.isJsonNull()) {
+            return false;
+        }
+
+        if (rawOutput.isJsonPrimitive()) {
+            return !rawOutput.getAsString().isBlank();
+        }
+
+        if (rawOutput.isJsonObject()) {
+            JsonElement item = rawOutput.getAsJsonObject().get("item");
+            return item != null && item.isJsonPrimitive() && !item.getAsString().isBlank();
+        }
+
+        return false;
+    }
+
+    private ItemStack resolvedOutput() {
+        ItemStack output = getValue(ManaweavingAltarSchema.OUTPUT);
+        if (output != null && !output.isEmpty()) {
+            return output;
+        }
+
+        JsonElement rawOutput = null;
+        if (json != null && json.has("output")) {
+            rawOutput = json.get("output");
+        } else if (originalJson != null && originalJson.has("output")) {
+            rawOutput = originalJson.get("output");
+        }
+
+        if (rawOutput == null) {
+            return output;
+        }
+
+        ItemStack recovered = ItemStackComponent.ITEMSTACK.read(this, rawOutput);
+        if (recovered != null && !recovered.isEmpty()) {
+            setValue(ManaweavingAltarSchema.OUTPUT, recovered);
+            return recovered;
+        }
+
+        return output;
     }
 }

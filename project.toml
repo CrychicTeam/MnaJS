@@ -4,7 +4,7 @@ template_version = "1.20.1-template-1.0.0"
 [mod]
 mod_id = "mnajs"
 mod_name = "MNAJS"
-version = "0.1.6"
+version = "0.1.7"
 version_suffix = ""
 group = "com.mihono.pickaid"
 authors = ["PickAID"]
@@ -14,7 +14,7 @@ credits = "None"
 issue_tracker_url = "https://github.com/PickAID/MnaJS/issues"
 
 [features]
-jei = false
+jei = true
 curios = false
 geckolib = false
 player_animator = false
@@ -61,6 +61,7 @@ mna_all_id = "6847805"
 mna_api_id = "6847805"
 mna_id = "406360"
 piserializekit_version = "0.0.4"
+probejs_version = "5227399"
 probejs_legacy_version = "6773935"
 rhino_version = "2001.2.3-build.10"
 

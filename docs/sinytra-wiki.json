@@ -1,0 +1,11 @@
+{
+    "id": "mnajs",
+    "platforms": {
+        "curseforge": "1255712"
+    },
+    "modid": "mnajs",
+    "owners": ["pickaid"],
+    "versions": {
+        "1.20.1": "1.20.1"
+    }
+}

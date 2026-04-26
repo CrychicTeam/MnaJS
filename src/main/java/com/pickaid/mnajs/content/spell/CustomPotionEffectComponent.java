@@ -16,13 +16,18 @@ import com.mna.api.spells.parts.SpellEffect;
 import com.mna.api.spells.targeting.SpellContext;
 import com.mna.api.spells.targeting.SpellSource;
 import com.mna.api.spells.targeting.SpellTarget;
-import com.mna.factions.Factions;
 import com.mna.spells.SpellCaster;
 import com.pickaid.mnajs.kubejs.id.MnaFactionId;
+import com.pickaid.mnajs.kubejs.id.MnaItemId;
+import com.pickaid.mnajs.kubejs.id.MnaMobEffectId;
+import com.pickaid.mnajs.kubejs.id.MnaSoundId;
+import com.pickaid.mnajs.kubejs.id.MnaTypedIdLookups;
 import com.pickaid.mnajs.kubejs.MnaJSPlugin;
+import com.pickaid.mnajs.kubejs.texture.MnaTexture;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.kubejs.typings.Param;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -53,7 +58,7 @@ public class CustomPotionEffectComponent extends SpellEffect {
     private final Builder builder;
     private ArrayList<SpellReagent> reagents = null;
     private ArrayList<SpellReagent> permanenceReagents = null;
-    private List<IFaction> permanentForFactions = null;
+    private List<MnaFactionId> permanentForFactions = null;
 
     public CustomPotionEffectComponent(Builder builder) {
         super(builder.guiIcon, builder.attributeValuePairs.toArray(new AttributeValuePair[0]));
@@ -336,7 +341,7 @@ public class CustomPotionEffectComponent extends SpellEffect {
 
     @Override
     public IFaction getFactionRequirement() {
-        return builder.factionRequirement;
+        return MnaTypedIdLookups.findFaction(builder.factionRequirement);
     }
 
     @Override
@@ -494,12 +499,12 @@ public class CustomPotionEffectComponent extends SpellEffect {
         private List<AttributeValuePair> attributeValuePairs = new ArrayList<>();
         private ArrayList<SpellReagent> reagents = new ArrayList<>();
         private ArrayList<SpellReagent> permanenceReagents = new ArrayList<>();
-        private ArrayList<IFaction> permanentForFactions = new ArrayList<>();
+        private ArrayList<MnaFactionId> permanentForFactions = new ArrayList<>();
         private int requiredXPForRote = 100;
         private boolean isSilverSpell = false;
         private float ire = 0.01F;
         private boolean replacesHeldItem = false;
-        private IFaction factionRequirement = null;
+        private MnaFactionId factionRequirement = null;
         private String addingModName = null;
         private MobEffect effect = null;
         private boolean modifiesDuration = false;
@@ -529,15 +534,19 @@ public class CustomPotionEffectComponent extends SpellEffect {
             return MnaJSPlugin.SPELL_EFFECT.get();
         }
 
-        @Info("Sets the GUI icon for this potion effect component")
-        public Builder guiIcon(ResourceLocation icon) {
-            this.guiIcon = icon;
+        @Info(value = "Sets the GUI icon for this potion effect component.", params = {
+                @Param(name = "icon", value = "Texture id such as mna:textures/gui/guide_book.png.")
+        })
+        public Builder guiIcon(MnaTexture icon) {
+            this.guiIcon = icon.location();
             return this;
         }
 
-        @Info("Sets the potion effect to apply")
-        public Builder effect(MobEffect effect) {
-            this.effect = effect;
+        @Info(value = "Sets the potion effect to apply.", params = {
+                @Param(name = "effect", value = "Mob effect id such as minecraft:speed.")
+        })
+        public Builder effect(MnaMobEffectId effect) {
+            this.effect = MnaTypedIdLookups.requireMobEffect(effect, "effect");
             return this;
         }
 
@@ -652,9 +661,11 @@ public class CustomPotionEffectComponent extends SpellEffect {
             return this;
         }
 
-        @Info("Sets the sound effect for this potion effect component")
-        public Builder soundEffect(SoundEvent sound) {
-            this.soundEffect = sound;
+        @Info(value = "Sets the sound effect for this potion effect component.", params = {
+                @Param(name = "sound", value = "Sound id such as mna:buff_arcane.")
+        })
+        public Builder soundEffect(MnaSoundId sound) {
+            this.soundEffect = MnaTypedIdLookups.requireSound(sound, "soundEffect");
             return this;
         }
 
@@ -682,15 +693,11 @@ public class CustomPotionEffectComponent extends SpellEffect {
             return this;
         }
 
-        @Info("Sets the faction requirement for this spell")
-        public Builder factionRequirement(IFaction faction) {
-            this.factionRequirement = faction;
-            return this;
-        }
-
-        @Info("Sets the faction requirement for this spell")
+        @Info(value = "Sets the faction requirement for this spell.", params = {
+                @Param(name = "faction", value = "Faction id such as mna:council.")
+        })
         public Builder factionRequirement(MnaFactionId faction) {
-            this.factionRequirement = Factions.INSTANCE.getFaction(faction.location());
+            this.factionRequirement = faction;
             return this;
         }
 
@@ -700,44 +707,97 @@ public class CustomPotionEffectComponent extends SpellEffect {
             return this;
         }
 
-        @Info("Adds a reagent requirement to this potion effect component")
-        public Builder addReagent(ItemStack reagentStack, boolean compareNBT, boolean ignoreDurability, boolean consume, IFaction... ignoredBy) {
-            SpellReagent reagent = new SpellReagent(null, reagentStack, compareNBT, ignoreDurability, consume, false, ignoredBy);
-            this.reagents.add(reagent);
+        @Info(value = "Adds a reagent requirement to this potion effect component.", params = {
+                @Param(name = "reagent", value = "Concrete item id required by the potion effect component."),
+                @Param(name = "compareNBT", value = "Whether the reagent should compare NBT."),
+                @Param(name = "ignoreDurability", value = "Whether durability should be ignored."),
+                @Param(name = "consume", value = "Whether the reagent should be consumed."),
+                @Param(name = "ignoredBy", value = "Factions that can ignore this reagent requirement.")
+        })
+        public Builder addReagent(MnaItemId reagent, boolean compareNBT, boolean ignoreDurability, boolean consume, MnaFactionId... ignoredBy) {
+            SpellReagent reagentEntry = new SpellReagent(
+                    null,
+                    MnaTypedIdLookups.stack(reagent, "reagent"),
+                    compareNBT,
+                    ignoreDurability,
+                    consume,
+                    false,
+                    MnaTypedIdLookups.factions(ignoredBy, "ignoredBy")
+            );
+            this.reagents.add(reagentEntry);
             return this;
         }
 
-        @Info("Adds a reagent requirement to this potion effect component with default settings")
-        public Builder addReagent(ItemStack reagentStack, IFaction... ignoredBy) {
-            return addReagent(reagentStack, false, false, true, ignoredBy);
+        @Info(value = "Adds a reagent requirement to this potion effect component with default settings.", params = {
+                @Param(name = "reagent", value = "Concrete item id required by the potion effect component."),
+                @Param(name = "ignoredBy", value = "Factions that can ignore this reagent requirement.")
+        })
+        public Builder addReagent(MnaItemId reagent, MnaFactionId... ignoredBy) {
+            return addReagent(reagent, false, false, true, ignoredBy);
         }
 
-        @Info("Adds an optional reagent to this potion effect component")
-        public Builder addOptionalReagent(ItemStack reagentStack, boolean compareNBT, boolean ignoreDurability, boolean consume, IFaction... ignoredBy) {
-            SpellReagent reagent = new SpellReagent(null, reagentStack, compareNBT, ignoreDurability, consume, true, ignoredBy);
-            this.reagents.add(reagent);
+        @Info(value = "Adds an optional reagent to this potion effect component.", params = {
+                @Param(name = "reagent", value = "Concrete item id used as an optional reagent."),
+                @Param(name = "compareNBT", value = "Whether the reagent should compare NBT."),
+                @Param(name = "ignoreDurability", value = "Whether durability should be ignored."),
+                @Param(name = "consume", value = "Whether the reagent should be consumed."),
+                @Param(name = "ignoredBy", value = "Factions that can ignore this reagent requirement.")
+        })
+        public Builder addOptionalReagent(MnaItemId reagent, boolean compareNBT, boolean ignoreDurability, boolean consume, MnaFactionId... ignoredBy) {
+            SpellReagent reagentEntry = new SpellReagent(
+                    null,
+                    MnaTypedIdLookups.stack(reagent, "reagent"),
+                    compareNBT,
+                    ignoreDurability,
+                    consume,
+                    true,
+                    MnaTypedIdLookups.factions(ignoredBy, "ignoredBy")
+            );
+            this.reagents.add(reagentEntry);
             return this;
         }
 
-        @Info("Adds an optional reagent to this potion effect component with default settings")
-        public Builder addOptionalReagent(ItemStack reagentStack, IFaction... ignoredBy) {
-            return addOptionalReagent(reagentStack, false, false, true, ignoredBy);
+        @Info(value = "Adds an optional reagent to this potion effect component with default settings.", params = {
+                @Param(name = "reagent", value = "Concrete item id used as an optional reagent."),
+                @Param(name = "ignoredBy", value = "Factions that can ignore this reagent requirement.")
+        })
+        public Builder addOptionalReagent(MnaItemId reagent, MnaFactionId... ignoredBy) {
+            return addOptionalReagent(reagent, false, false, true, ignoredBy);
         }
 
-        @Info("Adds a permanency reagent to this potion effect component")
-        public Builder addPermanencyReagent(ItemStack reagentStack, boolean compareNBT, boolean ignoreDurability, boolean consume, IFaction... ignoredBy) {
-            SpellReagent reagent = new SpellReagent(null, reagentStack, compareNBT, ignoreDurability, consume, true, ignoredBy);
-            this.permanenceReagents.add(reagent);
+        @Info(value = "Adds a permanency reagent to this potion effect component.", params = {
+                @Param(name = "reagent", value = "Concrete item id used as a permanency reagent."),
+                @Param(name = "compareNBT", value = "Whether the reagent should compare NBT."),
+                @Param(name = "ignoreDurability", value = "Whether durability should be ignored."),
+                @Param(name = "consume", value = "Whether the reagent should be consumed."),
+                @Param(name = "ignoredBy", value = "Factions that can ignore this reagent requirement.")
+        })
+        public Builder addPermanencyReagent(MnaItemId reagent, boolean compareNBT, boolean ignoreDurability, boolean consume, MnaFactionId... ignoredBy) {
+            SpellReagent reagentEntry = new SpellReagent(
+                    null,
+                    MnaTypedIdLookups.stack(reagent, "reagent"),
+                    compareNBT,
+                    ignoreDurability,
+                    consume,
+                    true,
+                    MnaTypedIdLookups.factions(ignoredBy, "ignoredBy")
+            );
+            this.permanenceReagents.add(reagentEntry);
             return this;
         }
 
-        @Info("Adds a permanency reagent to this potion effect component with default settings")
-        public Builder addPermanencyReagent(ItemStack reagentStack, IFaction... ignoredBy) {
-            return addPermanencyReagent(reagentStack, false, false, true, ignoredBy);
+        @Info(value = "Adds a permanency reagent to this potion effect component with default settings.", params = {
+                @Param(name = "reagent", value = "Concrete item id used as a permanency reagent."),
+                @Param(name = "ignoredBy", value = "Factions that can ignore this reagent requirement.")
+        })
+        public Builder addPermanencyReagent(MnaItemId reagent, MnaFactionId... ignoredBy) {
+            return addPermanencyReagent(reagent, false, false, true, ignoredBy);
         }
 
-        @Info("Makes this potion effect permanent for specified factions")
-        public Builder permanentFor(IFaction... factions) {
+        @Info(value = "Makes this potion effect permanent for the provided factions.", params = {
+                @Param(name = "factions", value = "Faction ids that receive the permanent effect variant.")
+        })
+        public Builder permanentFor(MnaFactionId... factions) {
             this.permanentForFactions.addAll(Arrays.asList(factions));
             return this;
         }

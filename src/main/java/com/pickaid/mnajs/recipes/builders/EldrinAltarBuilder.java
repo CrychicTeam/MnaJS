@@ -162,9 +162,9 @@ public class EldrinAltarBuilder extends ItemAndPatternBuilder {
 
         JsonArray inputs = new JsonArray();
         for (MnaItemOrTag input : requiredItems) {
-            inputs.add(input.scriptValue());
+            inputs.add(input.recipeValue());
         }
-        json.add("inputs", inputs);
+        json.add("items", inputs);
 
         if (outputNBT != null) {
             JsonObject outputObject = new JsonObject();

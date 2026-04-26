@@ -7,7 +7,7 @@ import java.util.Objects;
 public record MnaRitualId(ResourceLocation location) implements MnaTypedId {
     public MnaRitualId {
         Objects.requireNonNull(location, "location");
-        location = MnaIds.normalize(location, "mna", "rituals");
+        location = MnaIds.normalize(location, "mna", null);
     }
 
     public static MnaRitualId of(ResourceLocation location) {
@@ -18,7 +18,7 @@ public record MnaRitualId(ResourceLocation location) implements MnaTypedId {
         if (value instanceof MnaRitualId id) {
             return id;
         }
-        return new MnaRitualId(MnaIds.parse(value, "ritualId", "mna", "rituals"));
+        return new MnaRitualId(MnaIds.parse(value, "ritualId", "mna", null));
     }
 
     @Override

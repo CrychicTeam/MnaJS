@@ -18,10 +18,15 @@ import com.mna.api.spells.targeting.SpellSource;
 import com.mna.api.spells.targeting.SpellTarget;
 import com.mna.factions.Factions;
 import com.pickaid.mnajs.kubejs.id.MnaFactionId;
+import com.pickaid.mnajs.kubejs.id.MnaItemId;
+import com.pickaid.mnajs.kubejs.id.MnaSoundId;
+import com.pickaid.mnajs.kubejs.id.MnaTypedIdLookups;
 import com.pickaid.mnajs.kubejs.MnaJSPlugin;
+import com.pickaid.mnajs.kubejs.texture.MnaTexture;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.kubejs.typings.Param;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -191,7 +196,7 @@ public class CustomSpellEffect extends SpellEffect {
 
     @Override
     public IFaction getFactionRequirement() {
-        return builder.factionRequirement;
+        return MnaTypedIdLookups.findFaction(builder.factionRequirement);
     }
 
     @Override
@@ -337,7 +342,7 @@ public class CustomSpellEffect extends SpellEffect {
         private boolean isSilverSpell = false;
         private float ire = 0.01F;
         private boolean replacesHeldItem = false;
-        private IFaction factionRequirement = null;
+        private MnaFactionId factionRequirement = null;
         private String addingModName = null;
 
         private ApplyEffectCallback applyEffectCallback;
@@ -361,9 +366,11 @@ public class CustomSpellEffect extends SpellEffect {
             return MnaJSPlugin.SPELL_EFFECT.get();
         }
 
-        @Info("Sets the GUI icon for this spell effect")
-        public Builder guiIcon(ResourceLocation icon) {
-            this.guiIcon = icon;
+        @Info(value = "Sets the GUI icon for this spell effect.", params = {
+                @Param(name = "icon", value = "Texture id such as mna:textures/gui/guide_book.png.")
+        })
+        public Builder guiIcon(MnaTexture icon) {
+            this.guiIcon = icon.location();
             return this;
         }
 
@@ -445,9 +452,11 @@ public class CustomSpellEffect extends SpellEffect {
             return this;
         }
 
-        @Info("Sets the sound effect for this spell effect")
-        public Builder soundEffect(SoundEvent sound) {
-            this.soundEffect = sound;
+        @Info(value = "Sets the sound effect for this spell effect.", params = {
+                @Param(name = "sound", value = "Sound id such as mna:impact_arcane.")
+        })
+        public Builder soundEffect(MnaSoundId sound) {
+            this.soundEffect = MnaTypedIdLookups.requireSound(sound, "soundEffect");
             return this;
         }
 
@@ -475,15 +484,11 @@ public class CustomSpellEffect extends SpellEffect {
             return this;
         }
 
-        @Info("Sets the faction requirement for this spell")
-        public Builder factionRequirement(IFaction faction) {
-            this.factionRequirement = faction;
-            return this;
-        }
-
-        @Info("Sets the faction requirement for this spell")
+        @Info(value = "Sets the faction requirement for this spell.", params = {
+                @Param(name = "faction", value = "Faction id such as mna:council.")
+        })
         public Builder factionRequirement(MnaFactionId faction) {
-            this.factionRequirement = Factions.INSTANCE.getFaction(faction.location());
+            this.factionRequirement = faction;
             return this;
         }
 
@@ -493,28 +498,62 @@ public class CustomSpellEffect extends SpellEffect {
             return this;
         }
 
-        @Info("Adds a reagent requirement to this spell effect")
-        public Builder addReagent(ItemStack reagentStack, boolean compareNBT, boolean ignoreDurability, boolean consume, IFaction... ignoredBy) {
-            SpellReagent reagent = new SpellReagent(null, reagentStack, compareNBT, ignoreDurability, consume, false, ignoredBy);
-            this.reagents.add(reagent);
+        @Info(value = "Adds a reagent requirement to this spell effect.", params = {
+                @Param(name = "reagent", value = "Concrete item id required by the spell effect."),
+                @Param(name = "compareNBT", value = "Whether the reagent should compare NBT."),
+                @Param(name = "ignoreDurability", value = "Whether durability should be ignored."),
+                @Param(name = "consume", value = "Whether the reagent should be consumed."),
+                @Param(name = "ignoredBy", value = "Factions that can ignore this reagent requirement.")
+        })
+        public Builder addReagent(MnaItemId reagent, boolean compareNBT, boolean ignoreDurability, boolean consume, MnaFactionId... ignoredBy) {
+            SpellReagent reagentEntry = new SpellReagent(
+                    null,
+                    MnaTypedIdLookups.stack(reagent, "reagent"),
+                    compareNBT,
+                    ignoreDurability,
+                    consume,
+                    false,
+                    MnaTypedIdLookups.factions(ignoredBy, "ignoredBy")
+            );
+            this.reagents.add(reagentEntry);
             return this;
         }
 
-        @Info("Adds a reagent requirement to this spell effect with default settings")
-        public Builder addReagent(ItemStack reagentStack, IFaction... ignoredBy) {
-            return addReagent(reagentStack, false, false, true, ignoredBy);
+        @Info(value = "Adds a reagent requirement to this spell effect with default settings.", params = {
+                @Param(name = "reagent", value = "Concrete item id required by the spell effect."),
+                @Param(name = "ignoredBy", value = "Factions that can ignore this reagent requirement.")
+        })
+        public Builder addReagent(MnaItemId reagent, MnaFactionId... ignoredBy) {
+            return addReagent(reagent, false, false, true, ignoredBy);
         }
 
-        @Info("Adds an optional reagent to this spell effect")
-        public Builder addOptionalReagent(ItemStack reagentStack, boolean compareNBT, boolean ignoreDurability, boolean consume, IFaction... ignoredBy) {
-            SpellReagent reagent = new SpellReagent(null, reagentStack, compareNBT, ignoreDurability, consume, true, ignoredBy);
-            this.reagents.add(reagent);
+        @Info(value = "Adds an optional reagent to this spell effect.", params = {
+                @Param(name = "reagent", value = "Concrete item id used as an optional reagent."),
+                @Param(name = "compareNBT", value = "Whether the reagent should compare NBT."),
+                @Param(name = "ignoreDurability", value = "Whether durability should be ignored."),
+                @Param(name = "consume", value = "Whether the reagent should be consumed."),
+                @Param(name = "ignoredBy", value = "Factions that can ignore this reagent requirement.")
+        })
+        public Builder addOptionalReagent(MnaItemId reagent, boolean compareNBT, boolean ignoreDurability, boolean consume, MnaFactionId... ignoredBy) {
+            SpellReagent reagentEntry = new SpellReagent(
+                    null,
+                    MnaTypedIdLookups.stack(reagent, "reagent"),
+                    compareNBT,
+                    ignoreDurability,
+                    consume,
+                    true,
+                    MnaTypedIdLookups.factions(ignoredBy, "ignoredBy")
+            );
+            this.reagents.add(reagentEntry);
             return this;
         }
 
-        @Info("Adds an optional reagent to this spell effect with default settings")
-        public Builder addOptionalReagent(ItemStack reagentStack, IFaction... ignoredBy) {
-            return addOptionalReagent(reagentStack, false, false, true, ignoredBy);
+        @Info(value = "Adds an optional reagent to this spell effect with default settings.", params = {
+                @Param(name = "reagent", value = "Concrete item id used as an optional reagent."),
+                @Param(name = "ignoredBy", value = "Factions that can ignore this reagent requirement.")
+        })
+        public Builder addOptionalReagent(MnaItemId reagent, MnaFactionId... ignoredBy) {
+            return addOptionalReagent(reagent, false, false, true, ignoredBy);
         }
 
         @Info("Sets the callback for applying the spell effect")

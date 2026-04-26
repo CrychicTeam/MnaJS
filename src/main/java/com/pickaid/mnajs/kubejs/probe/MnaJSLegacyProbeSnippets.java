@@ -85,8 +85,8 @@ final class MnaJSLegacyProbeSnippets {
                 .newline().literal("    .reagentRows(");
         appendRitualExampleReagentRows(snippet, 8, "        ");
         snippet.newline().literal("    )")
-                .newline().literal("    .reagent('").tabStop(11, "A").literal("', ").tabStop(12, ProbeJS.GSON.toJson(DEFAULT_ITEM_ID)).literal(")")
-                .newline().literal("    .reagent('").tabStop(13, "B").literal("', ").tabStop(14, ProbeJS.GSON.toJson(DEFAULT_ITEM_TAG)).literal(", false, false)")
+                .newline().literal("    .reagent(new MnaRitualReagent(").tabStop(11, ProbeJS.GSON.toJson("A")).literal(", ").tabStop(12, ProbeJS.GSON.toJson(DEFAULT_ITEM_ID)).literal("))")
+                .newline().literal("    .reagent(new MnaRitualReagent(").tabStop(13, ProbeJS.GSON.toJson("B")).literal(", ").tabStop(14, ProbeJS.GSON.toJson(DEFAULT_ITEM_TAG)).literal(").optional().keep())")
                 .newline().literal("    .outputItem(").tabStop(15, ProbeJS.GSON.toJson(DEFAULT_OUTPUT_ID)).literal(")")
                 .tabStop(0);
     }
@@ -232,7 +232,9 @@ final class MnaJSLegacyProbeSnippets {
                 .prefix("@mna_progression_chain")
                 .description("MnaJS progression chain DSL scaffold");
         snippet.literal("event.recipes.mna.progression()")
-                .newline().literal("    .advancement(").tabStop(1, ProbeJS.GSON.toJson(DEFAULT_ADVANCEMENT_ID)).literal(")")
+                .newline().literal("    .advancement(");
+        appendIdChoiceOrPlaceholder(snippet, "MnaAdvancementId", 1, DEFAULT_ADVANCEMENT_ID);
+        snippet.literal(")")
                 .newline().literal("    .description(").tabStop(2, ProbeJS.GSON.toJson("mna.progression.example")).literal(")");
         appendTierAndFaction(snippet, 3, 4);
         snippet.tabStop(0);
@@ -353,41 +355,41 @@ final class MnaJSLegacyProbeSnippets {
     }
 
     private static void addRitualReagentSnippets(SnippetDump dump) {
-        addSimpleReagentSnippet(
+        addConfiguredReagentSnippet(
                 dump,
                 "MnaRitualReagent",
                 "@mna_ritual_reagent",
                 "MnaJS ritual reagent declaration",
-                ".reagent('",
+                ".reagent(new MnaRitualReagent(",
                 DEFAULT_ITEM_ID,
-                ")"
+                "))"
         );
-        addSimpleReagentSnippet(
+        addConfiguredReagentSnippet(
                 dump,
                 "MnaRitualDynamicReagent",
                 "@mna_ritual_dynamic_reagent",
                 "MnaJS ritual dynamic reagent declaration",
-                ".dynamicReagent('",
+                ".reagent(new MnaRitualReagent(",
                 DEFAULT_ITEM_ID,
-                ")"
+                ").dynamic())"
         );
-        addSimpleReagentSnippet(
+        addConfiguredReagentSnippet(
                 dump,
                 "MnaRitualDynamicSourceReagent",
                 "@mna_ritual_dynamic_source_reagent",
                 "MnaJS ritual dynamic source reagent declaration",
-                ".dynamicSourceReagent('",
+                ".reagent(new MnaRitualReagent(",
                 DEFAULT_ITEM_ID,
-                ")"
+                ").dynamicSource())"
         );
-        addSimpleReagentSnippet(
+        addConfiguredReagentSnippet(
                 dump,
                 "MnaRitualManualReturnReagent",
                 "@mna_ritual_manual_return_reagent",
                 "MnaJS ritual manual-return reagent declaration",
-                ".manualReturnReagent('",
+                ".reagent(new MnaRitualReagent(",
                 DEFAULT_ITEM_TAG,
-                ")"
+                ").manualReturn())"
         );
     }
 
@@ -438,13 +440,13 @@ final class MnaJSLegacyProbeSnippets {
                 .tabStop(0);
     }
 
-    private static void addSimpleReagentSnippet(SnippetDump dump, String name, String prefix, String description, String methodPrefix, String defaultItem, String suffix) {
+    private static void addConfiguredReagentSnippet(SnippetDump dump, String name, String prefix, String description, String methodPrefix, String defaultItem, String suffix) {
         Snippet snippet = dump.snippet(name)
                 .prefix(prefix)
                 .description(description);
         snippet.literal(methodPrefix)
-                .tabStop(1, "A")
-                .literal("', ")
+                .tabStop(1, ProbeJS.GSON.toJson("A"))
+                .literal(", ")
                 .tabStop(2, ProbeJS.GSON.toJson(defaultItem))
                 .literal(suffix)
                 .tabStop(0);

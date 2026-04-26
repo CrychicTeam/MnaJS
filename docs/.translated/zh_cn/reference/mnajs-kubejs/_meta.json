@@ -1,0 +1,26 @@
+{
+  "overview.mdx": {
+    "name": "概览",
+    "icon": "BookOpen"
+  },
+  "bindings.mdx": {
+    "name": "绑定",
+    "icon": "Cable"
+  },
+  "registries.mdx": {
+    "name": "注册",
+    "icon": "PackagePlus"
+  },
+  "recipes.mdx": {
+    "name": "配方",
+    "icon": "ScrollText"
+  },
+  "events.mdx": {
+    "name": "事件",
+    "icon": "RadioTower"
+  },
+  "helpers-and-probe.mdx": {
+    "name": "辅助与 Probe",
+    "icon": "WandSparkles"
+  }
+}

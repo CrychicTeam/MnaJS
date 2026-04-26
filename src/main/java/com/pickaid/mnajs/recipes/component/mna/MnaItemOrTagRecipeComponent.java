@@ -14,7 +14,7 @@ public final class MnaItemOrTagRecipeComponent implements RecipeComponent<MnaIte
 
     @Override
     public JsonElement write(RecipeJS recipe, MnaItemOrTag value) {
-        return new JsonPrimitive(value.scriptValue());
+        return new JsonPrimitive(value.recipeValue());
     }
 
     @Override

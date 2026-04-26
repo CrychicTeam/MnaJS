@@ -1,0 +1,90 @@
+---
+title: MnaJS KubeJS Support
+hide_meta: true
+---
+
+# MnaJS KubeJS Support
+
+Last reviewed: 2026-04-26
+
+This reference documents the KubeJS-facing surface currently implemented in this repository for Mana and Artifice on Forge 1.20.1.
+
+## Audience
+
+Use these docs if you are:
+
+- writing KubeJS startup scripts for M&A content
+- writing server scripts with `event.recipes.mna`
+- wiring gameplay around M&A events
+- relying on ProbeJS completion and typed ids
+
+## Conventions
+
+- Prefer typed ids or id strings over raw `Object`-style inputs.
+- For builder completion, keep the builder in a typed local before chaining.
+- Startup content belongs in `startup_scripts`.
+- Recipes and runtime hooks belong in `server_scripts`.
+- Client-only rendering helpers should stay in client scripts or client-side code paths.
+
+## Builder Typing Pattern
+
+`event.create(id, type)` does not always narrow completion strongly enough on its own. Prefer this pattern:
+
+```js
+/**
+ * @type {Internal.CustomRitualEffect$Builder}
+ */
+const builder = event.create("kubejs:lightning_ritual_effect", "basic");
+
+builder
+    .ritualName("kubejs:lightning_ritual")
+    .applicationTicks(20);
+```
+
+## Document Map
+
+- [Bindings]($reference/mnajs-kubejs/bindings)
+  - direct KubeJS globals exposed by `registerBindings`
+  - core spell constants and result types
+  - construct-system Java bindings
+  - server-only and client-only binding catalogs
+- [Registries]($reference/mnajs-kubejs/registries)
+  - custom factions
+  - ritual effects
+  - spell effects, damage components, potion components
+  - shapes, modifiers, construct tasks
+  - construct materials and construct parts
+  - items and blocks
+- [Recipes]($reference/mnajs-kubejs/recipes)
+  - all current `event.recipes.mna.*` chains
+  - `MNARecipesHelper`
+  - multiblock definition helper
+- [Events]($reference/mnajs-kubejs/events)
+  - startup events
+  - player events
+  - spell events
+  - runeforge events
+- [Helpers And Probe]($reference/mnajs-kubejs/helpers-and-probe)
+  - typed ids
+  - reagent and pattern helpers
+  - player and world state helpers
+  - PiSerializeKit typed-id interop
+  - ProbeJS modern and legacy support
+  - pattern document utilities
+
+## Validation
+
+These docs were checked against the current repo support surface, not against a wishlist.
+
+Validated during this review:
+
+- `./gradlew compileJava`
+- `./gradlew runServer`
+- startup example registration chain
+- server example recipe and event script load
+
+## Important Limits
+
+- `construct_task` does not support authoring a brand-new JS-native `ConstructAITask` implementation. Current support is metadata plus reuse of an existing AI class via `basedOn(...)` or `aiTask(...)`.
+- `registerGuideBook` currently exposes the raw guidebook registry. Deep guidebook authoring is still driven by M&A guidebook JSON and surrounding tooling.
+- Probe wiring is installed for modern ProbeJS and ProbeJS Legacy, but only runtime compatibility and support generation wiring are documented here. It is not a claim that every possible completion branch has already been manually exercised.

@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.pickaid.mnajs.util.KubeJSCompat;
+import dev.latvian.mods.kubejs.recipe.RecipeKey;
 import dev.latvian.mods.kubejs.recipe.RecipeJS;
 import dev.latvian.mods.kubejs.recipe.component.RecipeComponent;
 import net.minecraft.nbt.CompoundTag;
@@ -52,23 +53,24 @@ public interface ItemStackComponent {
 
         @Override
         public ItemStack read(RecipeJS recipe, Object from) {
+            if (from instanceof JsonObject object) {
+                return readFromJsonObject(object);
+            }
+            if (from instanceof JsonElement element) {
+                if (element.isJsonPrimitive()) {
+                    return read(recipe, element.getAsString());
+                }
+                if (element.isJsonObject()) {
+                    return readFromJsonObject(element.getAsJsonObject());
+                }
+            }
             if (from instanceof String string) {
                 var item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(string));
                 if (item != null) {
                     return new ItemStack(item);
                 }
-            } else if (from instanceof JsonObject object) {
-                if (object.has("item")) {
-                    var item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(object.get("item").getAsString()));
-                    if (item != null) {
-                        ItemStack itemStack = new ItemStack(item);
-                        if (object.has("data")) {
-                            CompoundTag tag = fromJSON(object.get("data").getAsJsonObject());
-                            itemStack.setTag(tag);
-                        }
-                        return itemStack;
-                    }
-                }
+            } else if (from instanceof Map<?, ?> map) {
+                return readFromMap(map);
             } else if (from instanceof Item item) {
                 return new ItemStack(item);
             } else if (from instanceof ItemStack itemStack) {
@@ -76,7 +78,115 @@ public interface ItemStackComponent {
             }
             return ItemStack.EMPTY;
         }
+
+        private static ItemStack readFromJsonObject(JsonObject object) {
+            if (!object.has("item")) {
+                return ItemStack.EMPTY;
+            }
+
+            var item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(object.get("item").getAsString()));
+            if (item == null) {
+                return ItemStack.EMPTY;
+            }
+
+            ItemStack itemStack = new ItemStack(item);
+            if (object.has("data") && object.get("data").isJsonObject()) {
+                CompoundTag tag = fromJSON(object.get("data").getAsJsonObject());
+                itemStack.setTag(tag);
+            }
+            if (object.has("count")) {
+                itemStack.setCount(object.get("count").getAsInt());
+            }
+            return itemStack;
+        }
+
+        private static ItemStack readFromMap(Map<?, ?> map) {
+            Object itemValue = getNamedValue(map, "item");
+            if (itemValue == null) {
+                return ItemStack.EMPTY;
+            }
+
+            Item item;
+            if (itemValue instanceof Item directItem) {
+                item = directItem;
+            } else if (itemValue instanceof ResourceLocation id) {
+                item = ForgeRegistries.ITEMS.getValue(id);
+            } else {
+                item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(String.valueOf(itemValue)));
+            }
+
+            if (item == null) {
+                return ItemStack.EMPTY;
+            }
+
+            ItemStack itemStack = new ItemStack(item);
+            Object dataValue = getNamedValue(map, "data");
+            if (dataValue instanceof JsonObject dataObject) {
+                itemStack.setTag(fromJSON(dataObject));
+            } else if (dataValue instanceof Map<?, ?> dataMap) {
+                JsonObject json = new JsonObject();
+                dataMap.forEach((key, value) -> json.add(String.valueOf(key), toJsonElement(value)));
+                itemStack.setTag(fromJSON(json));
+            }
+
+            Object countValue = getNamedValue(map, "count");
+            if (countValue instanceof Number number && number.intValue() > 0) {
+                itemStack.setCount(number.intValue());
+            }
+
+            return itemStack;
+        }
     };
+
+    private static Object getNamedValue(Map<?, ?> map, String name) {
+        Object direct = map.get(name);
+        if (direct != null) {
+            return direct;
+        }
+
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            Object key = entry.getKey();
+            if (name.equals(key)) {
+                return entry.getValue();
+            }
+            if (key instanceof RecipeKey<?> recipeKey && recipeKey.names.contains(name)) {
+                return entry.getValue();
+            }
+        }
+
+        return null;
+    }
+
+    private static JsonElement toJsonElement(Object value) {
+        if (value == null) {
+            return new JsonPrimitive("");
+        }
+        if (value instanceof JsonElement element) {
+            return element;
+        }
+        if (value instanceof Boolean bool) {
+            return new JsonPrimitive(bool);
+        }
+        if (value instanceof Number number) {
+            return new JsonPrimitive(number);
+        }
+        if (value instanceof String string) {
+            return new JsonPrimitive(string);
+        }
+        if (value instanceof Map<?, ?> map) {
+            JsonObject object = new JsonObject();
+            map.forEach((key, nestedValue) -> object.add(String.valueOf(key), toJsonElement(nestedValue)));
+            return object;
+        }
+        if (value instanceof Iterable<?> iterable) {
+            JsonArray array = new JsonArray();
+            for (Object element : iterable) {
+                array.add(toJsonElement(element));
+            }
+            return array;
+        }
+        return new JsonPrimitive(String.valueOf(value));
+    }
 
     private static JsonObject toJSON(CompoundTag tag) {
         JsonObject output = new JsonObject();

@@ -173,8 +173,8 @@ public final class MnaPatternHelper {
     }
 
     private static void validateOddSquareSize(String label, int size) {
-        if (size < 3) {
-            throw new IllegalArgumentException(label + " size must be at least 3");
+        if (size < 1) {
+            throw new IllegalArgumentException(label + " size must be at least 1");
         }
         if ((size & 1) == 0) {
             throw new IllegalArgumentException(label + " size must be odd");

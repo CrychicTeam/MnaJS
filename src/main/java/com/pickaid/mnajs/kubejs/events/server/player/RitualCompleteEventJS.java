@@ -20,6 +20,7 @@ public class RitualCompleteEventJS extends PlayerEventJS {
     private BlockPos center;
 
     public RitualCompleteEventJS(RitualCompleteEvent event) {
+        this.event = event;
         this.ritual = event.getRitual();
         this.caster = event.getCaster();
         this.collectedReagents = event.getCollectedReagents();

@@ -23,7 +23,8 @@ import java.util.Set;
 final class MnaJSLegacyProbeTypes {
     private static final List<String> LEGACY_GLOBAL_FILES = List.of(
             "mnajs_special_types.d.ts",
-            "mnajs_id_aliases.d.ts"
+            "mnajs_id_aliases.d.ts",
+            "mnajs_bindings.d.ts"
     );
 
     private MnaJSLegacyProbeTypes() {

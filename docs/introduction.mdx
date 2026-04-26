@@ -1,0 +1,225 @@
+---
+title: MnaJS KubeJS Support
+hide_meta: true
+---
+
+# MnaJS KubeJS Support
+
+MnaJS is a KubeJS addon layer for Mana and Artifice on Forge 1.20.1. Its goal is to make M&A content scriptable with typed ids, ProbeJS-friendly builders, chainable recipes, and server/runtime helpers that feel like normal KubeJS instead of raw Java interop.
+
+This document is the external overview. The detailed reference lives in [MnaJS KubeJS reference]($reference/mnajs-kubejs/overview).
+
+## What This Adds
+
+MnaJS currently exposes:
+
+- startup registries for M&A factions, ritual effects, spell components, shapes, modifiers, construct tasks, construct materials, construct parts, mana items, and M&A-aware blocks
+- server recipe chains for ritual, transmutation, crushing, runeforging, runescribing, component, modifier, shape, progression, manaweaving altar, arcane furnace, eldrin altar, eldrin fume, manaweave cache effect, and manaweaving pattern recipes
+- startup and server events for guidebook registration, cantrip registration, player magic progression, spell casting, ritual completion, wandering wizard trades, and runeforge hooks
+- typed ids and wrappers for M&A resources such as factions, rituals, spell effects, shapes, modifiers, construct tasks, construct materials, construct slots, construct capabilities, cantrips, structures, sounds, loot tables, and textures
+- helper bindings for player magic state, player progression state, world magic state, ritual reagents, pattern grids, and lower-level recipe JSON generation
+- ProbeJS and ProbeJS Legacy integration for builder typing, typed-id completion, snippets, and generated Java surfaces
+- PiSerializeKit-backed typed-id serializers for editor, packet, codec, and stored-document workflows
+
+## Startup Content
+
+Startup scripts can register new M&A-facing content through KubeJS registries:
+
+- `mna:factions`
+- `mna:ritual-effects`
+- `mna:components`
+- `mna:shapes`
+- `mna:modifiers`
+- `mna:construct_task`
+- `mnajs:construct_material`
+- `item` types `construct_part`, `mana_battery_item`, and `tiered_item`
+- `block` types `spell_interactible` and `manaweave_notifiable`
+
+The intended style is typed and chainable:
+
+```js
+StartupEvents.registry("mna:ritual-effects", (event) => {
+    /**
+     * @type {Internal.CustomRitualEffect$Builder}
+     */
+    const builder = event.create("kubejs:lightning_ritual_effect", "basic");
+
+    builder
+        .ritualName("kubejs:lightning_ritual")
+        .applicationTicks(20)
+        .applyEffect((context) => {
+            const level = context.getLevel();
+            if (level == null) return false;
+            const lightning = EntityType.LIGHTNING_BOLT.create(level);
+            if (lightning == null) return false;
+            lightning.setPos(context.getCenter().x, context.getCenter().y, context.getCenter().z);
+            level.addFreshEntity(lightning);
+            return true;
+        });
+});
+```
+
+The explicit `Internal.CustomXxx$Builder` local type is intentional. It gives ProbeJS a concrete builder type when `event.create(id, type)` alone cannot narrow completions deeply enough.
+
+## Recipe Chains
+
+Recipes are exposed as `event.recipes.mna.*()` chains instead of requiring users to hand-author every JSON payload.
+
+Example ritual recipe:
+
+```js
+ServerEvents.recipes((event) => {
+    event.recipes.mna
+        .ritual()
+        .tier(1)
+        .patternRows("1")
+        .displayPatternRows("1")
+        .reagentRows("A")
+        .reagent(MnaRitualReagent.of("A", "minecraft:amethyst_shard"))
+        .innerColor(0xffd54f)
+        .outerColor(0xfff176)
+        .beamColor(0xfbc02d)
+        .connectBeam(true)
+        .outputItem("minecraft:lightning_rod")
+        .id("kubejs:lightning_ritual");
+});
+```
+
+Covered recipe groups:
+
+- ritual recipes with pattern grids, display grids, reagent grids, colors, manaweave pattern requirements, commands, and output items
+- item conversion recipes such as crushing and arcane furnace
+- runeforging and runescribing recipes
+- spell part recipes for components, modifiers, and shapes
+- manaweaving altar, manaweaving pattern, and manaweave cache effect recipes
+- progression condition recipes
+- transmutation recipes with block replacement or loot table plus representation item
+- eldrin altar and eldrin fume recipes
+- low-level `MNARecipesHelper` builders for `event.custom(...)`
+- multiblock definition JSON generation through `MNARecipesHelper.multiblockDefinitionBuilder`
+
+## Events And Runtime Hooks
+
+MnaJS registers four KubeJS event groups:
+
+- `MnaEvent`
+- `MnaPlayerEvent`
+- `SpellEvent`
+- `RuneForgeEvent`
+
+Important hooks include:
+
+- `MnaEvent.registerGuideBook`
+- `MnaEvent.registerCantrip`
+- `MnaEvent.wanderingWizardSelectingTrade`
+- `MnaPlayerEvent.ritualCompleteEvent`
+- `MnaPlayerEvent.affinityChangedEvent`
+- `MnaPlayerEvent.genericProgression`
+- `MnaPlayerEvent.levelUp`
+- `MnaPlayerEvent.magicXPGained`
+- `MnaPlayerEvent.masteryGained`
+- `MnaPlayerEvent.roteProgression`
+- `SpellEvent.costingMana`
+- `SpellEvent.casted`
+- `SpellEvent.calculatingCooldown`
+- `SpellEvent.componentApplying`
+- `RuneForgeEvent.shouldActivate`
+- `RuneForgeEvent.itemUsed`
+
+Example:
+
+```js
+MnaPlayerEvent.magicXPGained((event) => {
+    event.setAmount(event.getAmount() + 5);
+});
+
+SpellEvent.costingMana((event) => {
+    event.setCost(Math.max(1, event.getCost() * 0.9));
+});
+```
+
+Cantrip registration is handled as a startup event and supports typed ids, required advancements, sounds, icon textures, manaweave patterns, dynamic item providers, custom callbacks, delayed callbacks, and verified built-in effects such as `firework`, `gust`, `ascend`, `ward`, and `apply_spell`.
+
+## Typed Ids And ProbeJS
+
+MnaJS intentionally avoids loose script APIs where possible. Common inputs are wrapped as typed ids, then exposed to ProbeJS so script authors get better completion.
+
+Examples of typed id families:
+
+- `MnaFactionId`
+- `MnaRitualEffectId`
+- `MnaSpellEffectId`
+- `MnaShapeId`
+- `MnaModifierId`
+- `MnaConstructTaskId`
+- `MnaConstructMaterialId`
+- `MnaConstructSlotId`
+- `MnaConstructCapabilityId`
+- `MnaRitualId`
+- `MnaManaweavePatternId`
+- `MnaCantripId`
+- `MnaItemId`
+- `MnaBlockId`
+- `MnaLootTableId`
+- `MnaSoundId`
+- `MnaStructureId`
+- `MnaTexture`
+
+Probe support is installed for both modern ProbeJS and ProbeJS Legacy. The main scripting guideline is:
+
+```js
+/**
+ * @type {Internal.CustomConstructMaterial$Builder}
+ */
+const material = event.create("kubejs:moonsteel", "basic");
+```
+
+This style gives better completion for builder methods, typed id parameters, and callback signatures.
+
+## Helper APIs
+
+MnaJS exposes helper globals for common script tasks:
+
+- `PlayerMagic` for mana, magic XP, magic level, affinity, casting resource, and progression access
+- `PlayerProgression` for tier, completed progression steps, faction standing, allied faction, and raid state
+- `WorldMagic` for wellspring nodes and affinity power state
+- `ProgressionEvents` for built-in typed progression event constants
+- `MnaRitualReagent` for ritual reagent construction
+- `MnaPatternHelper` for ritual, reagent, and manaweave grids
+- `MNARecipesHelper` for low-level JSON builders in server scripts
+
+Example:
+
+```js
+MnaPlayerEvent.levelUp((event) => {
+    const magic = PlayerMagic.of(event.getEntity());
+    magic.addMana(25);
+});
+```
+
+Pattern helpers are present for script ergonomics, while larger shape editing is expected to happen through editor tooling or the toolkit UI rather than handwritten Java-like helpers.
+
+## Current Limits
+
+These limits are deliberate documentation points, not hidden behavior:
+
+- `construct_task` currently supports metadata and reuse of existing Java AI tasks through `basedOn(...)` or `aiTask(...)`; it is not a JS-native AI task authoring system.
+- `registerGuideBook` currently exposes the raw M&A guidebook registry. Deep guidebook authoring is expected to be handled by guidebook JSON and external tooling.
+- ProbeJS compatibility is installed for modern and legacy ProbeJS, but the documented guarantee is support wiring and generated surfaces, not manual verification of every possible completion branch.
+
+## Reference
+
+Detailed pages:
+
+- [Bindings]($reference/mnajs-kubejs/bindings)
+- [Registries]($reference/mnajs-kubejs/registries)
+- [Recipes]($reference/mnajs-kubejs/recipes)
+- [Events]($reference/mnajs-kubejs/events)
+- [Helpers And Probe]($reference/mnajs-kubejs/helpers-and-probe)
+
+Validation noted in the reference:
+
+- `./gradlew compileJava`
+- `./gradlew runServer`
+- startup example registration chain
+- server recipe and event script load

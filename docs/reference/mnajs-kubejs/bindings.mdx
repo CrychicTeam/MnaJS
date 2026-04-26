@@ -1,0 +1,168 @@
+---
+title: Bindings
+hide_meta: true
+---
+
+# Bindings
+
+This page covers the direct Java bindings exposed by `MnaJSPlugin.registerBindings(...)`.
+
+Use this page when you want the exact global names available in KubeJS. For typed ids, state helpers, pattern helpers, and Probe notes, also see [Helpers And Probe]($reference/mnajs-kubejs/helpers-and-probe).
+
+## Core Spell And Affinity Bindings
+
+These globals are available directly in scripts:
+
+- `Affinity`
+- `Attribute`
+- `SpellAttribute`
+- `ComponentApplicationResult`
+- `SpellTarget`
+- `MnaShapes`
+- `MnaModifiers`
+
+Use them when a callback needs real M&A constants or result values instead of ids:
+
+- `Affinity` for faction, spell, and power alignment checks
+- `Attribute` or `SpellAttribute` for component and modifier attribute definitions
+- `ComponentApplicationResult` for spell-effect callback return values
+- `SpellTarget` for shape targeting callbacks and target inspection
+- `MnaShapes` and `MnaModifiers` when you want existing built-in M&A shape or modifier constants
+
+Example:
+
+```js
+/**
+ * @type {Internal.CustomSpellEffect$Builder}
+ */
+const builder = event.create("kubejs:arcane_pulse", "basic");
+
+builder
+    .affinity(Affinity.ARCANE)
+    .addAttribute(Attribute.RANGE, 1.0, 1.0, 4.0, 0.5, 0.25)
+    .applyEffect((source, target, modificationData, context) => {
+        return ComponentApplicationResult.SUCCESS;
+    });
+```
+
+Notes:
+
+- `SpellAttribute` is an alias binding for `Attribute`.
+- Prefer typed ids when an API accepts ids. Use these bindings when the API really expects constants, enums, or callback return values.
+
+## Construct System Bindings
+
+These globals expose the construct system directly:
+
+- `MnaConstructTasks`
+- `ConstructCapability`
+- `ConstructSlot`
+- `ConstructMaterial`
+- `ItemConstructPart`
+- `ConstructTask`
+- `ConstructAITask`
+- `ConstructAITaskParameter`
+- `ConstructParameterTypes`
+- `ConstructTaskBooleanParameter`
+- `ConstructTaskIntegerParameter`
+- `ConstructTaskItemStackParameter`
+- `ConstructTaskPointParameter`
+- `ConstructTaskAreaParameter`
+- `ConstructTaskFilterParameter`
+- `ConstructMutexArms`
+- `ConstructMutexHead`
+- `ConstructMutexLegs`
+- `ConstructMutexTorso`
+
+Practical use:
+
+- `MnaConstructTasks` is the main script-facing entry for reusing an existing M&A task in `basedOn(...)` or `aiTask(...)`.
+- `ConstructCapability`, `ConstructSlot`, and `ConstructMaterial` are available directly, but registry-facing MnaJS APIs should still prefer typed ids or the matching lower-case strings where supported.
+- The parameter and mutex classes matter for advanced construct-task metadata or inspection work, not for normal recipe authoring.
+
+Example:
+
+```js
+StartupEvents.registry("mna:construct_task", (event) => {
+    /**
+     * @type {Internal.CustomConstructTask$Builder}
+     */
+    const builder = event.create("kubejs:scripted_wait", "basic");
+
+    builder
+        .basedOn(MnaConstructTasks.WAIT)
+        .aiTask(MnaConstructTasks.WAIT)
+        .texture("mna:textures/gui/construct_tasks/wait.png");
+});
+```
+
+Notes:
+
+- Current construct-task scripting is metadata-driven reuse of an existing Java AI task, not authoring a new JS-native `ConstructAITask` implementation.
+- For construct part registration, prefer typed ids such as `material("kubejs:moonsteel")` and `slot("head")` instead of passing raw Java objects unless a callback explicitly needs them.
+
+## Tier Bindings
+
+Direct tier globals:
+
+- `Tier`
+- `Tiers`
+
+Use them when a surface expects a vanilla tool tier constant rather than an M&A typed id.
+
+Example:
+
+```js
+StartupEvents.registry("item", (event) => {
+    event
+        .create("kubejs:moonsteel_wand_core", "tiered_item")
+        .tier(Tiers.DIAMOND);
+});
+```
+
+## Utility Binding Catalog
+
+These globals are also bound directly and are documented in more depth on [Helpers And Probe]($reference/mnajs-kubejs/helpers-and-probe):
+
+- `CollectionUtils`
+- `MATags`
+- `MathUtils`
+- `BiomeUtils`
+- `ProjectileHelper`
+- `PlayerMagic`
+- `PlayerProgression`
+- `ProgressionEvents`
+- `WorldMagic`
+- `InventoryUtilities`
+- `RecipeUtil`
+- `MnaPatternHelper`
+- `MnaRitualReagent`
+
+Use this page as the name index and the helper page as the usage guide.
+
+## Server-Only Bindings
+
+These globals are only exposed in server scripts:
+
+- `MNARecipesHelper`
+- `ProgressionEventIDs`
+- `StructureUtils`
+- `EntityUtil`
+- `SummonUtils`
+- `ShearHelper`
+- `MnaFactionUtil`
+- `ManaItemUtil`
+- `MnaEntityHelper`
+- `MnaFactionRaidHelper`
+
+Use them for low-level recipe JSON generation, structure queries, entity and summon helpers, shearing checks, item mana lookups, and faction-raid integration.
+
+## Client-Only Bindings
+
+These globals are only exposed in client scripts:
+
+- `WorldRenderUtils`
+- `GuiRenderUtils`
+- `ParticleConfigurations`
+
+Use them for client-side rendering helpers only. Do not call them from `server_scripts`.

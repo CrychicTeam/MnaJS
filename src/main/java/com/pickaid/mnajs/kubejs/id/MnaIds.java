@@ -1,5 +1,8 @@
 package com.pickaid.mnajs.kubejs.id;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.rhino.Wrapper;
 import net.minecraft.resources.ResourceLocation;
@@ -15,6 +18,29 @@ public final class MnaIds {
 
     public static ResourceLocation parse(Object value, String fieldName, String defaultNamespace, String pathPrefix) {
         Object unwrapped = Wrapper.unwrapped(value);
+
+        if (unwrapped instanceof JsonElement element) {
+            if (element.isJsonNull()) {
+                throw new IllegalArgumentException(fieldName + " can't be null");
+            }
+
+            if (element.isJsonPrimitive()) {
+                JsonPrimitive primitive = element.getAsJsonPrimitive();
+                if (primitive.isString() || primitive.isNumber() || primitive.isBoolean()) {
+                    return parse(primitive.getAsString(), fieldName, defaultNamespace, pathPrefix);
+                }
+            }
+
+            if (element.isJsonObject()) {
+                JsonObject object = element.getAsJsonObject();
+                if (object.has("id")) {
+                    return parse(object.get("id"), fieldName, defaultNamespace, pathPrefix);
+                }
+                if (object.has("name")) {
+                    return parse(object.get("name"), fieldName, defaultNamespace, pathPrefix);
+                }
+            }
+        }
 
         if (unwrapped instanceof MnaTypedId typedId) {
             return normalize(typedId.location(), defaultNamespace, pathPrefix);

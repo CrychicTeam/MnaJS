@@ -3,6 +3,7 @@ package com.pickaid.mnajs.recipes.builders.base;
 import com.google.gson.JsonObject;
 import com.pickaid.mnajs.kubejs.id.MnaFactionId;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.kubejs.typings.Param;
 import net.minecraft.resources.ResourceLocation;
 
 public abstract class MABaseBuilder {
@@ -23,21 +24,12 @@ public abstract class MABaseBuilder {
         return this;
     }
 
-    @Info("set the faction requirement")
-    public MABaseBuilder faction(ResourceLocation value) {
-        this.faction = value;
-        return this;
-    }
-
-    @Info("set the faction requirement")
+    @Info(value = "Set the faction requirement for this recipe.", params = {
+            @Param(name = "value", value = "Faction id such as mna:council or yourmod:custom_faction.")
+    })
     public MABaseBuilder faction(MnaFactionId value) {
         this.faction = value.location();
         return this;
-    }
-
-    @Info("set the faction requirement")
-    public MABaseBuilder faction(String value) {
-        return faction(MnaFactionId.parse(value));
     }
 
     public JsonObject build() {

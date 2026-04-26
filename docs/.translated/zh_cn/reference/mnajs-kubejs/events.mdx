@@ -1,0 +1,290 @@
+---
+title: 事件
+hide_meta: true
+---
+
+# 事件
+
+本页记录 `MnaJSEvents` 注册的 KubeJS 事件组和当前脚本表面。
+
+## 事件组
+
+- `MnaEvent`
+- `MnaPlayerEvent`
+- `SpellEvent`
+- `RuneForgeEvent`
+
+## `MnaEvent.registerGuideBook`
+
+启动期事件。
+
+当前表面：
+
+- `getRegistry()`
+
+示例：
+
+```js
+MnaEvent.registerGuideBook((event) => {
+    const registry = event.getRegistry();
+    registry.addGuidebookPath("kubejs:guidebooks/mna_example.json");
+    registry.registerGuidebookCategory(
+        "kubejs.mna_examples",
+        "mna:textures/gui/cantrips/ward.png"
+    );
+});
+```
+
+说明：
+
+- 该事件当前暴露的是原始 M&A GuideBook 注册表。
+- 深度 GuideBook 页面内容仍由 guidebook JSON 和外部工具驱动。
+
+## `MnaEvent.registerCantrip`
+
+启动期事件。
+
+当前表面：
+
+- `create(MnaCantripId)`
+- `removeCantrip(MnaCantripId)`
+
+Cantrip Builder 方法：
+
+- `tier(int)`
+- `delay(int)`
+- `requiredAdvancement(MnaAdvancementId)`
+- `sound(MnaSoundId)`
+- `icon(MnaTexture)`
+- `addPattern(MnaManaweavePatternId)`
+- `pattern(MnaManaweavePatternId...)`
+- `spellStack(MnaItemId)`
+- `dynamicItem(MnaItemId)`
+- `clearDynamicItem()`
+- `dynamicItemProvider((player) => ItemStack)`
+- `effect((player, cantrip, hand) => ...)`
+- `delayedEffect((id, data) => ...)`
+- `builtInEffect(String)`
+- `register()`
+
+已确认的内置效果名：
+
+- `firework`
+- `gust`
+- `ascend`
+- `dispel`
+- `drought`
+- `ward`
+- `reveal_ward`
+- `summon_grimoire`
+- `summon_faction_grimoire`
+- `apply_spell`
+
+示例：
+
+```js
+MnaEvent.registerCantrip((event) => {
+    event
+        .create("kubejs:flare_orb")
+        .tier(1)
+        .delay(20)
+        .requiredAdvancement("mna:tier_4/craft_a_t4_spell")
+        .sound("geckolib:jack_in_the_box_music")
+        .icon("mna:textures/gui/affinity/air.png")
+        .pattern("mna:bolt", "mna:square")
+        .spellStack("minecraft:fire_charge")
+        .dynamicItem("minecraft:fire_charge")
+        .effect((player, cantrip, hand) => {
+            PlayerMagic.addMana(player, 5);
+        })
+        .register();
+});
+```
+
+说明：
+
+- 未设置 icon 时会回退到 `mna:textures/gui/cantrips/default.png`。
+- 未设置 pattern 时会回退到 `mna:manaweave_patterns/circle` 和 `mna:manaweave_patterns/square`。
+- 未设置 effect 时会回退到内置 `apply_spell`。
+- `dynamicItemProvider(...)` 会在 cantrip 触发时同步玩家拥有的 cantrip stack。
+- `removeCantrip(id)` 只有实际移除成功才返回 `true`，并会清理对应动态物品提供器。
+
+## `MnaEvent.wanderingWizardSelectingTrade`
+
+服务端事件。
+
+可用方法：
+
+- `getWanderingWizard()`
+- `getOffers()`
+- `getNewTrades()`
+- `getMaxNumbers()`
+
+## `MnaPlayerEvent.ritualCompleteEvent`
+
+服务端事件。
+
+可用方法：
+
+- `getEntity()`
+- `getCenter()`
+- `getRitual()`
+- `getCollectedReagents()`
+- `getHandlers()`
+- `getEvent()`
+
+## `MnaPlayerEvent.affinityChangedEvent`
+
+带 result 的服务端事件。
+
+可用方法：
+
+- `getEntity()`
+- `getAffinity()`
+- `getCurrentAmount()`
+- `getShift()`
+- `setShift(float)`
+
+示例：
+
+```js
+MnaPlayerEvent.affinityChangedEvent((event) => {
+    if (event.getAffinity() === Affinity.ARCANE) {
+        event.setShift(event.getShift() * 1.25);
+    }
+});
+```
+
+## `MnaPlayerEvent.genericProgression`
+
+服务端事件。
+
+可用方法：
+
+- `getEntity()`
+- `getId()`
+- `getRawId()`
+
+## `MnaPlayerEvent.levelUp`
+
+服务端事件。
+
+可用方法：
+
+- `getEntity()`
+- `getMagicLevel()`
+
+## `MnaPlayerEvent.magicXPGained`
+
+带 result 的服务端事件。
+
+可用方法：
+
+- `getEntity()`
+- `getAmount()`
+- `setAmount(int)`
+
+示例：
+
+```js
+MnaPlayerEvent.magicXPGained((event) => {
+    event.setAmount(event.getAmount() + 5);
+});
+```
+
+## `MnaPlayerEvent.masteryGained`
+
+带 result 的服务端事件。
+
+可用方法：
+
+- `getEntity()`
+- `getPart()`
+- `getAmount()`
+- `setAmount(float)`
+
+## `MnaPlayerEvent.roteProgression`
+
+带 result 的服务端事件。
+
+可用方法：
+
+- `getEntity()`
+- `getPart()`
+- `getAmount()`
+- `setAmount(float)`
+
+## `SpellEvent.costingMana`
+
+服务端事件。
+
+可用方法：
+
+- `getEntity()`
+- `getCost()`
+- `getSpell()`
+- `setCost(float)`
+
+示例：
+
+```js
+SpellEvent.costingMana((event) => {
+    event.setCost(Math.max(1, event.getCost() * 0.9));
+});
+```
+
+## `SpellEvent.casted`
+
+服务端事件。
+
+可用方法：
+
+- `getEntity()`
+- `getSpell()`
+- `getSource()`
+- `getContext()`
+- `getCastingStack()`
+
+## `SpellEvent.calculatingCooldown`
+
+服务端事件。
+
+可用方法：
+
+- `getEntity()`
+- `getSpell()`
+- `getCooldown()`
+- `setCooldown(int)`
+
+## `SpellEvent.componentApplying`
+
+带 result 的服务端事件。
+
+可用方法：
+
+- `getSource()`
+- `getContext()`
+- `getTarget()`
+- `getComponent()`
+
+## `RuneForgeEvent.shouldActivate`
+
+带 result 的服务端事件。
+
+可用方法：
+
+- `getPlayer()`
+- `getPatternStack()`
+- `getMaterialStack()`
+- `getCatalystStack()`
+
+## `RuneForgeEvent.itemUsed`
+
+带 result 的服务端事件。
+
+可用方法：
+
+- `getPlayer()`
+- `getPatternStack()`
+- `getMaterialStack()`
+- `getCatalystStack()`

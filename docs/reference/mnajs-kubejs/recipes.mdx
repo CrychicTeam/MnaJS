@@ -1,0 +1,550 @@
+---
+title: Recipes
+hide_meta: true
+---
+
+# Recipes
+
+This page covers the current `event.recipes.mna` surface plus the lower-level `MNARecipesHelper` builders used with `event.custom()`.
+
+## General Notes
+
+- Prefer `event.recipes.mna.*()` for normal KubeJS recipe authoring.
+- Prefer typed ids and id strings over raw objects when possible.
+- `tier(...)` and `faction(...)` are available through the shared base where the recipe schema supports them.
+- `MnaRitualReagent` and `MnaPatternHelper` are documented in [Helpers And Probe]($reference/mnajs-kubejs/helpers-and-probe).
+
+## Schema Names And Custom Components
+
+MnaJS registers both chain-style recipe entry points and lower-level schema/component support for `event.custom(...)`.
+
+Current KubeJS schema keys and backing recipe types:
+
+| KubeJS entry | Backing type |
+|---|---|
+| `ritual()` | `mna:ritual` |
+| `transmutation()` | `mna:transmutation` |
+| `crushing()` | `mna:crushing` |
+| `runeforging()` | `mna:runeforging` |
+| `runescribing()` | `mna:runescribing` |
+| `component()` | `mna:component` |
+| `modifier()` | `mna:modifier` |
+| `shape()` | `mna:shape` |
+| `progression()` | `mna:progression-condition` |
+| `manaweavingAltar()` | `mna:manaweaving-recipe` |
+| `arcaneFurnace()` | `mna:arcane-furnace` |
+| `eldrinAltar()` | `mna:eldrin-altar` |
+| `eldrinFume()` | `mna:eldrin-fume` |
+| `pattern()` | `mna:manaweaving-pattern` |
+| `cacheEffect()` | `mna:manaweave-cache-effect` |
+
+Registered low-level recipe components:
+
+- `mnaAdvancementId`
+- `power_key`
+- `item`
+- `itemStack`
+- `itemOrTagComponent`
+- `itemsOrTagsComponent`
+- `mnaItemId`
+- `mnaBlockId`
+- `mnaItemOrTag`
+- `mnaLootTableId`
+- `mnaFactionId`
+- `mnaCastingResourceId`
+- `mnaMobEffectId`
+- `mnaRitualEffectId`
+- `mnaSpellEffectId`
+- `mnaShapeId`
+- `mnaModifierId`
+- `mnaRitualId`
+- `mnaManaweavePatternId`
+- `mnaCantripId`
+- `mnaSoundId`
+- `mnaStructureId`
+
+Use this layer when you are writing direct JSON or building through `MNARecipesHelper` instead of the fluent chain.
+
+## `event.recipes.mna.ritual()`
+
+Use it for ritual recipes with chainable pattern, reagent, output, and color control.
+
+Notable methods:
+
+- `pattern(int[][] | rows)`
+- `displayPattern(int[][] | rows)`
+- `reagentRows(...)`
+- `reagent(MnaRitualReagent)`
+- `reagent(char, MnaItemOrTag, optional, consume)`
+- `dynamicReagent(...)`
+- `dynamicSourceReagent(...)`
+- `manualReturnReagent(...)`
+- `manaweavePatterns(...)`
+- `innerColor(long)`
+- `outerColor(long)`
+- `beamColor(long)`
+- `connectBeam(boolean)`
+- `displayIndexes(boolean)`
+- `kittable(boolean)`
+- `outputItem(MnaItemId)`
+- `command(String)`
+
+Example:
+
+```js
+event.recipes.mna
+    .ritual()
+    .tier(1)
+    .patternRows("1")
+    .displayPatternRows("1")
+    .reagentRows("A")
+    .reagent(MnaRitualReagent.of("A", "minecraft:amethyst_shard"))
+    .innerColor(0xffd54f)
+    .outerColor(0xfff176)
+    .beamColor(0xfbc02d)
+    .connectBeam(true)
+    .outputItem("minecraft:lightning_rod")
+    .id("kubejs:lightning_ritual");
+```
+
+Notes:
+
+- `outputItem(...)` is the main output field and should always be present.
+- Rituals are the deepest chain surface in this repo and are intended to stay chain-first.
+
+## `event.recipes.mna.crushing()`
+
+Use it for simple crushing conversions.
+
+Notable methods:
+
+- `input(MnaItemId)`
+- `output(MnaItemId)`
+- `outputQuantity(int)`
+
+Example:
+
+```js
+event.recipes.mna
+    .crushing()
+    .input("minecraft:amethyst_block")
+    .output("minecraft:amethyst_shard")
+    .outputQuantity(4)
+    .tier(1);
+```
+
+## `event.recipes.mna.arcaneFurnace()`
+
+Use it for arcane furnace smelting-like recipes.
+
+Notable methods:
+
+- `input(...)`
+- `output(...)`
+- `burnTime(int)`
+- `outputQuantity(int)`
+
+Example:
+
+```js
+event.recipes.mna
+    .arcaneFurnace()
+    .input("minecraft:raw_gold")
+    .output("minecraft:gold_ingot")
+    .burnTime(200)
+    .outputQuantity(1)
+    .tier(1);
+```
+
+## `event.recipes.mna.runeforging()`
+
+Use it for rune forging recipes.
+
+Notable methods:
+
+- `pattern(MnaItemId)`
+- `material(MnaItemId)`
+- `output(MnaItemId)`
+- `hits(int)`
+- `outputQuantity(int)`
+
+Example:
+
+```js
+event.recipes.mna
+    .runeforging()
+    .pattern("minecraft:stick")
+    .material("minecraft:gold_ingot")
+    .output("minecraft:blaze_rod")
+    .hits(6)
+    .outputQuantity(1)
+    .tier(2);
+```
+
+## `event.recipes.mna.runescribing()`
+
+Use it for rune scribing recipes.
+
+Notable methods:
+
+- `output(MnaItemId)`
+- `hMutex(int)`
+- `vMutex(int)`
+
+Example:
+
+```js
+event.recipes.mna
+    .runescribing()
+    .output("minecraft:paper")
+    .hMutex(0b00000000001)
+    .vMutex(0b00000010000)
+    .tier(1);
+```
+
+## `event.recipes.mna.component()`
+
+Use it for component crafting recipes.
+
+Notable methods:
+
+- `output(MnaSpellEffectId)`
+- `input(MnaItemOrTag)`
+- `addInput(MnaItemOrTag)`
+- `pattern(MnaManaweavePatternId)`
+- `addPattern(MnaManaweavePatternId)`
+- `outputQuantity(int)`
+
+Example:
+
+```js
+event.recipes.mna
+    .component()
+    .output("kubejs:arcane_pulse")
+    .input("minecraft:lapis_lazuli")
+    .addInput("#forge:gems/quartz")
+    .pattern("mna:circle")
+    .addPattern("mna:square")
+    .outputQuantity(1)
+    .tier(1)
+    .faction("mna:council");
+```
+
+## `event.recipes.mna.modifier()`
+
+Use it for modifier crafting recipes.
+
+Notable methods:
+
+- `output(MnaModifierId)`
+- `input(...)`
+- `addInput(...)`
+- `pattern(...)`
+- `addPattern(...)`
+- `outputQuantity(int)`
+
+Example:
+
+```js
+event.recipes.mna
+    .modifier()
+    .output("kubejs:stable_radius")
+    .input("minecraft:amethyst_shard")
+    .addInput("minecraft:redstone")
+    .pattern("mna:circle")
+    .addPattern("mna:slash")
+    .outputQuantity(1)
+    .tier(1);
+```
+
+## `event.recipes.mna.shape()`
+
+Use it for shape crafting recipes.
+
+Notable methods:
+
+- `output(MnaShapeId)`
+- `input(...)`
+- `addInput(...)`
+- `pattern(...)`
+- `addPattern(...)`
+- `outputQuantity(int)`
+
+Example:
+
+```js
+event.recipes.mna
+    .shape()
+    .output("kubejs:anchored_burst")
+    .input("minecraft:echo_shard")
+    .addInput("#forge:gems/quartz")
+    .pattern("mna:circle")
+    .addPattern("mna:square")
+    .outputQuantity(1)
+    .tier(2);
+```
+
+## `event.recipes.mna.manaweavingAltar()`
+
+Use it for manaweaving altar output recipes.
+
+Notable methods:
+
+- `output(...)`
+- `outputStack(ItemStack)`
+- `inputs(...)`
+- `addInput(...)`
+- `patterns(...)`
+- `addPattern(...)`
+- `enchant(String)`
+- `enchantment(String)`
+- `magnitude(int)`
+- `copyNBT(boolean)`
+- `outputQuantity(int)`
+
+Example:
+
+```js
+event.recipes.mna
+    .manaweavingAltar()
+    .outputStack(Item.of("minecraft:enchanted_book"))
+    .inputs("minecraft:book", "minecraft:lapis_lazuli")
+    .addInput("#forge:gems/quartz")
+    .patterns("mna:circle")
+    .addPattern("mna:square")
+    .enchantment("minecraft:sharpness")
+    .magnitude(3)
+    .copyNBT(false)
+    .outputQuantity(1)
+    .tier(2);
+```
+
+## `event.recipes.mna.progression()`
+
+Use it for progression-condition recipes.
+
+Notable methods:
+
+- `advancement(MnaAdvancementId)`
+- `desc(String)`
+- `description(String)`
+- `tier(int)`
+- `faction(MnaFactionId)`
+
+Example:
+
+```js
+event.recipes.mna
+    .progression()
+    .advancement("minecraft:story/root")
+    .desc("kubejs.progression.mna_example")
+    .tier(1)
+    .faction("mna:none");
+```
+
+## `event.recipes.mna.transmutation()`
+
+Use it for block transmutation definitions.
+
+Notable methods:
+
+- `targetBlock(MnaBlockId)`
+- `replaceBlock(MnaBlockId)`
+- `lootTable(MnaLootTableId)`
+- `representationItem(MnaItemId)`
+
+Examples:
+
+```js
+event.recipes.mna
+    .transmutation()
+    .targetBlock("minecraft:stone")
+    .replaceBlock("minecraft:gold_block")
+    .tier(2);
+
+event.recipes.mna
+    .transmutation()
+    .targetBlock("minecraft:grass_block")
+    .lootTable("minecraft:chests/simple_dungeon")
+    .representationItem("minecraft:chest")
+    .tier(2);
+```
+
+## `event.recipes.mna.eldrinFume()`
+
+Use it for eldrin fume power recipes.
+
+Notable methods:
+
+- `item(MnaItemOrTag)`
+- `input(MnaItemOrTag)`
+- `powerProvided(String | Affinity, Number)`
+- `affinity(...)`
+- `powerAmount(Number)`
+
+Example:
+
+```js
+event.recipes.mna
+    .eldrinFume()
+    .item("#forge:sand")
+    .powerProvided("FIRE", 100)
+    .tier(1);
+```
+
+## `event.recipes.mna.eldrinAltar()`
+
+Use it for eldrin altar crafting with power requirements.
+
+Notable methods:
+
+- `output(...)`
+- `outputStack(ItemStack)`
+- `inputs(...)`
+- `addInput(...)`
+- `powerRequirement(Affinity, Number)`
+- `addPowerRequirement(Affinity, Number)`
+- `colors(primary, secondary)`
+- `count(int)`
+
+Example:
+
+```js
+event.recipes.mna
+    .eldrinAltar()
+    .outputStack(Item.of("minecraft:diamond"))
+    .inputs("minecraft:emerald", "minecraft:lapis_lazuli")
+    .addInput("#forge:gems/quartz")
+    .powerRequirement(Affinity.ARCANE, 250)
+    .addPowerRequirement(Affinity.WIND, 100)
+    .colors(0x4fc3f7, 0x81d4fa)
+    .count(1)
+    .tier(3);
+```
+
+## `event.recipes.mna.cacheEffect()`
+
+Use it for manaweave cache effect recipes.
+
+Notable methods:
+
+- `effect(MnaMobEffectId)`
+- `durationMin(int)`
+- `durationMax(int)`
+- `duration(int, int)`
+- `magnitude(int)`
+
+Example:
+
+```js
+event.recipes.mna
+    .cacheEffect()
+    .effect("minecraft:speed")
+    .duration(200, 400)
+    .magnitude(2)
+    .tier(2)
+    .faction("mna:fey");
+```
+
+## `event.recipes.mna.pattern()`
+
+Use it for manaweaving pattern recipes.
+
+Notable methods:
+
+- `pattern(int[][])`
+- `cell(row, column, value)`
+
+Example:
+
+```js
+event.recipes.mna
+    .pattern(MnaPatternHelper.manaweaveGrid())
+    .cell(5, 5, 1)
+    .cell(5, 4, 1)
+    .cell(5, 6, 1)
+    .cell(4, 5, 1)
+    .cell(6, 5, 1)
+    .tier(1);
+```
+
+## `MNARecipesHelper`
+
+Server-side bindings expose lower-level builders for `event.custom()` workflows through `MNARecipesHelper`.
+
+Available helpers:
+
+- `ritual`
+- `progression`
+- `crushing`
+- `eldrinAltarBuilder`
+- `fumeFilterBuilder`
+- `manaweavingAltarBuilder`
+- `runeForgingBuilder`
+- `runeScribingBuilder`
+- `arcaneFurnaceBuilder`
+- `transmutationBuilder`
+- `componentBuilder`
+- `modifierBuilder`
+- `shapeBuilder`
+- `manaweavingPatternBuilder`
+- `multiblockDefinitionBuilder`
+
+Use them when:
+
+- you want raw JSON for `event.custom()`
+- you want to build outside the `event.recipes.mna` chain
+- you need multiblock definitions
+
+Example:
+
+```js
+const json = MNARecipesHelper.progression
+    .advancement("minecraft:story/root")
+    .desc("kubejs.progression.mna_example")
+    .tier(1)
+    .faction("mna:none")
+    .build();
+
+event.custom(json);
+```
+
+## `MNARecipesHelper.multiblockDefinitionBuilder`
+
+Use it for `mna:multiblock` definitions.
+
+Notable methods:
+
+- `structure(MnaStructureId)`
+- `symmetrical(boolean)`
+- `addTag(block, tag)`
+- `addRawBlockCheck(block)`
+- `addBlockMatcher(matcherType, offsetOrBlock)`
+- `createVariation(id)`
+- `addStairsMatcher(Block)`
+- `addStatelessMatcher(Block)`
+- `addChalkMatcher(Block)`
+- `addRefractionLensMatcher(Block)`
+- `addPedestalMatcher(Block)`
+- `build()`
+
+Example:
+
+```js
+const builder = MNARecipesHelper.multiblockDefinitionBuilder
+    .structure("kubejs:verdant_shrine")
+    .symmetrical(true)
+    .addRawBlockCheck("minecraft:gold_block")
+    .addBlockMatcher("mna:stairs", "minecraft:stone_brick_stairs");
+
+builder
+    .createVariation("lit")
+    .addReplacement(0, 0, 0, "minecraft:sea_lantern");
+
+event.custom(builder.build());
+```
+
+Notes:
+
+- This is the current documented path for multiblock JSON generation inside MnaJS.
+- `structure(...)` uses a structure id, not an ad-hoc filesystem path.

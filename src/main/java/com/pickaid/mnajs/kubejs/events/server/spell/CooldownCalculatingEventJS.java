@@ -21,7 +21,7 @@ public class CooldownCalculatingEventJS extends PlayerEventJS {
     }
 
     public void setCooldown(int value) {
-        this.setCooldown(value);
+        this.event.setCooldown(value);
     }
 
     @Override

@@ -100,7 +100,7 @@ public class FumeFilterBuilder extends MABaseBuilder {
         if (itemOrTag == null) {
             throw new IllegalStateException("Item or tag ID cannot be null");
         }
-        json.addProperty("item", itemOrTag.scriptValue());
+        json.addProperty("item", itemOrTag.recipeValue());
 
         if (affinity == null || affinity.isEmpty()) {
             throw new IllegalStateException("Affinity cannot be null or empty");

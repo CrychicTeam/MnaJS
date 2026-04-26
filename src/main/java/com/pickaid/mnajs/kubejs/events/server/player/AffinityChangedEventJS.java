@@ -7,16 +7,18 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
 public class AffinityChangedEventJS extends PlayerEventJS {
+    private final AffinityChangedEvent event;
     private final Player player;
     private final Affinity affinity;
     private final float currentAmount;
     private float shift;
 
     public AffinityChangedEventJS(AffinityChangedEvent event) {
+        this.event = event;
         this.player = event.getPlayer();
         this.affinity = event.getAffinity();
         this.currentAmount = event.getCurrentAmount();
-        this.shift = event .getShift();
+        this.shift = event.getShift();
     }
 
     @Override
@@ -35,5 +37,10 @@ public class AffinityChangedEventJS extends PlayerEventJS {
 
     public float getShift() {
         return shift;
+    }
+
+    public void setShift(float shift) {
+        this.shift = shift;
+        this.event.setShift(shift);
     }
 }

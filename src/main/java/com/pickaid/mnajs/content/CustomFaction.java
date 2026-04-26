@@ -4,10 +4,18 @@ import com.mna.api.faction.BaseFaction;
 import com.mna.api.faction.IFaction;
 import com.mna.api.spells.attributes.Attribute;
 import com.pickaid.mnajs.kubejs.MnaJSPlugin;
+import com.pickaid.mnajs.kubejs.id.MnaCastingResourceId;
+import com.pickaid.mnajs.kubejs.id.MnaItemId;
+import com.pickaid.mnajs.kubejs.id.MnaSoundId;
+import com.pickaid.mnajs.kubejs.id.MnaStructureId;
+import com.pickaid.mnajs.kubejs.id.MnaTypedIdLookups;
+import com.pickaid.mnajs.kubejs.texture.MnaTexture;
 import dev.latvian.mods.kubejs.generator.AssetJsonGenerator;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.kubejs.typings.Param;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -19,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Custom Faction implementation for KubeJS integration with Mana and Artifice.
@@ -115,7 +124,10 @@ public class CustomFaction extends BaseFaction {
     @Override
     public ResourceLocation getCastingResource(Player player) {
         if (resourceSelectorCallback != null) {
-            return resourceSelectorCallback.apply(player, castingResources);
+            MnaCastingResourceId selected = resourceSelectorCallback.apply(player, MnaTypedIdLookups.wrapCastingResources(castingResources));
+            if (selected != null) {
+                return selected.location();
+            }
         }
         return castingResources.length > 0 ? castingResources[0] : null;
     }
@@ -132,7 +144,7 @@ public class CustomFaction extends BaseFaction {
 
     @Info("Callback interface for selecting which casting resource to use for a player")
     public interface ResourceSelectorCallback {
-        ResourceLocation apply(Player player, ResourceLocation[] availableResources);
+        MnaCastingResourceId apply(Player player, MnaCastingResourceId[] availableResources);
     }
 
     public static class Builder extends BuilderBase<CustomFaction> {
@@ -155,27 +167,35 @@ public class CustomFaction extends BaseFaction {
             super(id);
         }
 
-        @Info("Sets the grimoire item for this faction")
-        public Builder factionGrimoire(ItemStack grimoire) {
-            this.factionGrimoire = grimoire;
+        @Info(value = "Set the grimoire item used by this faction.", params = {
+                @Param(name = "grimoire", value = "Item id such as mna:grimoire_council.")
+        })
+        public Builder factionGrimoire(MnaItemId grimoire) {
+            this.factionGrimoire = MnaTypedIdLookups.stack(grimoire, "factionGrimoire");
             return this;
         }
 
-        @Info("Sets the token item for this faction")
-        public Builder tokenItem(Item token) {
-            this.tokenItem = token;
+        @Info(value = "Set the token item used by this faction.", params = {
+                @Param(name = "token", value = "Item id such as mna:faction_token.")
+        })
+        public Builder tokenItem(MnaItemId token) {
+            this.tokenItem = MnaTypedIdLookups.requireItem(token, "tokenItem");
             return this;
         }
 
-        @Info("Sets the raid sound for this faction")
-        public Builder raidSound(SoundEvent sound) {
-            this.raidSound = sound;
+        @Info(value = "Set the raid sound used by this faction.", params = {
+                @Param(name = "sound", value = "Sound id such as mna:cast_arcane.")
+        })
+        public Builder raidSound(MnaSoundId sound) {
+            this.raidSound = MnaTypedIdLookups.requireSound(sound, "raidSound");
             return this;
         }
 
-        @Info("Sets the horn sound for this faction")
-        public Builder hornSound(SoundEvent sound) {
-            this.hornSound = sound;
+        @Info(value = "Set the optional horn sound used by this faction.", params = {
+                @Param(name = "sound", value = "Sound id such as minecraft:item.goat_horn.sound.0.")
+        })
+        public Builder hornSound(MnaSoundId sound) {
+            this.hornSound = MnaTypedIdLookups.requireSound(sound, "hornSound");
             return this;
         }
 
@@ -185,15 +205,24 @@ public class CustomFaction extends BaseFaction {
             return this;
         }
 
-        @Info("Sets the faction icon resource location")
-        public Builder factionIcon(ResourceLocation icon) {
-            this.factionIcon = icon;
+        @Info(value = "Set the faction icon texture.", params = {
+                @Param(name = "icon", value = "Texture id such as mna:textures/gui/guide_book.png.")
+        })
+        public Builder factionIcon(MnaTexture icon) {
+            this.factionIcon = icon.location();
             return this;
         }
 
-        @Info("Sets the RGB values for manaweave associated with this faction")
+        @Info(value = "Set the manaweave color for this faction using a CSS-style RGB value.", params = {
+                @Param(name = "color", value = "Frontend color string such as #4ab64f or rgb(74, 182, 79).")
+        })
+        public Builder manaweaveRGB(String color) {
+            return manaweaveRGB(parseCssRgb(color));
+        }
+
+        @HideFromJS
         public Builder manaweaveRGB(int[] rgb) {
-            this.manaweaveRGB = rgb;
+            this.manaweaveRGB = normalizeRgb(rgb);
             return this;
         }
 
@@ -203,15 +232,19 @@ public class CustomFaction extends BaseFaction {
             return this;
         }
 
-        @Info("Sets the sanctum structure resource location for this faction")
-        public Builder sanctumStructure(ResourceLocation structure) {
-            this.sanctumStructure = structure;
+        @Info(value = "Set the sanctum structure used by this faction.", params = {
+                @Param(name = "structure", value = "Structure id such as mna:multiblock/council_circle_of_power.")
+        })
+        public Builder sanctumStructure(MnaStructureId structure) {
+            this.sanctumStructure = structure.location();
             return this;
         }
 
-        @Info("Sets the casting resources for this faction")
-        public Builder castingResources(ResourceLocation... resources) {
-            this.castingResources = resources;
+        @Info(value = "Set the casting resources available to this faction.", params = {
+                @Param(name = "resources", value = "Casting resource ids such as mna:mana or mna:brimstone.")
+        })
+        public Builder castingResources(MnaCastingResourceId... resources) {
+            this.castingResources = MnaTypedIdLookups.locations(resources);
             return this;
         }
 
@@ -233,10 +266,77 @@ public class CustomFaction extends BaseFaction {
             return this;
         }
 
-        @Info("Sets a callback for selecting which casting resource to use based on the player")
+        @Info(value = "Set a callback for selecting which casting resource to use based on the player.", params = {
+                @Param(name = "callback", value = "Callback that receives the player and available casting resource ids.")
+        })
         public Builder resourceSelector(ResourceSelectorCallback callback) {
             this.resourceSelectorCallback = callback;
             return this;
+        }
+
+        private static int[] normalizeRgb(int[] rgb) {
+            Objects.requireNonNull(rgb, "manaweaveRGB can't be null");
+            if (rgb.length != 3) {
+                throw new IllegalArgumentException("manaweaveRGB must contain exactly 3 values");
+            }
+
+            return new int[]{
+                    clampChannel(rgb[0]),
+                    clampChannel(rgb[1]),
+                    clampChannel(rgb[2])
+            };
+        }
+
+        private static int[] parseCssRgb(String color) {
+            Objects.requireNonNull(color, "manaweaveRGB color can't be null");
+            String value = color.trim();
+            if (value.isEmpty()) {
+                throw new IllegalArgumentException("manaweaveRGB color can't be empty");
+            }
+
+            if (value.startsWith("#")) {
+                String hex = value.substring(1);
+                if (hex.length() == 3) {
+                    hex = "" + hex.charAt(0) + hex.charAt(0)
+                            + hex.charAt(1) + hex.charAt(1)
+                            + hex.charAt(2) + hex.charAt(2);
+                }
+                if (hex.length() != 6) {
+                    throw new IllegalArgumentException("manaweaveRGB hex color must be #RGB or #RRGGBB");
+                }
+                return new int[]{
+                        Integer.parseInt(hex.substring(0, 2), 16),
+                        Integer.parseInt(hex.substring(2, 4), 16),
+                        Integer.parseInt(hex.substring(4, 6), 16)
+                };
+            }
+
+            String lower = value.toLowerCase();
+            if (lower.startsWith("rgb(") && value.endsWith(")")) {
+                String inner = value.substring(4, value.length() - 1).trim();
+                if (inner.contains("/")) {
+                    inner = inner.substring(0, inner.indexOf('/')).trim();
+                }
+
+                String[] parts = inner.contains(",")
+                        ? inner.split("\\s*,\\s*")
+                        : inner.trim().split("\\s+");
+                if (parts.length != 3) {
+                    throw new IllegalArgumentException("manaweaveRGB rgb() value must contain exactly 3 channels");
+                }
+
+                return new int[]{
+                        clampChannel(Integer.parseInt(parts[0])),
+                        clampChannel(Integer.parseInt(parts[1])),
+                        clampChannel(Integer.parseInt(parts[2]))
+                };
+            }
+
+            throw new IllegalArgumentException("Unsupported manaweaveRGB color format: " + color);
+        }
+
+        private static int clampChannel(int value) {
+            return Math.max(0, Math.min(255, value));
         }
 
         @Override

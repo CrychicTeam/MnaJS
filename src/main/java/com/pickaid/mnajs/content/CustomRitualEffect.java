@@ -7,6 +7,7 @@ import com.pickaid.mnajs.kubejs.MnaJSPlugin;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.kubejs.typings.Param;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -149,13 +150,9 @@ public class CustomRitualEffect extends RitualEffect {
             return MnaJSPlugin.RITUAL_EFFECT_REGISTRY.get();
         }
 
-        @Info("Sets the name/identifier for this ritual effect.")
-        public Builder ritualName(ResourceLocation name) {
-            this.ritualName = name;
-            return this;
-        }
-
-        @Info("Sets the name/identifier for this ritual effect.")
+        @Info(value = "Set the ritual id handled by this ritual effect.", params = {
+                @Param(name = "name", value = "Ritual recipe id such as mna:rituals/alteration or kubejs:lightning_ritual.")
+        })
         public Builder ritualName(MnaRitualId name) {
             this.ritualName = name.location();
             return this;

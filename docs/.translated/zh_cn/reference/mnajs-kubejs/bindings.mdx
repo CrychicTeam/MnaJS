@@ -1,0 +1,168 @@
+---
+title: 绑定
+hide_meta: true
+---
+
+# 绑定
+
+本页记录 `MnaJSPlugin.registerBindings(...)` 直接暴露给 KubeJS 的 Java 绑定。
+
+如果你需要确认脚本里有哪些全局名称可用，请看本页。类型化 id、状态 helper、图案 helper 和 Probe 说明见 [辅助与 Probe]($reference/mnajs-kubejs/helpers-and-probe)。
+
+## 核心法术与亲和绑定
+
+以下全局变量可以直接在脚本中使用：
+
+- `Affinity`
+- `Attribute`
+- `SpellAttribute`
+- `ComponentApplicationResult`
+- `SpellTarget`
+- `MnaShapes`
+- `MnaModifiers`
+
+使用场景：
+
+- `Affinity`：派系、法术和能量亲和判断。
+- `Attribute` 或 `SpellAttribute`：组件和修饰符属性定义。
+- `ComponentApplicationResult`：法术效果回调返回值。
+- `SpellTarget`：形状目标选择回调和目标检查。
+- `MnaShapes`、`MnaModifiers`：访问 M&A 内置形状或修饰符常量。
+
+示例：
+
+```js
+/**
+ * @type {Internal.CustomSpellEffect$Builder}
+ */
+const builder = event.create("kubejs:arcane_pulse", "basic");
+
+builder
+    .affinity(Affinity.ARCANE)
+    .addAttribute(Attribute.RANGE, 1.0, 1.0, 4.0, 0.5, 0.25)
+    .applyEffect((source, target, modificationData, context) => {
+        return ComponentApplicationResult.SUCCESS;
+    });
+```
+
+说明：
+
+- `SpellAttribute` 是 `Attribute` 的别名绑定。
+- 如果 API 接受 id，优先使用类型化 id。只有当 API 确实需要常量、枚举或回调返回值时，才使用这些直接绑定。
+
+## 构装体系统绑定
+
+以下全局变量暴露构装体系统：
+
+- `MnaConstructTasks`
+- `ConstructCapability`
+- `ConstructSlot`
+- `ConstructMaterial`
+- `ItemConstructPart`
+- `ConstructTask`
+- `ConstructAITask`
+- `ConstructAITaskParameter`
+- `ConstructParameterTypes`
+- `ConstructTaskBooleanParameter`
+- `ConstructTaskIntegerParameter`
+- `ConstructTaskItemStackParameter`
+- `ConstructTaskPointParameter`
+- `ConstructTaskAreaParameter`
+- `ConstructTaskFilterParameter`
+- `ConstructMutexArms`
+- `ConstructMutexHead`
+- `ConstructMutexLegs`
+- `ConstructMutexTorso`
+
+实际用法：
+
+- `MnaConstructTasks` 是脚本里复用已有 M&A 任务的主要入口，可用于 `basedOn(...)` 或 `aiTask(...)`。
+- `ConstructCapability`、`ConstructSlot`、`ConstructMaterial` 可以直接访问，但 MnaJS 的注册 API 仍推荐使用类型化 id 或支持的小写字符串。
+- 参数类和 mutex 常量主要用于高级构装体任务元数据或检查，不是普通配方写作必须内容。
+
+示例：
+
+```js
+StartupEvents.registry("mna:construct_task", (event) => {
+    /**
+     * @type {Internal.CustomConstructTask$Builder}
+     */
+    const builder = event.create("kubejs:scripted_wait", "basic");
+
+    builder
+        .basedOn(MnaConstructTasks.WAIT)
+        .aiTask(MnaConstructTasks.WAIT)
+        .texture("mna:textures/gui/construct_tasks/wait.png");
+});
+```
+
+说明：
+
+- 当前构装体任务脚本支持是基于已有 Java AI 任务的元数据复用，不是 JS 原生 AI 任务创作。
+- 注册构装体部件时，优先写 `material("kubejs:moonsteel")` 和 `slot("head")` 这样的类型化输入。只有回调确实需要 Java 对象时，再传裸对象。
+
+## Tier 绑定
+
+直接全局变量：
+
+- `Tier`
+- `Tiers`
+
+当 API 需要原版工具 tier 常量，而不是 M&A 类型化 id 时使用。
+
+示例：
+
+```js
+StartupEvents.registry("item", (event) => {
+    event
+        .create("kubejs:moonsteel_wand_core", "tiered_item")
+        .tier(Tiers.DIAMOND);
+});
+```
+
+## 通用工具绑定目录
+
+这些全局变量也会直接绑定，更详细的用法见 [辅助与 Probe]($reference/mnajs-kubejs/helpers-and-probe)：
+
+- `CollectionUtils`
+- `MATags`
+- `MathUtils`
+- `BiomeUtils`
+- `ProjectileHelper`
+- `PlayerMagic`
+- `PlayerProgression`
+- `ProgressionEvents`
+- `WorldMagic`
+- `InventoryUtilities`
+- `RecipeUtil`
+- `MnaPatternHelper`
+- `MnaRitualReagent`
+
+本页作为名称索引；具体用法以 helper 页面为准。
+
+## 服务端专用绑定
+
+这些全局变量只在服务端脚本中暴露：
+
+- `MNARecipesHelper`
+- `ProgressionEventIDs`
+- `StructureUtils`
+- `EntityUtil`
+- `SummonUtils`
+- `ShearHelper`
+- `MnaFactionUtil`
+- `ManaItemUtil`
+- `MnaEntityHelper`
+- `MnaFactionRaidHelper`
+
+用途包括底层配方 JSON 生成、结构查询、实体和召唤辅助、剪切检查、法力物品查询、派系与 raid 集成。
+
+## 客户端专用绑定
+
+这些全局变量只在客户端脚本中暴露：
+
+- `WorldRenderUtils`
+- `GuiRenderUtils`
+- `ParticleConfigurations`
+
+它们只用于客户端渲染相关逻辑，不要在 `server_scripts` 中调用。

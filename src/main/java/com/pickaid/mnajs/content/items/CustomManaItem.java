@@ -6,10 +6,13 @@ import com.mna.api.items.IShowHud;
 import com.mna.api.items.TieredItem;
 import com.mna.items.base.IManaRepairable;
 import com.pickaid.mnajs.kubejs.MnaJSPlugin;
+import com.pickaid.mnajs.kubejs.id.MnaFactionId;
+import com.pickaid.mnajs.kubejs.id.MnaTypedIdLookups;
 import dev.latvian.mods.kubejs.item.ItemBuilder;
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.registry.RegistryInfo;
 import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.kubejs.typings.Param;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -46,7 +49,7 @@ public class CustomManaItem extends TieredItem implements IShowHud, IFactionSpec
 
     @Override
     public IFaction getFaction() {
-        return builder.faction;
+        return MnaTypedIdLookups.findFaction(builder.faction);
     }
 
     @Override
@@ -132,7 +135,7 @@ public class CustomManaItem extends TieredItem implements IShowHud, IFactionSpec
     public static class Builder extends ItemBuilder {
         private boolean sneakBypass = false;
         private int tier = -1;
-        private IFaction faction = null;
+        private MnaFactionId faction = null;
         private float minIre = 0.0F;
         private float maxIre = 0.005F;
 
@@ -156,8 +159,10 @@ public class CustomManaItem extends TieredItem implements IShowHud, IFactionSpec
             return this;
         }
 
-        @Info("Sets the faction for this item")
-        public Builder faction(IFaction faction) {
+        @Info(value = "Set the faction tied to this item.", params = {
+                @Param(name = "faction", value = "Faction id such as mna:council.")
+        })
+        public Builder faction(MnaFactionId faction) {
             this.faction = faction;
             return this;
         }

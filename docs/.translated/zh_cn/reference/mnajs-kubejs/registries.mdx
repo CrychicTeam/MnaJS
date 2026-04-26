@@ -1,0 +1,280 @@
+---
+title: 注册
+hide_meta: true
+---
+
+# 注册
+
+本页记录 MnaJS 当前暴露的启动期注册表面。
+
+## `mna:factions`
+
+通过 `StartupEvents.registry("mna:factions", ...)` 注册。
+
+用于注册新派系，可配置 grimoire、token、声音、图标、颜色、结构和施法资源选择。
+
+常用方法：
+
+- `factionGrimoire(MnaItemId)`
+- `tokenItem(MnaItemId)`
+- `raidSound(MnaSoundId)`
+- `hornSound(MnaSoundId)`
+- `factionIcon(MnaTexture)`
+- `manaweaveRGB("rgb(116, 182, 79)")`
+- `sanctumStructure(MnaStructureId)`
+- `castingResources(MnaCastingResourceId...)`
+- `factionIconTextureSize(int)`
+- `maxModifierBonus(Attribute, float)`
+- `minModifierBonus(Attribute, float)`
+- `resourceSelector((player, availableResources) => ...)`
+
+示例：
+
+```js
+StartupEvents.registry("mna:factions", (event) => {
+    event
+        .create("kubejs:verdant_court", "basic")
+        .factionGrimoire("minecraft:book")
+        .tokenItem("minecraft:emerald")
+        .raidSound("minecraft:event.raid.horn")
+        .factionIcon("mna:textures/gui/cantrips/ward.png")
+        .manaweaveRGB("rgb(116, 182, 79)")
+        .sanctumStructure("mna:multiblock/council_circle_of_power")
+        .castingResources("mna:mana", "mna:council_mana");
+});
+```
+
+## `mna:ritual-effects`
+
+通过 `StartupEvents.registry("mna:ritual-effects", ...)` 注册。
+
+用于给仪式配方 id 绑定运行时行为。
+
+常用方法：
+
+- `ritualName(MnaRitualId)`
+- `applicationTicks(int | callback)`
+- `applyEffect((context) => boolean)`
+- `matchReagents(...)`
+- `modifyReagents(...)`
+- `canStart(...)`
+- `applyStartCheckInCreative(boolean)`
+- `particles(...)`
+- `loopSound(...)`
+
+示例：
+
+```js
+StartupEvents.registry("mna:ritual-effects", (event) => {
+    /**
+     * @type {Internal.CustomRitualEffect$Builder}
+     */
+    const builder = event.create("kubejs:lightning_ritual_effect", "basic");
+
+    builder
+        .ritualName("kubejs:lightning_ritual")
+        .applicationTicks(20)
+        .applyEffect((context) => {
+            const level = context.getLevel();
+            if (level == null) return false;
+            const lightning = EntityType.LIGHTNING_BOLT.create(level);
+            if (lightning == null) return false;
+            lightning.setPos(context.getCenter().x, context.getCenter().y, context.getCenter().z);
+            level.addFreshEntity(lightning);
+            return true;
+        });
+});
+```
+
+说明：
+
+- 为了 Probe 补全，建议把 Builder 保存在带 JSDoc 的本地变量中。
+- `ritualName(...)` 应与实际生成的仪式配方 id 对应。
+
+## `mna:components` type `basic`
+
+通过 `StartupEvents.registry("mna:components", ...)` 和 `event.create(id, "basic")` 注册。
+
+用于通用脚本法术效果组件。
+
+常用方法：
+
+- `guiIcon(MnaTexture)`
+- `affinity(Affinity)`
+- `initialComplexity(float)`
+- `addAttribute(Attribute, base, min, max, step, complexity)`
+- `baselineCooldown(int)`
+- `soundEffect(MnaSoundId)`
+- `factionRequirement(MnaFactionId)`
+- `addReagent(MnaItemId, ...)`
+- `addOptionalReagent(MnaItemId, ...)`
+- `applyEffect(...)`
+- `spawnParticles(...)`
+- `canBeCastAt(...)`
+- `getDescriptionTooltip(...)`
+
+## `mna:components` type `damage`
+
+使用 `event.create(id, "damage")`。
+
+这是面向伤害的法术效果表面，继承通用组件 API，并提供伤害相关能力。
+
+额外方法：
+
+- `addDamageAttribute(base, min, max, step, complexity)`
+- `damageEntity((source, target, damage, context) => ...)`
+- `isTargetFriendly(...)`
+- `magnitudeHealthCheck(...)`
+
+## `mna:components` type `potion`
+
+使用 `event.create(id, "potion")`。
+
+用于药水效果类组件。
+
+常用方法：
+
+- `effect(MnaMobEffectId)`
+- `modifiesDuration(boolean)`
+- `addDurationAttribute(base, min, max, step, complexity)`
+- `modifiesMagnitude(boolean)`
+- `addMagnitudeAttribute(base, min, max, step, complexity)`
+- `addPermanencyReagent(MnaItemId)`
+- `permanentFor(MnaFactionId...)`
+
+## `mna:shapes`
+
+通过 `StartupEvents.registry("mna:shapes", ...)` 注册。
+
+用于自定义法术目标选择逻辑。
+
+常用方法：
+
+- `guiIcon(MnaTexture)`
+- `initialComplexity(float)`
+- `spawnsTargetEntity(boolean)`
+- `isChanneled(boolean)`
+- `baselineCooldown(int)`
+- `affectsCaster(boolean)`
+- `addReagent(MnaItemId, ...)`
+- `target((source, level, modificationData, recipe) => SpellTarget[])`
+- `targetNPCCast(...)`
+- `allowChanneledComponents(...)`
+- `maxChannelTime(...)`
+
+## `mna:modifiers`
+
+通过 `StartupEvents.registry("mna:modifiers", ...)` 注册。
+
+用于自定义法术修饰符。
+
+常用方法：
+
+- `guiIcon(MnaTexture)`
+- `attribute(Attribute)`
+- `addAttribute(Attribute, ...)`
+- `tier(int)`
+- `roteXpRequired(float)`
+- `affinity(Affinity)`
+- `addReagent(MnaItemId, ...)`
+
+## `mna:construct_task`
+
+通过 `StartupEvents.registry("mna:construct_task", ...)` 注册。
+
+当前支持是元数据和复用已有 Java AI 任务，不是 JS 原生 AI 创作。
+
+常用方法：
+
+- `basedOn(ConstructTask)`
+- `aiTask(ConstructTask)`
+- `texture(MnaTexture)`
+- `name(String)`
+- `description(String)`
+- `output(...)`
+- `lowTierAssignable(boolean)`
+
+示例：
+
+```js
+StartupEvents.registry("mna:construct_task", (event) => {
+    /**
+     * @type {Internal.CustomConstructTask$Builder}
+     */
+    const builder = event.create("kubejs:scripted_wait", "basic");
+
+    builder
+        .basedOn(MnaConstructTasks.WAIT)
+        .aiTask(MnaConstructTasks.WAIT)
+        .texture("mna:textures/gui/construct_tasks/wait.png");
+});
+```
+
+## `mnajs:construct_material`
+
+通过 `StartupEvents.registry("mnajs:construct_material", ...)` 注册。
+
+用于注册构装体材料。支持基于已有材料复制，并使用字符串槽位/能力 id 做深度配置。
+
+常用方法：
+
+- `basedOn(MnaConstructMaterialId)`
+- `texture(MnaTexture)`
+- `health(float)`
+- `damage(float)`
+- `manaCapacity(int)`
+- `cooldownMultiplier(MnaConstructSlotId, MnaConstructCapabilityId, float)`
+- `armorBonus(MnaConstructSlotId, float)`
+- `toughnessBonus(MnaConstructSlotId, float)`
+
+## `item` type `construct_part`
+
+通过 `StartupEvents.registry("item", ...)` 和 `event.create(id, "construct_part")` 注册。
+
+用于注册构装体部件物品。
+
+常用方法：
+
+- `material(MnaConstructMaterialId)`
+- `slot(MnaConstructSlotId)`
+- `tier(int)`
+- `partName(String)`
+
+## `item` type `mana_battery_item`
+
+通过 `StartupEvents.registry("item", ...)` 和 `event.create(id, "mana_battery_item")` 注册。
+
+用于注册可储存 mana 的物品。
+
+常用方法：
+
+- `maxMana(float)`
+- `manaPerTick(float)`
+- `curiosTick(...)`
+- `tickEffect(...)`
+
+## `item` type `tiered_item`
+
+通过 `StartupEvents.registry("item", ...)` 和 `event.create(id, "tiered_item")` 注册。
+
+用于注册带 tier 的 M&A 物品。
+
+## `block` type `spell_interactible`
+
+通过 `StartupEvents.registry("block", ...)` 和 `event.create(id, "spell_interactible")` 注册。
+
+用于注册可响应法术命中的方块。
+
+常用方法：
+
+- `onHitBySpell((level, pos, state, source, target, spell) => boolean)`
+
+## `block` type `manaweave_notifiable`
+
+通过 `StartupEvents.registry("block", ...)` 和 `event.create(id, "manaweave_notifiable")` 注册。
+
+用于注册可响应 manaweave pattern 通知的方块。
+
+常用方法：
+
+- `onManaweavePatternNotified((level, pos, state, patterns) => boolean)`

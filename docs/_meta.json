@@ -1,0 +1,10 @@
+{
+  "introduction.mdx": {
+    "name": "Introduction",
+    "icon": "BookOpen"
+  },
+  "reference": {
+    "name": "Reference",
+    "icon": "Braces"
+  }
+}

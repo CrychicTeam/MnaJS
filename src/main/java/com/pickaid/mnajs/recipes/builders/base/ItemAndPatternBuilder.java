@@ -109,7 +109,7 @@ public abstract class ItemAndPatternBuilder extends MABaseBuilder {
         }
         JsonArray itemsArray = new JsonArray();
         for (MnaItemOrTag item : requiredItems) {
-            itemsArray.add(item.scriptValue());
+            itemsArray.add(item.recipeValue());
         }
         json.add("items", itemsArray);
         if (!requiredPatterns.isEmpty()) {

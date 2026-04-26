@@ -1,10 +1,11 @@
 package com.pickaid.mnajs.recipes.builders;
 
 import com.google.gson.JsonObject;
-import com.pickaid.mnajs.kubejs.id.MnaIds;
+import com.pickaid.mnajs.kubejs.id.MnaMobEffectId;
+import com.pickaid.mnajs.kubejs.id.MnaTypedIdLookups;
 import com.pickaid.mnajs.recipes.builders.base.MABaseBuilder;
 import dev.latvian.mods.kubejs.typings.Info;
-import dev.latvian.mods.rhino.util.HideFromJS;
+import dev.latvian.mods.kubejs.typings.Param;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -15,21 +16,12 @@ public class ManaweaveCacheEffectBuilder extends MABaseBuilder {
     private int durationMin = 0;
     private int durationMax = 0;
 
-    @Info("Set the effect for the Manaweave Cache Effect recipe")
-    public ManaweaveCacheEffectBuilder effect(MobEffect effect) {
-        this.effect = effect;
+    @Info(value = "Set the mob effect applied by this manaweave cache effect recipe.", params = {
+            @Param(name = "effect", value = "Mob effect id such as minecraft:speed.")
+    })
+    public ManaweaveCacheEffectBuilder effect(MnaMobEffectId effect) {
+        this.effect = MnaTypedIdLookups.requireMobEffect(effect, "effect");
         return this;
-    }
-
-    @HideFromJS
-    public ManaweaveCacheEffectBuilder effect(ResourceLocation effect) {
-        this.effect = ForgeRegistries.MOB_EFFECTS.getValue(effect);
-        return this;
-    }
-
-    @HideFromJS
-    public ManaweaveCacheEffectBuilder effect(String effect) {
-        return effect(MnaIds.parse(effect, "effect", "minecraft", null));
     }
 
     @Info("Set the magnitude for the Manaweave Cache Effect recipe")

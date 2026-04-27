@@ -22,6 +22,21 @@ plugins {
 apply plugin: 'idea'
 apply plugin: 'org.spongepowered.mixin'
 
+jarJar.enable()
+
+tasks.jarJar.configure {
+    archiveClassifier.set("")
+    finalizedBy("reobfJarJar")
+}
+
+tasks.jar.configure {
+    archiveClassifier.set("slim")
+}
+
+tasks.matching { it.name == "reobfJar" }.configureEach {
+    enabled = false
+}
+
 apply from: 'gradle/template-config.gradle'
 
 def prop = { String key -> config.isSet(key) ? String.valueOf(config[key]).trim() : '' }
@@ -103,6 +118,8 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    mavenLocal()
+
     maven {
         name = 'MinecraftForge'
         url = 'https://maven.minecraftforge.net/'
@@ -210,13 +227,18 @@ dependencies {
         implementation fg.deobf("com.mihono.pickaid:pibrary:${prop('pibrary_version')}")
     }
     if (hasProp('piserializekit_version')) {
+        def piSerializeKitNotation = "com.mihono.pickaid:piserializekit:${prop('piserializekit_version')}"
         def localPiSerializeKitJar = localDeobfJar('PiSerializeKit', 'piserializekit', prop('piserializekit_version'))
         if (localPiSerializeKitJar != null) {
             implementation files(localPiSerializeKitJar)
             annotationProcessor files(localPiSerializeKitJar)
         } else {
-            implementation fg.deobf("com.mihono.pickaid:piserializekit:${prop('piserializekit_version')}")
-            annotationProcessor fg.deobf("com.mihono.pickaid:piserializekit:${prop('piserializekit_version')}")
+            implementation fg.deobf(piSerializeKitNotation)
+            annotationProcessor fg.deobf(piSerializeKitNotation)
+        }
+        // The published Gradle metadata selects the slim deobf variant; JarJar must embed the reobfuscated runtime jar.
+        jarJar(group: 'com.mihono.pickaid', name: 'piserializekit', version: "[${prop('piserializekit_version')},)", ext: 'jar') {
+            transitive = false
         }
     }
     if (hasProp('pikubejscompat_version')) {

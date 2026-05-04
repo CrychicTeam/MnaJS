@@ -121,9 +121,9 @@ public interface ItemsOrTagsComponent {
 
         private ResourceLocation ensureNamespace(String string) {
             if (!string.contains(":")) {
-                return ResourceLocation.fromNamespaceAndPath("minecraft", string);
+                return new ResourceLocation("minecraft", string);
             }
-            return ResourceLocation.parse(string);
+            return new ResourceLocation(string);
         }
 
         private Either<TagKey<Item>, Item> processResourceLocation(ResourceLocation resourcelocation) {

@@ -209,13 +209,13 @@ public class CantripRegistrationEventJS extends EventJS {
         public ICantrip register() {
             if (icon == null) {
                 MnaJS.LOGGER.warn("Cantrip " + id + " has no icon set. Using default.");
-                icon = ResourceLocation.fromNamespaceAndPath("mna", "textures/gui/cantrips/default.png");
+                icon = new ResourceLocation("mna", "textures/gui/cantrips/default.png");
             }
 
             if (pattern.isEmpty()) {
                 MnaJS.LOGGER.warn("Cantrip " + id + " has no pattern set. Using default pattern.");
-                pattern.add(ResourceLocation.fromNamespaceAndPath("mna", "manaweave_patterns/circle"));
-                pattern.add(ResourceLocation.fromNamespaceAndPath("mna", "manaweave_patterns/square"));
+                pattern.add(new ResourceLocation("mna", "manaweave_patterns/circle"));
+                pattern.add(new ResourceLocation("mna", "manaweave_patterns/square"));
             }
 
             ResourceLocation[] patternArray = pattern.toArray(new ResourceLocation[0]);

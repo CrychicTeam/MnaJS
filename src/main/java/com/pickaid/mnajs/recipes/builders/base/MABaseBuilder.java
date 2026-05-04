@@ -16,7 +16,7 @@ public abstract class MABaseBuilder {
     };
 
     public int tier = 1;
-    public ResourceLocation faction = ResourceLocation.fromNamespaceAndPath("mna", "none");
+    public ResourceLocation faction = new ResourceLocation("mna", "none");
 
     @Info("set the tier requirement")
     public MABaseBuilder tier(int value) {

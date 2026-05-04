@@ -125,7 +125,7 @@ public class CustomRitualEffect extends RitualEffect {
     }
 
     public static class Builder extends BuilderBase<CustomRitualEffect> {
-        private ResourceLocation ritualName = ResourceLocation.fromNamespaceAndPath("mna", "none");
+        private ResourceLocation ritualName = new ResourceLocation("mna", "none");
         private ApplyEffectCallback applyEffect;
         private ApplicationTicksCallback applicationTicks;
         private int defaultApplicationTicks = 0;

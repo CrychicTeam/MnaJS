@@ -65,7 +65,7 @@ public interface ItemStackComponent {
                 }
             }
             if (from instanceof String string) {
-                var item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(string));
+                var item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(string));
                 if (item != null) {
                     return new ItemStack(item);
                 }
@@ -84,7 +84,7 @@ public interface ItemStackComponent {
                 return ItemStack.EMPTY;
             }
 
-            var item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(object.get("item").getAsString()));
+            var item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(object.get("item").getAsString()));
             if (item == null) {
                 return ItemStack.EMPTY;
             }
@@ -112,7 +112,7 @@ public interface ItemStackComponent {
             } else if (itemValue instanceof ResourceLocation id) {
                 item = ForgeRegistries.ITEMS.getValue(id);
             } else {
-                item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(String.valueOf(itemValue)));
+                item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(String.valueOf(itemValue)));
             }
 
             if (item == null) {

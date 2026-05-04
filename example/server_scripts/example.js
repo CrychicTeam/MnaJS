@@ -45,17 +45,17 @@ function exampleCommonMnaBindings(player, level) {
     const ResourceLocation = Java.loadClass(
         "net.minecraft.resources.ResourceLocation"
     );
-    const ironTag = ResourceLocation.fromNamespaceAndPath(
+    const ironTag = new ResourceLocation(
         "forge",
         "ingots/iron"
     );
-    const logTag = ResourceLocation.fromNamespaceAndPath("minecraft", "logs");
+    const logTag = new ResourceLocation("minecraft", "logs");
     const allBiomes = BiomeUtils.getAllBiomeIDs(level);
     const allStructures = StructureUtils.getAllStructureIDs(level);
     const insideVillage = StructureUtils.isPointInStructure(
         level,
         player.blockPosition(),
-        ResourceLocation.fromNamespaceAndPath("minecraft", "village_plains"),
+        new ResourceLocation("minecraft", "village_plains"),
         1
     );
     const tagMatch = MATags.isItemEqual(player.getMainHandItem(), ironTag);

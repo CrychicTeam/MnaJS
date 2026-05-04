@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 public final class MnaJSRegistries {
     public static final ResourceKey<Registry<ConstructMaterial>> CONSTRUCT_MATERIAL_REGISTRY_KEY =
-            ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath(MnaJS.MOD_ID, "construct_material"));
+            ResourceKey.createRegistryKey(new ResourceLocation(MnaJS.MOD_ID, "construct_material"));
 
     private static final DeferredRegister<ConstructMaterial> CONSTRUCT_MATERIALS =
             DeferredRegister.create(CONSTRUCT_MATERIAL_REGISTRY_KEY, MnaJS.MOD_ID);

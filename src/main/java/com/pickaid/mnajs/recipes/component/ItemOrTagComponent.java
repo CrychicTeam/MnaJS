@@ -53,7 +53,7 @@ public interface ItemOrTagComponent {
             ResourceLocation resourceLocation = null;
             if (from instanceof String string) {
                 if (string.startsWith("#")) string = string.substring(1);
-                resourceLocation = ResourceLocation.parse(string);
+                resourceLocation = new ResourceLocation(string);
             } else if (from instanceof ResourceLocation location) {
                 resourceLocation = location;
             } else if (from instanceof Item item) {

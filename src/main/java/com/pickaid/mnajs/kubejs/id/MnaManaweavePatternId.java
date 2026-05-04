@@ -12,7 +12,7 @@ public record MnaManaweavePatternId(ResourceLocation location) implements MnaTyp
         location = MnaIds.normalize(location, "mna", null);
         String path = location.getPath();
         if (path.startsWith(LEGACY_RECIPE_PATH)) {
-            location = ResourceLocation.fromNamespaceAndPath(
+            location = new ResourceLocation(
                     location.getNamespace(),
                     path.substring(LEGACY_RECIPE_PATH.length())
             );
@@ -33,7 +33,7 @@ public record MnaManaweavePatternId(ResourceLocation location) implements MnaTyp
     public ResourceLocation recipeLocation() {
         String path = location.getPath();
         if ("mna".equals(location.getNamespace()) && !path.startsWith(LEGACY_RECIPE_PATH)) {
-            return ResourceLocation.fromNamespaceAndPath(location.getNamespace(), LEGACY_RECIPE_PATH + path);
+            return new ResourceLocation(location.getNamespace(), LEGACY_RECIPE_PATH + path);
         }
         return location;
     }

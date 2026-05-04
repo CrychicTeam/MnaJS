@@ -15,7 +15,7 @@ public interface ManaweavingAltarSchema extends ItemsPatternSchema {
     RecipeKey<net.minecraft.world.item.ItemStack> OUTPUT = ItemsPatternSchema.OUTPUT;
     RecipeKey<MnaItemOrTag[]> INPUTS = ItemsPatternSchema.INPUTS;
     RecipeKey<MnaManaweavePatternId[]> PATTERNS = ItemsPatternSchema.PATTERNS;
-    RecipeKey<String> ENCHANT = StringComponent.ID.key("enchant").optional(ResourceLocation.fromNamespaceAndPath("mna", "none").toString()).allowEmpty();
+    RecipeKey<String> ENCHANT = StringComponent.ID.key("enchant").optional(new ResourceLocation("mna", "none").toString()).allowEmpty();
     RecipeKey<Integer> MAGNITUDE = NumberComponent.INT.key("magnitude").optional(1);
     RecipeKey<Boolean> COPY_NBT = BooleanComponent.BOOLEAN.key("copy_nbt").optional(false);
 

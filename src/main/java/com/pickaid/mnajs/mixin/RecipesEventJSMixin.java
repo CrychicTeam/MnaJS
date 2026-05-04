@@ -80,7 +80,7 @@ public class RecipesEventJSMixin {
         if (function == null) {
             RecipeSchemaType type = new RecipeSchemaType(
                     namespace,
-                    ResourceLocation.fromNamespaceAndPath("mna", alias.originalKey()),
+                    new ResourceLocation("mna", alias.originalKey()),
                     alias.schema()
             );
             function = new RecipeTypeFunction(event, type);

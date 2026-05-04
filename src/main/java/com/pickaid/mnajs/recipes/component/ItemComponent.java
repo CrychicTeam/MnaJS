@@ -40,7 +40,7 @@ public interface ItemComponent {
                 }
             }
             if (from instanceof String string) {
-                return ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(string)) == null ? ItemStack.EMPTY.getItem() : ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(string));
+                return ForgeRegistries.ITEMS.getValue(new ResourceLocation(string)) == null ? ItemStack.EMPTY.getItem() : ForgeRegistries.ITEMS.getValue(new ResourceLocation(string));
             } else if (from instanceof ItemStack stack) {
                 return stack.getItem();
             } else if (from instanceof Ingredient ingredient) {

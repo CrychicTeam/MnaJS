@@ -91,6 +91,6 @@ public final class MnaIds {
             path = pathPrefix + "/" + path;
         }
 
-        return ResourceLocation.fromNamespaceAndPath(namespace, path);
+        return new ResourceLocation(namespace, path);
     }
 }

@@ -129,17 +129,17 @@ import net.minecraftforge.common.util.Lazy;
 
 public class MnaJSPlugin extends KubeJSPlugin {
     public static final Lazy<RegistryInfo<IFaction>> FACTION_REGISTRY =
-            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath("mna", "factions")), IFaction.class));
+            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(new ResourceLocation("mna", "factions")), IFaction.class));
     public static final Lazy<RegistryInfo<RitualEffect>> RITUAL_EFFECT_REGISTRY =
-            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath("mna", "ritual-effects")), RitualEffect.class));
+            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(new ResourceLocation("mna", "ritual-effects")), RitualEffect.class));
     public static final Lazy<RegistryInfo<SpellEffect>> SPELL_EFFECT =
-            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath("mna", "components")), SpellEffect.class));
+            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(new ResourceLocation("mna", "components")), SpellEffect.class));
     public static final Lazy<RegistryInfo<Shape>> SPELL_SHAPE =
-            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath("mna", "shapes")), Shape.class));
+            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(new ResourceLocation("mna", "shapes")), Shape.class));
     public static final Lazy<RegistryInfo<Modifier>> MODIFIER_REGISTRY =
-            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath("mna", "modifiers")), Modifier.class));
+            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(new ResourceLocation("mna", "modifiers")), Modifier.class));
     public static final Lazy<RegistryInfo<ConstructTask>> CONSTRUCT_TASK_REGISTRY =
-            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath("mna", "construct_task")), ConstructTask.class));
+            Lazy.of(() -> RegistryInfo.of(ResourceKey.createRegistryKey(new ResourceLocation("mna", "construct_task")), ConstructTask.class));
     public static final Lazy<RegistryInfo<ConstructMaterial>> CONSTRUCT_MATERIAL_REGISTRY =
             Lazy.of(() -> RegistryInfo.of(MnaJSRegistries.CONSTRUCT_MATERIAL_REGISTRY_KEY, ConstructMaterial.class));
 
@@ -363,12 +363,12 @@ public class MnaJSPlugin extends KubeJSPlugin {
                 .register("modifier", ModifierSchema.SCHEMA)
                 .register("shape", ShapeSchema.SCHEMA);
 
-        mnaNamespace.put("progression", new RecipeSchemaType(mnaNamespace, ResourceLocation.fromNamespaceAndPath("mna", "progression-condition"), ProgressionSchema.SCHEMA));
-        mnaNamespace.put("manaweavingAltar", new RecipeSchemaType(mnaNamespace, ResourceLocation.fromNamespaceAndPath("mna", "manaweaving-recipe"), ManaweavingAltarSchema.SCHEMA));
-        mnaNamespace.put("arcaneFurnace", new RecipeSchemaType(mnaNamespace, ResourceLocation.fromNamespaceAndPath("mna", "arcane-furnace"), ArcaneFurnaceSchema.SCHEMA));
-        mnaNamespace.put("eldrinAltar", new RecipeSchemaType(mnaNamespace, ResourceLocation.fromNamespaceAndPath("mna", "eldrin-altar"), EldrinAltarSchema.SCHEMA));
-        mnaNamespace.put("eldrinFume", new RecipeSchemaType(mnaNamespace, ResourceLocation.fromNamespaceAndPath("mna", "eldrin-fume"), FumerFliterSchema.SCHEMA));
-        mnaNamespace.put("pattern", new RecipeSchemaType(mnaNamespace, ResourceLocation.fromNamespaceAndPath("mna", "manaweaving-pattern"), ManaweavingPatternSchema.SCHEMA));
-        mnaNamespace.put("cacheEffect", new RecipeSchemaType(mnaNamespace, ResourceLocation.fromNamespaceAndPath("mna", "manaweave-cache-effect"), ManaweaveCacheEffectSchema.SCHEMA));
+        mnaNamespace.put("progression", new RecipeSchemaType(mnaNamespace, new ResourceLocation("mna", "progression-condition"), ProgressionSchema.SCHEMA));
+        mnaNamespace.put("manaweavingAltar", new RecipeSchemaType(mnaNamespace, new ResourceLocation("mna", "manaweaving-recipe"), ManaweavingAltarSchema.SCHEMA));
+        mnaNamespace.put("arcaneFurnace", new RecipeSchemaType(mnaNamespace, new ResourceLocation("mna", "arcane-furnace"), ArcaneFurnaceSchema.SCHEMA));
+        mnaNamespace.put("eldrinAltar", new RecipeSchemaType(mnaNamespace, new ResourceLocation("mna", "eldrin-altar"), EldrinAltarSchema.SCHEMA));
+        mnaNamespace.put("eldrinFume", new RecipeSchemaType(mnaNamespace, new ResourceLocation("mna", "eldrin-fume"), FumerFliterSchema.SCHEMA));
+        mnaNamespace.put("pattern", new RecipeSchemaType(mnaNamespace, new ResourceLocation("mna", "manaweaving-pattern"), ManaweavingPatternSchema.SCHEMA));
+        mnaNamespace.put("cacheEffect", new RecipeSchemaType(mnaNamespace, new ResourceLocation("mna", "manaweave-cache-effect"), ManaweaveCacheEffectSchema.SCHEMA));
     }
 }

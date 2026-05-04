@@ -85,7 +85,7 @@ public final class MnaTypedIdPiSerializers {
     }
 
     private static <T> PiSerializerType<T> type(String path, Class<T> javaType) {
-        return new PiSerializerType<>(ResourceLocation.fromNamespaceAndPath(MnaJS.MOD_ID, path), javaType);
+        return new PiSerializerType<>(new ResourceLocation(MnaJS.MOD_ID, path), javaType);
     }
 
     private static <T> void registerIfMissing(PiSerializeService service, PiSerializerType<T> type, PiSerializer<T> serializer) {

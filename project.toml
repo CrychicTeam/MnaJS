@@ -60,7 +60,7 @@ mixin_extras_version = "0.2.0-beta.8"
 mna_all_id = "6847805"
 mna_api_id = "6847805"
 mna_id = "406360"
-piserializekit_version = "0.0.4"
+piserializekit_version = "0.0.7"
 probejs_version = "5227399"
 probejs_legacy_version = "6773935"
 rhino_version = "2001.2.3-build.10"
@@ -70,6 +70,18 @@ maven_url = "https://maven.mihono.cn/repository/pickaid1201/"
 curseforge_project = 0
 modrinth_project = ""
 release_type = "release"
+
+[publish.mods]
+game_versions = ["1.20.1"]
+loaders = ["forge"]
+
+[publish.modrinth]
+changelog_file = "CHANGELOG.md"
+changelog_section = "version"
+
+[publish.curseforge]
+changelog_file = "CHANGELOG.md"
+changelog_section = "version"
 
 [naming]
 archive_name = "MnaJS"

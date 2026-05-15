@@ -209,24 +209,20 @@ dependencies {
         runtimeOnly fg.deobf("mezz.jei:jei-${prop('mc_version')}-forge:${project.ext.resolvedFeatureVersions.jei}")
     }
 
-    if (hasProp('curios_version')) {
+    if (project.ext.enabledFeatures.curios) {
         compileOnly fg.deobf("top.theillusivec4.curios:curios-forge:${prop('curios_version')}")
         runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${prop('curios_version')}")
-    }
-    if (hasProp('caelus_version')) {
         compileOnly fg.deobf("top.theillusivec4.caelus:caelus-forge:${prop('caelus_version')}")
         runtimeOnly fg.deobf("top.theillusivec4.caelus:caelus-forge:${prop('caelus_version')}")
     }
-    if (hasProp('geckolib_version')) {
+    if (project.ext.enabledFeatures.geckolib) {
         implementation fg.deobf(project.dependencies.create("software.bernie.geckolib:geckolib-forge-${prop('mc_version')}:${prop('geckolib_version')}") {
             transitive = false
         })
         implementation 'com.eliotlash.mclib:mclib:20'
     }
-    if (hasProp('playeranimator_version')) {
+    if (project.ext.enabledFeatures.player_animator) {
         implementation fg.deobf("dev.kosmx.player-anim:player-animation-lib-forge:${prop('playeranimator_version')}")
-    }
-    if (hasProp('bendylib_version')) {
         runtimeOnly fg.deobf("io.github.kosmx.bendy-lib:bendy-lib-forge:${prop('bendylib_version')}")
     }
     if (hasProp('pibrary_version')) {
@@ -248,7 +244,12 @@ dependencies {
         }
     }
     if (hasProp('pikubejscompat_version')) {
-        implementation fg.deobf("com.mihono.pickaid:pikubejscompat:${prop('pikubejscompat_version')}")
+        def localPiKubeJSCompatJar = localDeobfJar('PiKubeJSCompat', 'pikubejscompat', prop('pikubejscompat_version'))
+        if (localPiKubeJSCompatJar != null) {
+            implementation files(localPiKubeJSCompatJar)
+        } else {
+            implementation fg.deobf("com.mihono.pickaid:pikubejscompat:${prop('pikubejscompat_version')}")
+        }
     }
 
     annotationProcessor 'org.spongepowered:mixin:0.8.7:processor'

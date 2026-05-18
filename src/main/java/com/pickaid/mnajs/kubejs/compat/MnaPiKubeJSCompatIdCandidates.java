@@ -29,6 +29,18 @@ public final class MnaPiKubeJSCompatIdCandidates {
         return registryIds(Registries.SpellEffect);
     }
 
+    public static List<String> ritualEffectIds() {
+        return registryIds(Registries.RitualEffect);
+    }
+
+    public static List<String> shapeIds() {
+        return registryIds(Registries.Shape);
+    }
+
+    public static List<String> modifierIds() {
+        return registryIds(Registries.Modifier);
+    }
+
     public static List<String> soundIds() {
         return registryIds(() -> ForgeRegistries.SOUND_EVENTS);
     }

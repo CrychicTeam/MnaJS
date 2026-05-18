@@ -11,7 +11,10 @@ public final class MnaPiKubeJSCompatBridge {
     public static void install() {
         PiKubeJSCompat.registerModule(MODULE_ID, new MnaPiKubeJSCompatModule(
                 MnaPiKubeJSCompatIdCandidates::factionIds,
+                MnaPiKubeJSCompatIdCandidates::ritualEffectIds,
                 MnaPiKubeJSCompatIdCandidates::spellEffectIds,
+                MnaPiKubeJSCompatIdCandidates::shapeIds,
+                MnaPiKubeJSCompatIdCandidates::modifierIds,
                 MnaPiKubeJSCompatIdCandidates::soundIds
         ));
     }

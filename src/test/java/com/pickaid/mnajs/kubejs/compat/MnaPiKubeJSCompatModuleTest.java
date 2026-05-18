@@ -16,19 +16,35 @@ class MnaPiKubeJSCompatModuleTest {
 
         new MnaPiKubeJSCompatModule(
                 () -> List.of("mna:council"),
+                () -> List.of("mna:altar"),
                 () -> List.of("mna:fireball"),
+                () -> List.of("mna:self"),
+                () -> List.of("mna:range"),
                 () -> List.of("minecraft:block.note_block.harp")
         ).contribute(bootstrap);
 
-        assertEquals(List.of(MnaPiKubeJSCompatIds.FACTION, MnaPiKubeJSCompatIds.SPELL_EFFECT, PiCommonIdSpecs.SOUND),
+        assertEquals(List.of(
+                        MnaPiKubeJSCompatIds.FACTION,
+                        MnaPiKubeJSCompatIds.RITUAL_EFFECT,
+                        MnaPiKubeJSCompatIds.SPELL_EFFECT,
+                        MnaPiKubeJSCompatIds.SHAPE,
+                        MnaPiKubeJSCompatIds.MODIFIER,
+                        PiCommonIdSpecs.SOUND
+                ),
                 bootstrap.ids().stream().map(PiIdSpec::role).toList());
         assertEquals("\"mna:council\"",
                 bootstrap.ids().get(0).toRecipeComponent().constructorDescription(null).build());
-        assertEquals("\"mna:fireball\"",
+        assertEquals("\"mna:altar\"",
                 bootstrap.ids().get(1).toRecipeComponent().constructorDescription(null).build());
         assertEquals("\"mna:fireball\"",
-                PiProbeTypeSpec.fromId(bootstrap.ids().get(1)).typeExpression());
-        assertEquals("\"minecraft:block.note_block.harp\"",
                 bootstrap.ids().get(2).toRecipeComponent().constructorDescription(null).build());
+        assertEquals("\"mna:fireball\"",
+                PiProbeTypeSpec.fromId(bootstrap.ids().get(2)).typeExpression());
+        assertEquals("\"mna:self\"",
+                bootstrap.ids().get(3).toRecipeComponent().constructorDescription(null).build());
+        assertEquals("\"mna:range\"",
+                bootstrap.ids().get(4).toRecipeComponent().constructorDescription(null).build());
+        assertEquals("\"minecraft:block.note_block.harp\"",
+                bootstrap.ids().get(5).toRecipeComponent().constructorDescription(null).build());
     }
 }

@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.google.gson.JsonParser;
 import com.pickaid.mnajs.kubejs.id.MnaFactionId;
+import com.pickaid.mnajs.kubejs.id.MnaModifierId;
+import com.pickaid.mnajs.kubejs.id.MnaRitualEffectId;
+import com.pickaid.mnajs.kubejs.id.MnaShapeId;
 import com.pickaid.mnajs.kubejs.id.MnaSpellEffectId;
 import java.util.List;
 import net.minecraft.resources.ResourceLocation;
@@ -33,6 +36,23 @@ class MnaPiKubeJSCompatIdsTest {
     }
 
     @Test
+    void ritualEffectIdSpecDerivesParserSerializerRecipeComponentAndProbeType() {
+        PiIdSpec<MnaRitualEffectId> spec = MnaPiKubeJSCompatIds.ritualEffect(
+                () -> List.of("mna:altar", "mna:moonwell")
+        );
+
+        MnaRitualEffectId parsed = spec.parser().apply("altar");
+
+        assertEquals("mna:ritual_effect", spec.role());
+        assertEquals(MnaRitualEffectId.class, spec.targetType());
+        assertEquals(new MnaRitualEffectId(new ResourceLocation("mna", "altar")), parsed);
+        assertEquals("mna:altar", spec.stringSerializer().apply(parsed));
+        assertNotNull(spec.piSerializer());
+        assertEquals("\"mna:altar\" | \"mna:moonwell\"", spec.toRecipeComponent().constructorDescription(null).build());
+        assertEquals("\"mna:altar\" | \"mna:moonwell\"", PiProbeTypeSpec.fromId(spec).typeExpression());
+    }
+
+    @Test
     void spellEffectIdSpecDerivesParserSerializerRecipeComponentAndProbeType() {
         PiIdSpec<MnaSpellEffectId> spec = MnaPiKubeJSCompatIds.spellEffect(
                 () -> List.of("mna:fireball", "mna:frost")
@@ -47,6 +67,40 @@ class MnaPiKubeJSCompatIdsTest {
         assertNotNull(spec.piSerializer());
         assertEquals("\"mna:fireball\" | \"mna:frost\"", spec.toRecipeComponent().constructorDescription(null).build());
         assertEquals("\"mna:fireball\" | \"mna:frost\"", PiProbeTypeSpec.fromId(spec).typeExpression());
+    }
+
+    @Test
+    void shapeIdSpecDerivesParserSerializerRecipeComponentAndProbeType() {
+        PiIdSpec<MnaShapeId> spec = MnaPiKubeJSCompatIds.shape(
+                () -> List.of("mna:self", "mna:beam")
+        );
+
+        MnaShapeId parsed = spec.parser().apply("beam");
+
+        assertEquals("mna:shape", spec.role());
+        assertEquals(MnaShapeId.class, spec.targetType());
+        assertEquals(new MnaShapeId(new ResourceLocation("mna", "beam")), parsed);
+        assertEquals("mna:beam", spec.stringSerializer().apply(parsed));
+        assertNotNull(spec.piSerializer());
+        assertEquals("\"mna:self\" | \"mna:beam\"", spec.toRecipeComponent().constructorDescription(null).build());
+        assertEquals("\"mna:self\" | \"mna:beam\"", PiProbeTypeSpec.fromId(spec).typeExpression());
+    }
+
+    @Test
+    void modifierIdSpecDerivesParserSerializerRecipeComponentAndProbeType() {
+        PiIdSpec<MnaModifierId> spec = MnaPiKubeJSCompatIds.modifier(
+                () -> List.of("mna:damage", "mna:range")
+        );
+
+        MnaModifierId parsed = spec.parser().apply("range");
+
+        assertEquals("mna:modifier", spec.role());
+        assertEquals(MnaModifierId.class, spec.targetType());
+        assertEquals(new MnaModifierId(new ResourceLocation("mna", "range")), parsed);
+        assertEquals("mna:range", spec.stringSerializer().apply(parsed));
+        assertNotNull(spec.piSerializer());
+        assertEquals("\"mna:damage\" | \"mna:range\"", spec.toRecipeComponent().constructorDescription(null).build());
+        assertEquals("\"mna:damage\" | \"mna:range\"", PiProbeTypeSpec.fromId(spec).typeExpression());
     }
 
     @Test

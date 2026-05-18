@@ -7,8 +7,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 public final class MnaPiKubeJSCompatIdCandidates {
     private MnaPiKubeJSCompatIdCandidates() {
@@ -39,6 +41,20 @@ public final class MnaPiKubeJSCompatIdCandidates {
 
     public static List<String> modifierIds() {
         return registryIds(Registries.Modifier);
+    }
+
+    public static List<String> lootTableIds() {
+        return resourceLocationIds(() -> {
+            var server = ServerLifecycleHooks.getCurrentServer();
+            if (server == null) {
+                return List.of();
+            }
+            return server.getLootData().getKeys(LootDataType.TABLE);
+        });
+    }
+
+    public static List<String> textureIds() {
+        return List.of();
     }
 
     public static List<String> soundIds() {

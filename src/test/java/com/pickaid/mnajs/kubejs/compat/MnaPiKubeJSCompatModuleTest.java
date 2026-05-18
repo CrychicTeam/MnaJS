@@ -20,6 +20,8 @@ class MnaPiKubeJSCompatModuleTest {
                 () -> List.of("mna:fireball"),
                 () -> List.of("mna:self"),
                 () -> List.of("mna:range"),
+                () -> List.of("minecraft:chests/simple_dungeon"),
+                () -> List.of("mna:textures/gui/guide_book.png"),
                 () -> List.of("minecraft:block.note_block.harp")
         ).contribute(bootstrap);
 
@@ -29,6 +31,8 @@ class MnaPiKubeJSCompatModuleTest {
                         MnaPiKubeJSCompatIds.SPELL_EFFECT,
                         MnaPiKubeJSCompatIds.SHAPE,
                         MnaPiKubeJSCompatIds.MODIFIER,
+                        MnaPiKubeJSCompatIds.LOOT_TABLE,
+                        MnaPiKubeJSCompatIds.TEXTURE,
                         PiCommonIdSpecs.SOUND
                 ),
                 bootstrap.ids().stream().map(PiIdSpec::role).toList());
@@ -44,7 +48,11 @@ class MnaPiKubeJSCompatModuleTest {
                 bootstrap.ids().get(3).toRecipeComponent().constructorDescription(null).build());
         assertEquals("\"mna:range\"",
                 bootstrap.ids().get(4).toRecipeComponent().constructorDescription(null).build());
-        assertEquals("\"minecraft:block.note_block.harp\"",
+        assertEquals("Special.LootTable",
                 bootstrap.ids().get(5).toRecipeComponent().constructorDescription(null).build());
+        assertEquals("Special.Texture",
+                bootstrap.ids().get(6).toRecipeComponent().constructorDescription(null).build());
+        assertEquals("\"minecraft:block.note_block.harp\"",
+                bootstrap.ids().get(7).toRecipeComponent().constructorDescription(null).build());
     }
 }

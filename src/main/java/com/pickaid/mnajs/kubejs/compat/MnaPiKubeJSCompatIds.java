@@ -1,11 +1,13 @@
 package com.pickaid.mnajs.kubejs.compat;
 
 import com.pickaid.mnajs.kubejs.id.MnaFactionId;
+import com.pickaid.mnajs.kubejs.id.MnaLootTableId;
 import com.pickaid.mnajs.kubejs.id.MnaModifierId;
 import com.pickaid.mnajs.kubejs.id.MnaRitualEffectId;
 import com.pickaid.mnajs.kubejs.id.MnaShapeId;
 import com.pickaid.mnajs.kubejs.id.MnaSpellEffectId;
 import com.pickaid.mnajs.kubejs.id.MnaTypedIdPiSerializers;
+import com.pickaid.mnajs.kubejs.texture.MnaTexture;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceLocation;
@@ -20,6 +22,8 @@ public final class MnaPiKubeJSCompatIds {
     public static final String SPELL_EFFECT = "mna:spell_effect";
     public static final String SHAPE = "mna:shape";
     public static final String MODIFIER = "mna:modifier";
+    public static final String LOOT_TABLE = "mna:loot_table";
+    public static final String TEXTURE = "mna:texture";
 
     private MnaPiKubeJSCompatIds() {
     }
@@ -91,6 +95,36 @@ public final class MnaPiKubeJSCompatIds {
                 .parser(MnaModifierId::parse)
                 .piSerializer(MnaTypedIdPiSerializers.requireSerializer(MnaTypedIdPiSerializers.MODIFIER_ID))
                 .candidates(candidates)
+                .build();
+    }
+
+    public static PiIdSpec<MnaLootTableId> lootTable(Supplier<List<String>> candidates) {
+        return PiIdSpec.builder(LOOT_TABLE, MnaLootTableId.class)
+                .converter("lootTableId", PiTypedValueConverters.resourceLocationBacked(
+                        MnaLootTableId.class,
+                        MnaLootTableId::of,
+                        MnaLootTableId::location,
+                        PiResourceLocationConverter.builder().defaultNamespace("minecraft").build()
+                ))
+                .parser(MnaLootTableId::parse)
+                .piSerializer(MnaTypedIdPiSerializers.requireSerializer(MnaTypedIdPiSerializers.LOOT_TABLE_ID))
+                .candidates(candidates)
+                .specialTypeRef("Special.LootTable")
+                .build();
+    }
+
+    public static PiIdSpec<MnaTexture> texture(Supplier<List<String>> candidates) {
+        return PiIdSpec.builder(TEXTURE, MnaTexture.class)
+                .converter("texture", PiTypedValueConverters.resourceLocationBacked(
+                        MnaTexture.class,
+                        MnaTexture::of,
+                        MnaTexture::location,
+                        PiResourceLocationConverter.builder().defaultNamespace("mna").build()
+                ))
+                .parser(MnaTexture::parse)
+                .piSerializer(MnaTypedIdPiSerializers.requireSerializer(MnaTypedIdPiSerializers.TEXTURE))
+                .candidates(candidates)
+                .specialTypeRef("Special.Texture")
                 .build();
     }
 

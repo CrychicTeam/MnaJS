@@ -27,6 +27,8 @@ class MnaPiKubeJSCompatBridgeTest {
                 MnaPiKubeJSCompatIds.SPELL_EFFECT,
                 MnaPiKubeJSCompatIds.SHAPE,
                 MnaPiKubeJSCompatIds.MODIFIER,
+                MnaPiKubeJSCompatIds.LOOT_TABLE,
+                MnaPiKubeJSCompatIds.TEXTURE,
                 "minecraft:sound"
         ), idRoles);
     }

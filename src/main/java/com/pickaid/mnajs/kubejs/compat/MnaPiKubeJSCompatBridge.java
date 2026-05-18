@@ -15,6 +15,8 @@ public final class MnaPiKubeJSCompatBridge {
                 MnaPiKubeJSCompatIdCandidates::spellEffectIds,
                 MnaPiKubeJSCompatIdCandidates::shapeIds,
                 MnaPiKubeJSCompatIdCandidates::modifierIds,
+                MnaPiKubeJSCompatIdCandidates::lootTableIds,
+                MnaPiKubeJSCompatIdCandidates::textureIds,
                 MnaPiKubeJSCompatIdCandidates::soundIds
         ));
     }

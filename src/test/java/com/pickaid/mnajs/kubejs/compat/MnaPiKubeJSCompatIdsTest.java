@@ -10,6 +10,8 @@ import com.pickaid.mnajs.kubejs.id.MnaModifierId;
 import com.pickaid.mnajs.kubejs.id.MnaRitualEffectId;
 import com.pickaid.mnajs.kubejs.id.MnaShapeId;
 import com.pickaid.mnajs.kubejs.id.MnaSpellEffectId;
+import com.pickaid.mnajs.kubejs.id.MnaLootTableId;
+import com.pickaid.mnajs.kubejs.texture.MnaTexture;
 import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
@@ -101,6 +103,40 @@ class MnaPiKubeJSCompatIdsTest {
         assertNotNull(spec.piSerializer());
         assertEquals("\"mna:damage\" | \"mna:range\"", spec.toRecipeComponent().constructorDescription(null).build());
         assertEquals("\"mna:damage\" | \"mna:range\"", PiProbeTypeSpec.fromId(spec).typeExpression());
+    }
+
+    @Test
+    void lootTableIdSpecKeepsMnaWrapperAndUsesSpecialProbeType() {
+        PiIdSpec<MnaLootTableId> spec = MnaPiKubeJSCompatIds.lootTable(
+                () -> List.of("minecraft:chests/simple_dungeon")
+        );
+
+        MnaLootTableId parsed = spec.parser().apply(JsonParser.parseString("{\"id\":\"chests/simple_dungeon\"}"));
+
+        assertEquals("mna:loot_table", spec.role());
+        assertEquals(MnaLootTableId.class, spec.targetType());
+        assertEquals(new MnaLootTableId(new ResourceLocation("minecraft", "chests/simple_dungeon")), parsed);
+        assertEquals("minecraft:chests/simple_dungeon", spec.stringSerializer().apply(parsed));
+        assertNotNull(spec.piSerializer());
+        assertEquals("Special.LootTable", spec.toRecipeComponent().constructorDescription(null).build());
+        assertEquals("Special.LootTable", PiProbeTypeSpec.fromId(spec).typeExpression());
+    }
+
+    @Test
+    void textureSpecKeepsMnaWrapperAndUsesSpecialProbeType() {
+        PiIdSpec<MnaTexture> spec = MnaPiKubeJSCompatIds.texture(
+                () -> List.of("mna:textures/gui/guide_book.png")
+        );
+
+        MnaTexture parsed = spec.parser().apply(JsonParser.parseString("{\"name\":\"textures/gui/guide_book.png\"}"));
+
+        assertEquals("mna:texture", spec.role());
+        assertEquals(MnaTexture.class, spec.targetType());
+        assertEquals(new MnaTexture(new ResourceLocation("mna", "textures/gui/guide_book.png")), parsed);
+        assertEquals("mna:textures/gui/guide_book.png", spec.stringSerializer().apply(parsed));
+        assertNotNull(spec.piSerializer());
+        assertEquals("Special.Texture", spec.toRecipeComponent().constructorDescription(null).build());
+        assertEquals("Special.Texture", PiProbeTypeSpec.fromId(spec).typeExpression());
     }
 
     @Test

@@ -12,6 +12,8 @@ public final class MnaPiKubeJSCompatModule implements PiKubeJSCompatModule {
     private final Supplier<List<String>> spellEffectCandidates;
     private final Supplier<List<String>> shapeCandidates;
     private final Supplier<List<String>> modifierCandidates;
+    private final Supplier<List<String>> lootTableCandidates;
+    private final Supplier<List<String>> textureCandidates;
     private final Supplier<List<String>> soundCandidates;
 
     public MnaPiKubeJSCompatModule(
@@ -20,6 +22,8 @@ public final class MnaPiKubeJSCompatModule implements PiKubeJSCompatModule {
             Supplier<List<String>> spellEffectCandidates,
             Supplier<List<String>> shapeCandidates,
             Supplier<List<String>> modifierCandidates,
+            Supplier<List<String>> lootTableCandidates,
+            Supplier<List<String>> textureCandidates,
             Supplier<List<String>> soundCandidates
     ) {
         this.factionCandidates = Objects.requireNonNull(factionCandidates, "factionCandidates");
@@ -27,6 +31,8 @@ public final class MnaPiKubeJSCompatModule implements PiKubeJSCompatModule {
         this.spellEffectCandidates = Objects.requireNonNull(spellEffectCandidates, "spellEffectCandidates");
         this.shapeCandidates = Objects.requireNonNull(shapeCandidates, "shapeCandidates");
         this.modifierCandidates = Objects.requireNonNull(modifierCandidates, "modifierCandidates");
+        this.lootTableCandidates = Objects.requireNonNull(lootTableCandidates, "lootTableCandidates");
+        this.textureCandidates = Objects.requireNonNull(textureCandidates, "textureCandidates");
         this.soundCandidates = Objects.requireNonNull(soundCandidates, "soundCandidates");
     }
 
@@ -38,6 +44,8 @@ public final class MnaPiKubeJSCompatModule implements PiKubeJSCompatModule {
         bootstrap.addId(MnaPiKubeJSCompatIds.spellEffect(spellEffectCandidates));
         bootstrap.addId(MnaPiKubeJSCompatIds.shape(shapeCandidates));
         bootstrap.addId(MnaPiKubeJSCompatIds.modifier(modifierCandidates));
+        bootstrap.addId(MnaPiKubeJSCompatIds.lootTable(lootTableCandidates));
+        bootstrap.addId(MnaPiKubeJSCompatIds.texture(textureCandidates));
         bootstrap.addId(MnaPiKubeJSCompatIds.sound(soundCandidates));
     }
 }

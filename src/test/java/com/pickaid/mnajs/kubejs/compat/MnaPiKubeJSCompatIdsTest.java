@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.google.gson.JsonParser;
 import com.pickaid.mnajs.kubejs.id.MnaSpellEffectId;
 import java.util.List;
 import net.minecraft.resources.ResourceLocation;
@@ -28,6 +29,14 @@ class MnaPiKubeJSCompatIdsTest {
         assertNotNull(spec.piSerializer());
         assertEquals("\"mna:fireball\" | \"mna:frost\"", spec.toRecipeComponent().constructorDescription(null).build());
         assertEquals("\"mna:fireball\" | \"mna:frost\"", PiProbeTypeSpec.fromId(spec).typeExpression());
+    }
+
+    @Test
+    void spellEffectSpecKeepsMnaParserInputShapes() {
+        PiIdSpec<MnaSpellEffectId> spec = MnaPiKubeJSCompatIds.spellEffect(List::of);
+
+        assertEquals(new MnaSpellEffectId(new ResourceLocation("mna", "frost")),
+                spec.toRecipeComponent().read(null, JsonParser.parseString("{\"id\":\"frost\"}")));
     }
 
     @Test

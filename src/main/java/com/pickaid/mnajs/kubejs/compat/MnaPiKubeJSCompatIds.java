@@ -24,6 +24,7 @@ public final class MnaPiKubeJSCompatIds {
                         MnaSpellEffectId::location,
                         PiResourceLocationConverter.builder().defaultNamespace("mna").build()
                 ))
+                .parser(MnaSpellEffectId::parse)
                 .piSerializer(MnaTypedIdPiSerializers.requireSerializer(MnaTypedIdPiSerializers.SPELL_EFFECT_ID))
                 .candidates(candidates)
                 .build();

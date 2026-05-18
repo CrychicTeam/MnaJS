@@ -21,6 +21,6 @@ class MnaPiKubeJSCompatBridgeTest {
                 .toList();
 
         assertEquals(1, moduleCount);
-        assertEquals(List.of(MnaPiKubeJSCompatIds.SPELL_EFFECT, "minecraft:sound"), idRoles);
+        assertEquals(List.of(MnaPiKubeJSCompatIds.FACTION, MnaPiKubeJSCompatIds.SPELL_EFFECT, "minecraft:sound"), idRoles);
     }
 }

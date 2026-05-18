@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.google.gson.JsonParser;
+import com.pickaid.mnajs.kubejs.id.MnaFactionId;
 import com.pickaid.mnajs.kubejs.id.MnaSpellEffectId;
 import java.util.List;
 import net.minecraft.resources.ResourceLocation;
@@ -14,6 +15,23 @@ import org.pickaid.pikubejscompat.api.probe.PiProbeTypeSpec;
 import org.pickaid.pikubejscompat.api.spec.PiIdSpec;
 
 class MnaPiKubeJSCompatIdsTest {
+    @Test
+    void factionIdSpecDerivesParserSerializerRecipeComponentAndProbeType() {
+        PiIdSpec<MnaFactionId> spec = MnaPiKubeJSCompatIds.faction(
+                () -> List.of("mna:council", "mna:demons")
+        );
+
+        MnaFactionId parsed = spec.parser().apply(JsonParser.parseString("{\"name\":\"council\"}"));
+
+        assertEquals("mna:faction", spec.role());
+        assertEquals(MnaFactionId.class, spec.targetType());
+        assertEquals(new MnaFactionId(new ResourceLocation("mna", "council")), parsed);
+        assertEquals("mna:council", spec.stringSerializer().apply(parsed));
+        assertNotNull(spec.piSerializer());
+        assertEquals("\"mna:council\" | \"mna:demons\"", spec.toRecipeComponent().constructorDescription(null).build());
+        assertEquals("\"mna:council\" | \"mna:demons\"", PiProbeTypeSpec.fromId(spec).typeExpression());
+    }
+
     @Test
     void spellEffectIdSpecDerivesParserSerializerRecipeComponentAndProbeType() {
         PiIdSpec<MnaSpellEffectId> spec = MnaPiKubeJSCompatIds.spellEffect(

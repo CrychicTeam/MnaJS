@@ -1,5 +1,6 @@
 package com.pickaid.mnajs.kubejs.compat;
 
+import com.pickaid.mnajs.kubejs.id.MnaFactionId;
 import com.pickaid.mnajs.kubejs.id.MnaSpellEffectId;
 import com.pickaid.mnajs.kubejs.id.MnaTypedIdPiSerializers;
 import java.util.List;
@@ -11,9 +12,24 @@ import org.pickaid.piserializekit.api.convert.PiResourceLocationConverter;
 import org.pickaid.piserializekit.api.convert.PiTypedValueConverters;
 
 public final class MnaPiKubeJSCompatIds {
+    public static final String FACTION = "mna:faction";
     public static final String SPELL_EFFECT = "mna:spell_effect";
 
     private MnaPiKubeJSCompatIds() {
+    }
+
+    public static PiIdSpec<MnaFactionId> faction(Supplier<List<String>> candidates) {
+        return PiIdSpec.builder(FACTION, MnaFactionId.class)
+                .converter("factionId", PiTypedValueConverters.resourceLocationBacked(
+                        MnaFactionId.class,
+                        MnaFactionId::of,
+                        MnaFactionId::location,
+                        PiResourceLocationConverter.builder().defaultNamespace("mna").build()
+                ))
+                .parser(MnaFactionId::parse)
+                .piSerializer(MnaTypedIdPiSerializers.requireSerializer(MnaTypedIdPiSerializers.FACTION_ID))
+                .candidates(candidates)
+                .build();
     }
 
     public static PiIdSpec<MnaSpellEffectId> spellEffect(Supplier<List<String>> candidates) {

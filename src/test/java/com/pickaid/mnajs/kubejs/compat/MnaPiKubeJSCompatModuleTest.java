@@ -15,17 +15,20 @@ class MnaPiKubeJSCompatModuleTest {
         PiKubeJSCompatBootstrap bootstrap = new PiKubeJSCompatBootstrap();
 
         new MnaPiKubeJSCompatModule(
+                () -> List.of("mna:council"),
                 () -> List.of("mna:fireball"),
                 () -> List.of("minecraft:block.note_block.harp")
         ).contribute(bootstrap);
 
-        assertEquals(List.of(MnaPiKubeJSCompatIds.SPELL_EFFECT, PiCommonIdSpecs.SOUND),
+        assertEquals(List.of(MnaPiKubeJSCompatIds.FACTION, MnaPiKubeJSCompatIds.SPELL_EFFECT, PiCommonIdSpecs.SOUND),
                 bootstrap.ids().stream().map(PiIdSpec::role).toList());
-        assertEquals("\"mna:fireball\"",
+        assertEquals("\"mna:council\"",
                 bootstrap.ids().get(0).toRecipeComponent().constructorDescription(null).build());
         assertEquals("\"mna:fireball\"",
-                PiProbeTypeSpec.fromId(bootstrap.ids().get(0)).typeExpression());
-        assertEquals("\"minecraft:block.note_block.harp\"",
                 bootstrap.ids().get(1).toRecipeComponent().constructorDescription(null).build());
+        assertEquals("\"mna:fireball\"",
+                PiProbeTypeSpec.fromId(bootstrap.ids().get(1)).typeExpression());
+        assertEquals("\"minecraft:block.note_block.harp\"",
+                bootstrap.ids().get(2).toRecipeComponent().constructorDescription(null).build());
     }
 }

@@ -1,6 +1,7 @@
 package com.pickaid.mnajs;
 
 import com.mojang.logging.LogUtils;
+import com.pickaid.mnajs.kubejs.compat.MnaPiKubeJSCompatBridge;
 import com.pickaid.mnajs.kubejs.id.MnaTypedIdPiSerializers;
 import com.pickaid.mnajs.kubejs.probe.MnaJSProbeCompat;
 import com.pickaid.mnajs.kubejs.probe.MnaJSLegacyProbeCompat;
@@ -20,6 +21,9 @@ public final class MnaJS {
         LOGGER.info("Initializing {}", MOD_ID);
         MnaJSRegistries.init(FMLJavaModLoadingContext.get().getModEventBus());
         MnaTypedIdPiSerializers.bootstrap();
+        if (ModList.get().isLoaded("pikubejscompat")) {
+            MnaPiKubeJSCompatBridge.install();
+        }
         if (ModList.get().isLoaded("probejs")) {
             MnaJSProbeCompat.install();
         }

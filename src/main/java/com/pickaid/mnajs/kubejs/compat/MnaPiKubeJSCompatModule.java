@@ -1,51 +1,31 @@
 package com.pickaid.mnajs.kubejs.compat;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.function.Supplier;
 import org.pickaid.pikubejscompat.api.bootstrap.PiKubeJSCompatBootstrap;
 import org.pickaid.pikubejscompat.api.bootstrap.PiKubeJSCompatModule;
 
 public final class MnaPiKubeJSCompatModule implements PiKubeJSCompatModule {
-    private final Supplier<List<String>> factionCandidates;
-    private final Supplier<List<String>> ritualEffectCandidates;
-    private final Supplier<List<String>> spellEffectCandidates;
-    private final Supplier<List<String>> shapeCandidates;
-    private final Supplier<List<String>> modifierCandidates;
-    private final Supplier<List<String>> lootTableCandidates;
-    private final Supplier<List<String>> textureCandidates;
-    private final Supplier<List<String>> soundCandidates;
+    private final MnaPiKubeJSCompatCandidates candidates;
 
-    public MnaPiKubeJSCompatModule(
-            Supplier<List<String>> factionCandidates,
-            Supplier<List<String>> ritualEffectCandidates,
-            Supplier<List<String>> spellEffectCandidates,
-            Supplier<List<String>> shapeCandidates,
-            Supplier<List<String>> modifierCandidates,
-            Supplier<List<String>> lootTableCandidates,
-            Supplier<List<String>> textureCandidates,
-            Supplier<List<String>> soundCandidates
-    ) {
-        this.factionCandidates = Objects.requireNonNull(factionCandidates, "factionCandidates");
-        this.ritualEffectCandidates = Objects.requireNonNull(ritualEffectCandidates, "ritualEffectCandidates");
-        this.spellEffectCandidates = Objects.requireNonNull(spellEffectCandidates, "spellEffectCandidates");
-        this.shapeCandidates = Objects.requireNonNull(shapeCandidates, "shapeCandidates");
-        this.modifierCandidates = Objects.requireNonNull(modifierCandidates, "modifierCandidates");
-        this.lootTableCandidates = Objects.requireNonNull(lootTableCandidates, "lootTableCandidates");
-        this.textureCandidates = Objects.requireNonNull(textureCandidates, "textureCandidates");
-        this.soundCandidates = Objects.requireNonNull(soundCandidates, "soundCandidates");
+    public MnaPiKubeJSCompatModule(MnaPiKubeJSCompatCandidates candidates) {
+        this.candidates = Objects.requireNonNull(candidates, "candidates");
     }
 
     @Override
     public void contribute(PiKubeJSCompatBootstrap bootstrap) {
         Objects.requireNonNull(bootstrap, "bootstrap");
-        bootstrap.addId(MnaPiKubeJSCompatIds.faction(factionCandidates));
-        bootstrap.addId(MnaPiKubeJSCompatIds.ritualEffect(ritualEffectCandidates));
-        bootstrap.addId(MnaPiKubeJSCompatIds.spellEffect(spellEffectCandidates));
-        bootstrap.addId(MnaPiKubeJSCompatIds.shape(shapeCandidates));
-        bootstrap.addId(MnaPiKubeJSCompatIds.modifier(modifierCandidates));
-        bootstrap.addId(MnaPiKubeJSCompatIds.lootTable(lootTableCandidates));
-        bootstrap.addId(MnaPiKubeJSCompatIds.texture(textureCandidates));
-        bootstrap.addId(MnaPiKubeJSCompatIds.sound(soundCandidates));
+        bootstrap.addId(MnaPiKubeJSCompatIds.progressionEvent(candidates.progressionEvents()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.faction(candidates.factions()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.castingResource(candidates.castingResources()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.mobEffect(candidates.mobEffects()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.ritualEffect(candidates.ritualEffects()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.spellEffect(candidates.spellEffects()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.shape(candidates.shapes()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.modifier(candidates.modifiers()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.constructTask(candidates.constructTasks()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.lootTable(candidates.lootTables()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.structure(candidates.structures()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.texture(candidates.textures()));
+        bootstrap.addId(MnaPiKubeJSCompatIds.sound(candidates.sounds()));
     }
 }

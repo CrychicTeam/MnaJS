@@ -22,12 +22,17 @@ class MnaPiKubeJSCompatBridgeTest {
 
         assertEquals(1, moduleCount);
         assertEquals(List.of(
+                MnaPiKubeJSCompatIds.PROGRESSION_EVENT,
                 MnaPiKubeJSCompatIds.FACTION,
+                MnaPiKubeJSCompatIds.CASTING_RESOURCE,
+                MnaPiKubeJSCompatIds.MOB_EFFECT,
                 MnaPiKubeJSCompatIds.RITUAL_EFFECT,
                 MnaPiKubeJSCompatIds.SPELL_EFFECT,
                 MnaPiKubeJSCompatIds.SHAPE,
                 MnaPiKubeJSCompatIds.MODIFIER,
+                MnaPiKubeJSCompatIds.CONSTRUCT_TASK,
                 MnaPiKubeJSCompatIds.LOOT_TABLE,
+                MnaPiKubeJSCompatIds.STRUCTURE,
                 MnaPiKubeJSCompatIds.TEXTURE,
                 "minecraft:sound"
         ), idRoles);

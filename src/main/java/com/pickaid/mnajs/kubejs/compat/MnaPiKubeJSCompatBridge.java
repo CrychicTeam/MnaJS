@@ -9,15 +9,20 @@ public final class MnaPiKubeJSCompatBridge {
     }
 
     public static void install() {
-        PiKubeJSCompat.registerModule(MODULE_ID, new MnaPiKubeJSCompatModule(
+        PiKubeJSCompat.registerModule(MODULE_ID, new MnaPiKubeJSCompatModule(new MnaPiKubeJSCompatCandidates(
+                MnaPiKubeJSCompatIdCandidates::progressionEventIds,
                 MnaPiKubeJSCompatIdCandidates::factionIds,
+                MnaPiKubeJSCompatIdCandidates::castingResourceIds,
+                MnaPiKubeJSCompatIdCandidates::mobEffectIds,
                 MnaPiKubeJSCompatIdCandidates::ritualEffectIds,
                 MnaPiKubeJSCompatIdCandidates::spellEffectIds,
                 MnaPiKubeJSCompatIdCandidates::shapeIds,
                 MnaPiKubeJSCompatIdCandidates::modifierIds,
+                MnaPiKubeJSCompatIdCandidates::constructTaskIds,
                 MnaPiKubeJSCompatIdCandidates::lootTableIds,
+                MnaPiKubeJSCompatIdCandidates::structureIds,
                 MnaPiKubeJSCompatIdCandidates::textureIds,
                 MnaPiKubeJSCompatIdCandidates::soundIds
-        ));
+        )));
     }
 }

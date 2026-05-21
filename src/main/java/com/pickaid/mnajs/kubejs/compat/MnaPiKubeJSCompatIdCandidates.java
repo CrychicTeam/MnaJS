@@ -13,18 +13,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import org.pickaid.pikubejscompat.api.id.PiCandidateSources;
 
 public final class MnaPiKubeJSCompatIdCandidates {
     private MnaPiKubeJSCompatIdCandidates() {
     }
 
     public static List<String> progressionEventIds() {
-        return resourceLocationIds(() -> {
+        return PiCandidateSources.resourceLocationIds(() -> {
             LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
             for (Field field : ProgressionEventIDs.class.getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers()) || field.getType() != ResourceLocation.class) {
@@ -41,22 +39,22 @@ public final class MnaPiKubeJSCompatIdCandidates {
                 }
             }
             return ids;
-        });
+        }).get();
     }
 
     public static List<String> factionIds() {
-        return resourceLocationIds(() -> {
+        return PiCandidateSources.resourceLocationIds(() -> {
             LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>(rawRegistryIds(Registries.Factions));
             ids.add(FactionIDs.COUNCIL);
             ids.add(FactionIDs.DEMONS);
             ids.add(FactionIDs.FEY);
             ids.add(FactionIDs.UNDEAD);
             return ids;
-        });
+        }).get();
     }
 
     public static List<String> castingResourceIds() {
-        return resourceLocationIds(() -> {
+        return PiCandidateSources.resourceLocationIds(() -> {
             LinkedHashSet<ResourceLocation> ids = new LinkedHashSet<>();
             ids.add(CastingResourceIDs.MANA);
             ids.add(CastingResourceIDs.COUNCIL_MANA);
@@ -80,7 +78,7 @@ public final class MnaPiKubeJSCompatIdCandidates {
             }
 
             return ids;
-        });
+        }).get();
     }
 
     public static List<String> mobEffectIds() {
@@ -108,23 +106,11 @@ public final class MnaPiKubeJSCompatIdCandidates {
     }
 
     public static List<String> lootTableIds() {
-        return resourceLocationIds(() -> {
-            MinecraftServer server = currentServer();
-            if (server == null) {
-                return List.of();
-            }
-            return server.getLootData().getKeys(LootDataType.TABLE);
-        });
+        return PiCandidateSources.lootTableIds().get();
     }
 
     public static List<String> structureIds() {
-        return resourceLocationIds(() -> {
-            MinecraftServer server = currentServer();
-            if (server == null) {
-                return List.of();
-            }
-            return server.getStructureManager().listTemplates().toList();
-        });
+        return PiCandidateSources.structureTemplateIds().get();
     }
 
     public static List<String> textureIds() {
@@ -136,7 +122,7 @@ public final class MnaPiKubeJSCompatIdCandidates {
     }
 
     private static List<String> registryIds(Supplier<? extends IForgeRegistry<?>> registrySupplier) {
-        return resourceLocationIds(() -> rawRegistryIds(registrySupplier));
+        return PiCandidateSources.resourceLocationIds(() -> rawRegistryIds(registrySupplier)).get();
     }
 
     private static Collection<ResourceLocation> rawRegistryIds(Supplier<? extends IForgeRegistry<?>> registrySupplier) {
@@ -148,28 +134,4 @@ public final class MnaPiKubeJSCompatIdCandidates {
         }
     }
 
-    private static MinecraftServer currentServer() {
-        try {
-            return ServerLifecycleHooks.getCurrentServer();
-        } catch (RuntimeException exception) {
-            return null;
-        }
-    }
-
-    private static List<String> resourceLocationIds(Supplier<? extends Collection<ResourceLocation>> supplier) {
-        try {
-            Collection<ResourceLocation> values = supplier.get();
-            if (values == null || values.isEmpty()) {
-                return List.of();
-            }
-            return values.stream()
-                    .filter(java.util.Objects::nonNull)
-                    .map(ResourceLocation::toString)
-                    .sorted()
-                    .distinct()
-                    .toList();
-        } catch (RuntimeException exception) {
-            return List.of();
-        }
-    }
 }
